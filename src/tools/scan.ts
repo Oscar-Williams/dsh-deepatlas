@@ -7,6 +7,7 @@ import { DeepAtlasConfig } from '../config.js'
 import { Scanner } from '../core/scanner.js'
 import { IndexStore, defaultDataDir } from '../core/index-store.js'
 import { looseObjectOutput, renderJson } from './common.js'
+import { resolveGithubToken, authMode } from '../core/github.js'
 
 export function scannerFor(config: DeepAtlasConfig) {
   const store = new IndexStore(defaultDataDir(config.dataDir))
@@ -26,7 +27,7 @@ export function buildScanTool(_ctx: Context, config: DeepAtlasConfig) {
     async execute(args: { confirm: boolean; incremental?: boolean }) {
       if (!args.confirm) return { ok: false, message: '用户未确认,取消扫描' }
       const scanner = scannerFor(config)
-      const token = process.env[config.githubTokenEnv] || undefined
+      const token = resolveGithubToken(config)
       const index = await scanner.scan({ token, incremental: args.incremental })
       return {
         ok: true,
@@ -47,7 +48,14 @@ export function buildStatusTool(_ctx: Context, config: DeepAtlasConfig) {
     output: { schema: looseObjectOutput, render: renderJson },
     async execute() {
       const scanner = scannerFor(config)
-      return await scanner.status(config.indexTtlHours)
+      const status = await scanner.status(config.indexTtlHours)
+      // 认证模式与元数据覆盖率(不回显 Token 本体)
+      const enriched = (await scanner.loadIndex())?.plugins.filter((p) => p.metadataFetchedAt).length ?? 0
+      return {
+        ...status,
+        githubAuth: authMode(resolveGithubToken(config)),
+        metadataCoverage: status.exists ? { enriched, total: status.pluginCount } : undefined,
+      }
     },
   }
 }

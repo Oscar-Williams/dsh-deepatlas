@@ -7,17 +7,19 @@
  */
 import { Scanner } from './core/scanner.js'
 import { IndexStore, defaultDataDir } from './core/index-store.js'
+import { backfillMetadata } from './core/metadata.js'
+import { resolveGithubToken, authMode } from './core/github.js'
 
 const command = process.argv[2] ?? ''
 const incremental = process.argv.includes('--incremental')
 const ttlHours = Number(process.env.DEEPATLAS_TTL_HOURS ?? '24')
 const store = new IndexStore(defaultDataDir(process.env.DEEPATLAS_DATA_DIR))
 const scanner = new Scanner(store)
+const token = resolveGithubToken()
 
 switch (command) {
   case 'scan': {
-    const token = process.env.DEEPATLAS_GITHUB_TOKEN || undefined
-    console.log(`[deepatlas] 开始${incremental ? '增量' : '全量'}扫描…`)
+    console.log(`[deepatlas] 开始${incremental ? '增量' : '全量'}扫描…(GitHub 认证:${authMode(token)})`)
     const index = await scanner.scan({
       token,
       incremental,
@@ -27,6 +29,17 @@ switch (command) {
     for (const s of index.sources) {
       console.log(`  - ${s.sourceId}(${s.mode ?? 'full'}): ${s.ok ? `ok(${s.itemCount})` : `失败:${s.error}`}`)
     }
+    break
+  }
+  case 'backfill': {
+    console.log(`[deepatlas] 元数据回填开始…(GitHub 认证:${authMode(token)})`)
+    const result = await backfillMetadata(store, {
+      token,
+      onProgress: (done, total) => {
+        if (done % 50 === 0 || done === total) console.log(`  进度 ${done}/${total}`)
+      },
+    })
+    console.log(`[deepatlas] 回填完成:更新 ${result.updated},跳过 ${result.skipped}${result.stoppedReason ? `,提前收手(${result.stoppedReason})` : ''}`)
     break
   }
   case 'status': {
@@ -50,6 +63,6 @@ switch (command) {
     break
   }
   default:
-    console.log('用法:deepatlas <scan [--incremental]|status>')
+    console.log('用法:deepatlas <scan [--incremental]|backfill|status>')
     process.exitCode = 1
 }

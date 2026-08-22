@@ -30,6 +30,14 @@ export interface PluginMeta {
   license: string
   /** 仓库 topics */
   topics: string[]
+  /** 是否已归档(回填自 GitHub) */
+  archived?: boolean
+  /** 是否为 fork(回填自 GitHub) */
+  fork?: boolean
+  /** 默认分支(回填自 GitHub) */
+  defaultBranch?: string
+  /** 元数据最近一次回填时间(<7 天不重抓) */
+  metadataFetchedAt?: string
   /** 是否命中 awesome-dsh-plugin 白名单 */
   whitelisted: boolean
   /** 提供的 skills / commands / 工具清单(扫描时可得的粗粒度摘要) */

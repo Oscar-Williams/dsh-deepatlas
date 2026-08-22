@@ -21,14 +21,15 @@ export function communityScore(stars: number): number {
   return s
 }
 
-/** 可信度分(0-100):白名单 +50,宽松开源协议 +30,规范命名(dsh- 前缀)+20 */
-export function trustScore(meta: Pick<PluginMeta, 'whitelisted' | 'license' | 'name'>): number {
+/** 可信度分(0-100):白名单 +50,宽松开源协议 +30,规范命名(dsh- 前缀)+20,归档 -20 */
+export function trustScore(meta: Pick<PluginMeta, 'whitelisted' | 'license' | 'name' | 'archived'>): number {
   let s = 0
   if (meta.whitelisted) s += 50
   const permissive = ['MIT', 'Apache-2.0', 'ISC', 'BSD-3-Clause', 'BSD-2-Clause', 'CC0-1.0', '0BSD']
   if (permissive.includes(meta.license)) s += 30
   if (/^(dsh|deepseek)[-_]/i.test(meta.name)) s += 20
-  return Math.min(100, s)
+  if (meta.archived) s -= 20
+  return Math.min(100, Math.max(0, s))
 }
 
 /** 综合静态分(match 恒为 0,推荐阶段由模型语义匹配后补足) */
