@@ -7,7 +7,8 @@
  * 接入真实环境后请对照 docs/verification-checklist.md 核实签名。
  */
 declare module '@deepseek-ai/schemastery' {
-  export const Schema: any
+  const Schema: any
+  export default Schema
 }
 
 declare module '@deepseek-ai/dsh-tools' {

@@ -4,7 +4,7 @@
  * 遵循 DSH 插件规范:命名导出 Config,由 Cordis 注入用户配置。
  * 安全默认值:dryRun=true(骨架阶段不真正执行安装)、安装需显式同意。
  */
-import { Schema } from '@deepseek-ai/schemastery'
+import Schema from '@deepseek-ai/schemastery'
 
 export interface DeepAtlasConfig {
   /** 索引与日志存放目录,默认 ~/.dsh/deepatlas */

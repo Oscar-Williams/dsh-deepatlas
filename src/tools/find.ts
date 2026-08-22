@@ -3,10 +3,10 @@
  * 检索本地索引做关键词预筛,返回候选与质量分;语义排序由 DSH 模型完成。
  */
 import { Context } from '@deepseek-ai/cordis'
-import { Schema } from '@deepseek-ai/schemastery'
 import { DeepAtlasConfig } from '../config.js'
 import { PluginMeta, Recommendation } from '../types.js'
 import { scannerFor } from './scan.js'
+import { looseObjectOutput, renderJson } from './common.js'
 
 /** 关键词预筛:分词后在 name/description/topics 中计数 */
 function prescore(meta: PluginMeta, tokens: string[]): number {
@@ -31,11 +31,12 @@ export function buildFindTool(_ctx: Context, config: DeepAtlasConfig) {
     name: 'deepatlas_find',
     description:
       '按自然语言任务需求在本地索引中检索插件,返回候选列表(含质量分、匹配提示、安装命令预览)。若索引缺失或过期会提示先扫描。语义相关性由模型基于返回的候选元数据判断。',
-    parameters: Schema.object({
-      need: Schema.string().required().description('任务需求,如"接入微信并监控 token 花费"'),
-      limit: Schema.number().default(8).description('返回候选上限'),
-    }),
-    async execute(args: { need: string; limit: number }) {
+    parameters: {
+      need: { type: 'string' as const, required: true, description: '任务需求,如"接入微信并监控 token 花费"' },
+      limit: { type: 'number' as const, description: '返回候选上限,默认 8' },
+    },
+    output: { schema: looseObjectOutput, render: renderJson },
+    async execute(args: { need: string; limit?: number }) {
       const scanner = scannerFor(config)
       const status = await scanner.status(config.indexTtlHours)
       if (!status.exists) {
@@ -62,7 +63,7 @@ export function buildFindTool(_ctx: Context, config: DeepAtlasConfig) {
         .map((p) => ({ p, s: prescore(p, tokens) }))
         .filter(({ s }) => s > 0)
         .sort((a, b) => b.s - a.s || (b.p.quality?.total ?? 0) - (a.p.quality?.total ?? 0))
-        .slice(0, args.limit)
+        .slice(0, args.limit ?? 8)
         .map(({ p }) => {
           const [owner, repo] = p.id.split('/')
           const rec: Recommendation = {

@@ -4,24 +4,23 @@
  * 骨架阶段 dryRun 默认开启,只生成命令不执行(P3 接通 dsh CLI)。
  */
 import { Context } from '@deepseek-ai/cordis'
-import { Schema } from '@deepseek-ai/schemastery'
 import { DeepAtlasConfig } from '../config.js'
 import { planInstall, executeInstall } from '../core/installer.js'
 import { AuditLevel } from '../types.js'
+import { looseObjectOutput, renderJson } from './common.js'
 
 export function buildInstallTool(_ctx: Context, config: DeepAtlasConfig) {
   return {
     name: 'deepatlas_install',
     description:
       '安装社区插件(需先通过 deepatlas_audit)。强制条件:用户显式同意、审计非红色、锁定具体 commit。dryRun 模式只返回安装命令。',
-    parameters: Schema.object({
-      target: Schema.string().required().description('目标仓库,格式 owner/repo'),
-      commit: Schema.string().required().description('锁定的 commit 短哈希(供应链安全,必填)'),
-      auditLevel: Schema.union(['green', 'yellow', 'red'] as const)
-        .required()
-        .description('最近一次 deepatlas_audit 的等级'),
-      userConsent: Schema.boolean().required().description('用户是否明确同意安装,必须由用户亲口/显式操作给出'),
-    }),
+    parameters: {
+      target: { type: 'string' as const, required: true, description: '目标仓库,格式 owner/repo' },
+      commit: { type: 'string' as const, required: true, description: '锁定的 commit 短哈希(供应链安全,必填)' },
+      auditLevel: { type: 'string' as const, required: true, description: "最近一次 deepatlas_audit 的等级:green/yellow/red" },
+      userConsent: { type: 'boolean' as const, required: true, description: '用户是否明确同意安装,必须由用户亲口/显式操作给出' },
+    },
+    output: { schema: looseObjectOutput, render: renderJson },
     async execute(args: { target: string; commit: string; auditLevel: AuditLevel; userConsent: boolean }) {
       const target = args.target.toLowerCase().replace(/^github:/, '')
       const plan = planInstall(
