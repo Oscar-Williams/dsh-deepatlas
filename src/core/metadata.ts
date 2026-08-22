@@ -118,6 +118,8 @@ export async function backfillMetadata(
       }
       index.plugins[idx] = { ...merged, quality: rank(merged) }
       updated++
+      // 分批持久化:每 50 条落盘一次,中断可续跑(已更新条目 7 天内不重抓)
+      if (updated % 50 === 0) await store.save(index)
     }
     options.onProgress?.(i + 1, total)
     if (stoppedReason) break
