@@ -18,8 +18,8 @@
   (本地已有官方源码 clone:reference/deepseek-harness,P1 末核对 types/dsh-stubs.d.ts)
 - ☑ 运行时实测:`dsh --version`(0.1.1-rc.1)/ `dsh --help` / `dsh plugin`
   必须绑定 --profile(详见 docs/cli-capture/0002,WSL2 + pnpm 11.22.0)
-- ☐ 端到端:真实 `dsh plugin add github:` 安装本插件并重启生效
-  (headless 模式 `dsh --profile headless "..."` 可脚本化验证)
+- ☑ 端到端(Linux/WSL2):link: 安装→dump-config→headless 能力执行(exit 0,cli-capture/0004)
+- ☑ 端到端(Windows 原生):staging 安装→dump-config→web 启动 HTTP 200(Note 0009)
 
 ## 生态数据
 
