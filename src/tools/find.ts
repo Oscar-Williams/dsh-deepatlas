@@ -7,6 +7,7 @@ import { DeepAtlasConfig } from '../config.js'
 import { PluginMeta, Recommendation } from '../types.js'
 import { scannerFor } from './scan.js'
 import { looseObjectOutput, renderJson } from './common.js'
+import { getRuntimeInfo } from '../core/compat.js'
 
 /** 关键词预筛:分词后在 name/description/topics 中计数 */
 function prescore(meta: PluginMeta, tokens: string[]): number {
@@ -66,18 +67,25 @@ export function buildFindTool(_ctx: Context, config: DeepAtlasConfig) {
         .slice(0, args.limit ?? 8)
         .map(({ p }) => {
           const [owner, repo] = p.id.split('/')
+          const archivedNote = p.archived ? ';⚠️仓库已归档' : ''
           const rec: Recommendation = {
             plugin: p,
-            reason: `命中关键词:${tokens.filter((t) => `${p.name} ${p.description}`.toLowerCase().includes(t)).join(', ') || '(语义匹配)'};质量分 ${p.quality?.total}(活跃 ${p.quality?.activity}/社区 ${p.quality?.community}/可信 ${p.quality?.trust})`,
+            reason: `命中关键词:${tokens.filter((t) => `${p.name} ${p.description}`.toLowerCase().includes(t)).join(', ') || '(语义匹配)'};质量分 ${p.quality?.total}(活跃 ${p.quality?.activity}/社区 ${p.quality?.community}/可信 ${p.quality?.trust})${archivedNote}`,
             overlapNote: overlapFor(p, plugins, tokens),
             installCommandPreview: `dsh plugin --profile ${config.installProfile} add github:${owner}/${repo}#<commit>`,
           }
           return rec
         })
 
+      const runtime = getRuntimeInfo()
       return {
         ok: true,
         need: args.need,
+        runtime: {
+          platform: `${runtime.platform}/${runtime.arch}`,
+          node: runtime.nodeVersion,
+          note: '逐插件兼容性结论(Node 引擎/native/构建脚本)需经 deepatlas_audit 获取;安装前必须审计',
+        },
         candidates,
         hint: candidates.length === 0 ? '索引中无关键词命中,可由模型再判断是否语义相关,或建议用户去 GitHub topic 搜索' : undefined,
       }
