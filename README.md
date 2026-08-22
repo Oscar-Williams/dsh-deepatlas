@@ -123,9 +123,10 @@ awesome 清单/白名单 ────┤→ M1 扫描器 → 本地索引(~/.dsh
 
 ## Roadmap
 
-- **P1**:✅ 全量分页扫描 + 增量刷新 + 类型精判(文件清单) + CI;⏳ 官方形态实测核实(dsh CLI 抓取中)
-- **P2**:推荐卡片完善(重叠对比/中文理由);质量分校准;**兼容性检测**(平台/架构/Node/DSH 版本进推荐卡,采纳外部评审意见)
-- **P3**:真实安装执行 + npm audit 联动 + 源码树扫描;**Install Adapter 运行时自检**(process.platform/arch/node/包管理器/DSH 版本,安装前校验宿主一致性)
+- **M0 Real Harness Integration**:✅ 本地安装→dump-config→启动冒烟(HTTP 200)打通(2026-08-22);⏳ 能力真实执行(待 API Key);CI 双平台集成测试
+- **P1**:✅ 全量分页扫描 + 增量刷新 + 类型精判(文件清单) + CI;✅ 官方形态实测核实(cli-capture 0001-0003)
+- **P2**:推荐卡片完善(重叠对比/中文理由);质量分校准;**兼容性检测**(平台/架构/Node/DSH 版本进推荐卡,采纳外部评审意见);PluginRecord 知识模型
+- **P3**:InstallPlan 状态机(RESOLVED→…→ACTIVE,含组合验证与启动验证);真实安装执行 + npm audit 联动 + 源码树扫描;**装前查重组件树(防 duplicate loader entry,#2889)**
 - **P4**:主动推荐触发 + 反馈日志个性化降权
 
 ## 参考与致谢
