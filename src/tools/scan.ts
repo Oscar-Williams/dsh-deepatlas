@@ -17,15 +17,16 @@ export function buildScanTool(_ctx: Context, config: DeepAtlasConfig) {
   return {
     name: 'deepatlas_scan',
     description:
-      '扫描 DSH 插件生态(GitHub topic dsh-plugin 与 awesome 清单)并重建本地索引。耗时约数十秒,24 小时内已有索引时建议先用 deepatlas_status 检查。',
+      '扫描 DSH 插件生态(GitHub topic dsh-plugin 与 awesome 清单)并重建本地索引。支持全量(默认)与增量(已有索引时仅抓更新,更快)。首次使用建议全量。',
     parameters: Schema.object({
       confirm: Schema.boolean().required().description('索引重建会产生网络请求,需用户确认为 true'),
+      incremental: Schema.boolean().description('增量模式:基于上次索引时间只抓有更新的仓库;无索引时自动全量'),
     }),
-    async execute(args: { confirm: boolean }) {
+    async execute(args: { confirm: boolean; incremental?: boolean }) {
       if (!args.confirm) return { ok: false, message: '用户未确认,取消扫描' }
       const scanner = scannerFor(config)
       const token = process.env[config.githubTokenEnv] || undefined
-      const index = await scanner.scan({ token })
+      const index = await scanner.scan({ token, incremental: args.incremental })
       return {
         ok: true,
         pluginCount: index.plugins.length,

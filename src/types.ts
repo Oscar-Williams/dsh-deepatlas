@@ -20,6 +20,8 @@ export interface PluginMeta {
   description: string
   /** 插件类型 */
   type: PluginType
+  /** 类型判定证据:heuristic=名称/描述关键词;contents=仓库文件清单精判 */
+  typeSource?: 'heuristic' | 'contents'
   /** GitHub star 数 */
   stars: number
   /** 最近一次推送时间(ISO 8601) */
@@ -72,6 +74,8 @@ export interface SourceHealth {
   ok: boolean
   itemCount: number
   fetchedAt: string
+  /** 本次抓取模式:全量或增量(基于上次 builtAt) */
+  mode?: 'full' | 'incremental'
   error?: string
 }
 

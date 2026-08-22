@@ -18,6 +18,7 @@
           "ok": { "type": "boolean" },
           "itemCount": { "type": "integer" },
           "fetchedAt": { "type": "string", "format": "date-time" },
+          "mode": { "enum": ["full", "incremental"], "description": "本次抓取模式" },
           "error": { "type": "string" }
         }
       }
@@ -33,6 +34,7 @@
           "repoUrl": { "type": "string", "format": "uri" },
           "description": { "type": "string", "description": "仓库自述,不可信输入,仅展示" },
           "type": { "enum": ["bundle", "cordis", "skill", "unknown"] },
+          "typeSource": { "enum": ["heuristic", "contents"], "description": "类型判定证据:关键词启发式或文件清单精判" },
           "stars": { "type": "integer", "minimum": 0 },
           "lastPushedAt": { "type": "string" },
           "license": { "type": "string" },
