@@ -22,17 +22,19 @@ export interface RepoMetadata {
 }
 
 export type RepoFetcher = (id: string, token?: string) => Promise<
-  { ok: true; data: RepoMetadata; remaining?: number } | { ok: false; retryAfterMs?: number; remaining?: number }
+  | { ok: true; data: RepoMetadata; remaining?: number }
+  | { ok: false; missing?: boolean; retryAfterMs?: number; remaining?: number }
 >
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-/** 真实实现:GET /repos/{owner}/{repo} */
+/** 真实实现:GET /repos/{owner}/{repo}(404 视为死链,403/429 视为限流) */
 export const githubRepoFetcher: RepoFetcher = async (id, token) => {
   const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
   if (token) headers.Authorization = `Bearer ${token}`
   const res = await fetch(`https://api.github.com/repos/${id}`, { headers })
   const { remaining } = rateInfoFromHeaders(res.headers)
+  if (res.status === 404) return { ok: false, missing: true, remaining }
   if (res.status === 403 || res.status === 429) {
     const ra = Number(res.headers.get('retry-after') ?? '0')
     return { ok: false, retryAfterMs: ra > 0 ? ra * 1000 : 60_000, remaining }
@@ -64,6 +66,7 @@ export function needsBackfill(meta: PluginMeta, now = Date.now()): boolean {
 
 export interface BackfillResult {
   updated: number
+  dead: number
   skipped: number
   stoppedReason?: 'rate-floor' | 'retry-after' | 'limit-reached'
 }
@@ -85,12 +88,25 @@ export async function backfillMetadata(
   const targets = index.plugins.filter((p) => needsBackfill(p))
   const total = Math.min(targets.length, Number.isFinite(limit) ? limit : targets.length)
   let updated = 0
+  let dead = 0
   let stoppedReason: BackfillResult['stoppedReason']
 
   for (let i = 0; i < total; i++) {
     const meta = targets[i]
     const r = await fetcher(meta.id, options.token)
     if (!r.ok) {
+      if (r.missing) {
+        // 死链(404/改名/删除):标记后不再重试,推荐侧过滤
+        const idx = index.plugins.findIndex((p) => p.id === meta.id)
+        if (idx >= 0) {
+          index.plugins[idx] = { ...index.plugins[idx], deadLink: true, metadataFetchedAt: new Date().toISOString() }
+          if ((updated + dead) % 50 === 0) await store.save(index)
+          dead++
+        }
+        options.onProgress?.(i + 1, total)
+        await sleep(350)
+        continue
+      }
       if (r.remaining !== undefined && r.remaining < RATE_FLOOR) {
         stoppedReason = 'rate-floor'
         break
@@ -128,5 +144,5 @@ export async function backfillMetadata(
 
   index.plugins.sort((a, b) => (b.quality?.total ?? 0) - (a.quality?.total ?? 0))
   await store.save(index)
-  return { updated, skipped: targets.length - updated, stoppedReason }
+  return { updated, dead, skipped: targets.length - updated - dead, stoppedReason }
 }

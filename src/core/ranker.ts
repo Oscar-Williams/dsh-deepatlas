@@ -14,11 +14,15 @@ export function activityScore(lastPushedAt: string, now = new Date()): number {
   return Math.round(100 * (1 - (days - 7) / 173))
 }
 
-/** star 数对数缩放 → 社区分(0-100):0 星 0 分,≥1000 星满分 */
+/**
+ * star 对数缩放 → 社区分(0-100)。
+ * 参考基数 15 万(头部生态位):0 星 0 分;千星级 ~58;万星级 ~78;
+ * 官方 harness 183k⭐ ~100。修复旧版(基数 1000)头部全部饱和同分的缺陷。
+ */
 export function communityScore(stars: number): number {
   if (stars <= 0) return 0
-  const s = Math.min(100, Math.round((Math.log10(stars + 1) / 3) * 100))
-  return s
+  const ref = Math.log10(150_001)
+  return Math.min(100, Math.round((Math.log10(stars + 1) / ref) * 100))
 }
 
 /** 可信度分(0-100):白名单 +50,宽松开源协议 +30,规范命名(dsh- 前缀)+20,归档 -20 */

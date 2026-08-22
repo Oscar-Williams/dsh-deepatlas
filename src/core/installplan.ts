@@ -1,0 +1,109 @@
+/**
+ * InstallPlan 状态机(P3,采纳外部评审 #2889 教训)
+ *
+ * RESOLVED(目标与 commit 已确定,兼容性已核)
+ *   → APPROVED(审计非红 + 用户显式同意)
+ *   → INSTALLED(dsh plugin add 执行成功)
+ *   → COMPOSED(dump-config 组合树含目标行,防 duplicate loader entry)
+ *   → BOOT_VERIFIED(宿主启动冒烟通过)——本轮留接口,headless 冒烟 P3 后续
+ *   → ACTIVE
+ * 只有 ACTIVE 才向用户报告"安装成功"。
+ */
+import { PluginMeta, AuditReport } from '../types.js'
+
+export type PlanState = 'RESOLVED' | 'APPROVED' | 'INSTALLED' | 'COMPOSED' | 'BOOT_VERIFIED' | 'ACTIVE'
+export type PlanBlocked = 'REJECTED_CONSENT' | 'REJECTED_AUDIT' | 'REJECTED_UNPINNED' | 'REJECTED_DUPLICATE' | 'REJECTED_COMPAT'
+
+export interface InstallPlan {
+  target: string
+  commit?: string
+  profile: string
+  state: PlanState | PlanBlocked
+  /** 触发 blocking 的证据说明 */
+  detail?: string
+  /** 每次状态推进的时间线 */
+  trace: { at: string; from: PlanState | PlanBlocked; to: PlanState | PlanBlocked; note?: string }[]
+  installCommand?: string
+}
+
+export function newPlan(target: string, profile: string, commit?: string): InstallPlan {
+  return { target, commit, profile, state: 'RESOLVED', trace: [] }
+}
+
+function advance(plan: InstallPlan, to: PlanState | PlanBlocked, note?: string): InstallPlan {
+  const from = plan.state
+  return {
+    ...plan,
+    state: to,
+    detail: note && to.startsWith('REJECTED') ? note : plan.detail,
+    trace: [...plan.trace, { at: new Date().toISOString(), from, to, note }],
+  }
+}
+
+export interface PlanGateInput {
+  userConsent: boolean
+  audit: Pick<AuditReport, 'level'>
+  compatibilityOk: boolean
+}
+
+/** RESOLVED → APPROVED:三重闸门 + 兼容性(P2 新增硬闸) */
+export function approve(plan: InstallPlan, input: PlanGateInput): InstallPlan {
+  if (!input.compatibilityOk) return advance(plan, 'REJECTED_COMPAT', '运行时不兼容(Node 引擎等硬性冲突)')
+  if (!input.userConsent) return advance(plan, 'REJECTED_CONSENT', '未获得用户显式同意')
+  if (input.audit.level === 'red') return advance(plan, 'REJECTED_AUDIT', '审计红色风险')
+  if (!plan.commit) return advance(plan, 'REJECTED_UNPINNED', '未锁定 commit')
+  return advance(plan, 'APPROVED')
+}
+
+/** 装前查重(#2889):dump-config 输出已含目标插件行则拒绝 */
+export function checkDuplicate(
+  plan: InstallPlan,
+  dumpConfigOutput: string,
+  pluginName: string,
+): InstallPlan {
+  const re = new RegExp(`name:\\s*'?${pluginName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'?`)
+  if (re.test(dumpConfigOutput)) {
+    return advance(plan, 'REJECTED_DUPLICATE', `组合树已存在 ${pluginName} 行,再装将触发 duplicate loader entry(#2889)`)
+  }
+  return plan
+}
+
+/** APPROVED → INSTALLED:执行安装命令(exec 注入以便测试) */
+export async function install(
+  plan: InstallPlan,
+  dryRun: boolean,
+  exec?: (cmd: string) => Promise<{ code: number; output: string }>,
+): Promise<InstallPlan> {
+  if (plan.state !== 'APPROVED') return advance(plan, plan.state, '非 APPROVED 状态,拒绝执行')
+  const [owner, repo] = plan.target.split('/')
+  const cmd = `dsh plugin --profile ${plan.profile} add github:${owner}/${repo}${plan.commit ? '#' + plan.commit : ''}`
+  const withCmd = { ...plan, installCommand: cmd }
+  if (dryRun || !exec) return advance({ ...withCmd, state: 'APPROVED' }, 'INSTALLED', '[dry-run] 仅生成命令,未执行')
+  const r = await exec(cmd)
+  if (r.code !== 0) return advance(withCmd, 'INSTALLED', `安装命令退出码 ${r.code}:${r.output.slice(0, 200)}`)
+  return advance(withCmd, 'INSTALLED')
+}
+
+/** INSTALLED → COMPOSED:dump-config 断言目标行存在 */
+export function verifyComposed(plan: InstallPlan, dumpConfigOutput: string, pluginName: string): InstallPlan {
+  if (plan.state !== 'INSTALLED') return plan
+  const re = new RegExp(`name:\\s*'?${pluginName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'?`)
+  if (!re.test(dumpConfigOutput)) return advance(plan, 'INSTALLED', '组合树未见目标行,COMPOSED 失败(回退 INSTALLED)')
+  return advance(plan, 'COMPOSED')
+}
+
+/** COMPOSED → ACTIVE:启动冒烟(本轮占位,P3 后续接 headless) */
+export function markActiveIfBooted(plan: InstallPlan, booted: boolean): InstallPlan {
+  if (plan.state !== 'COMPOSED') return plan
+  return booted ? advance(plan, 'ACTIVE') : plan
+}
+
+/** 是否可向用户宣告"安装成功" */
+export function isActive(plan: InstallPlan): boolean {
+  return plan.state === 'ACTIVE'
+}
+
+/** 兼容元数据查找辅助(从索引条目取名) */
+export function pluginNameOf(meta: PluginMeta): string {
+  return meta.name
+}

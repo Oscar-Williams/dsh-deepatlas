@@ -170,7 +170,7 @@ export class Scanner {
   async status(ttlHours: number) {
     const index = await this.store.load()
     if (!index) return { exists: false, location: this.store.location }
-    const top10 = index.plugins.slice(0, 10).map((p) => ({
+    const top10 = index.plugins.filter((p) => !p.deadLink).slice(0, 10).map((p) => ({
       name: p.name,
       id: p.id,
       stars: p.stars,

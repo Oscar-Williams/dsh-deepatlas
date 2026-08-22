@@ -15,8 +15,8 @@ function prescore(meta: PluginMeta, tokens: string[]): number {
   return tokens.reduce((acc, t) => acc + (haystack.includes(t) ? 1 : 0), 0)
 }
 
-/** 重叠提示:同类型且共享关键词的更高分插件 */
-function overlapFor(target: PluginMeta, all: PluginMeta[], tokens: string[]): string | undefined {
+/** 重叠对比(结构化):同类型且共享关键词的更高分插件 */
+function overlapFor(target: PluginMeta, all: PluginMeta[], tokens: string[]) {
   const sibling = all.find(
     (p) =>
       p.id !== target.id &&
@@ -24,7 +24,15 @@ function overlapFor(target: PluginMeta, all: PluginMeta[], tokens: string[]): st
       prescore(p, tokens) > 0 &&
       (p.quality?.total ?? 0) > (target.quality?.total ?? 0),
   )
-  return sibling ? `注意:${sibling.name}(质量分 ${sibling.quality?.total})功能可能重叠,请对比后选择` : undefined
+  if (!sibling) return undefined
+  const starRatio = target.stars > 0 ? Math.round((sibling.stars / target.stars) * 10) / 10 : Infinity
+  return {
+    id: sibling.id,
+    name: sibling.name,
+    stars: sibling.stars,
+    quality: sibling.quality?.total ?? 0,
+    note: `功能可能重叠:${sibling.name}(⭐${sibling.stars},质量分 ${sibling.quality?.total})高于本条${starRatio !== Infinity ? `约 ${starRatio} 倍 star` : ''},请对比后选择`,
+  }
 }
 
 export function buildFindTool(_ctx: Context, config: DeepAtlasConfig) {
@@ -47,7 +55,7 @@ export function buildFindTool(_ctx: Context, config: DeepAtlasConfig) {
         return { ok: false, message: '索引已过期,请先调用 deepatlas_scan 刷新' }
       }
       const index = await scanner.loadIndex()
-      const plugins = (index?.plugins ?? []).filter((p) => p.stars >= config.minStars)
+      const plugins = (index?.plugins ?? []).filter((p) => p.stars >= config.minStars && !p.deadLink)
 
       // 中英混合分词:英文按词,中文按 2-gram(轻量方案,不引外部分词依赖)
       const raw = args.need.toLowerCase()
@@ -71,7 +79,8 @@ export function buildFindTool(_ctx: Context, config: DeepAtlasConfig) {
           const rec: Recommendation = {
             plugin: p,
             reason: `命中关键词:${tokens.filter((t) => `${p.name} ${p.description}`.toLowerCase().includes(t)).join(', ') || '(语义匹配)'};质量分 ${p.quality?.total}(活跃 ${p.quality?.activity}/社区 ${p.quality?.community}/可信 ${p.quality?.trust})${archivedNote}`,
-            overlapNote: overlapFor(p, plugins, tokens),
+            overlap: overlapFor(p, plugins, tokens),
+            overlapNote: overlapFor(p, plugins, tokens)?.note,
             installCommandPreview: `dsh plugin --profile ${config.installProfile} add github:${owner}/${repo}#<commit>`,
           }
           return rec

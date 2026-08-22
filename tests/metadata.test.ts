@@ -87,7 +87,7 @@ describe('backfillMetadata(注入假 fetcher)', () => {
     const after = await store.load()
     expect(after!.plugins[0].id).toBe('a/hot') // 高分在前
     expect(after!.plugins[0].stars).toBe(5508)
-    expect(after!.plugins[0].quality!.community).toBe(100)
+    expect(after!.plugins[0].quality!.community).toBe(72) // 新基数:5508⭐ ≈ 72 分
     expect(after!.plugins.every((p) => p.metadataFetchedAt)).toBe(true)
   })
 

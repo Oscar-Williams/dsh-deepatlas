@@ -38,6 +38,8 @@ export interface PluginMeta {
   defaultBranch?: string
   /** 元数据最近一次回填时间(<7 天不重抓) */
   metadataFetchedAt?: string
+  /** 死链(404/删除/改名),推荐与 Top10 过滤 */
+  deadLink?: boolean
   /** 是否命中 awesome-dsh-plugin 白名单 */
   whitelisted: boolean
   /** 提供的 skills / commands / 工具清单(扫描时可得的粗粒度摘要) */
@@ -121,7 +123,9 @@ export interface Recommendation {
   plugin: PluginMeta
   /** 匹配理由(由推荐器/模型生成) */
   reason: string
-  /** 与已装/功能重叠插件的对比说明 */
+  /** 与功能重叠插件的对比(结构化) */
+  overlap?: { id: string; name: string; stars: number; quality: number; note: string }
+  /** 兼容展示:重叠提示文本(向后兼容) */
   overlapNote?: string
   /** 安装命令预览(commit 锁定) */
   installCommandPreview: string
