@@ -5,6 +5,7 @@
  * 清单快照;P3 扩展为抓取仓库源码树做静态扫描 + npm audit。
  * 输出结构化报告:风险分级(绿/黄/红)+ 逐条证据,红色一律拒绝自动安装。
  */
+import { AuditReport } from '../types.js'
 
 /** 审计输入:目标插件的清单快照与仓库信息 */
 export interface AuditInput {
@@ -64,9 +65,9 @@ const RULES: Rule[] = [
       }
       const suspicious = Object.keys(deps).filter((d) => {
         if (d.startsWith('@deepseek-ai/') || d.startsWith('@types/')) return false
-        // 非 npm 注册表直链(git/url/tarball)无法被常规审计覆盖
+        // 非 npm 注册表直链(git/url/tarball/file)无法被常规审计覆盖
         const v = deps[d]
-        return typeof v === 'string' && /^(git|http|https|file):/.test(v)
+        return typeof v === 'string' && /^(git\+|git:|http:|https:|file:)/.test(v)
       })
       return suspicious.length ? `非注册表依赖: ${suspicious.join(', ')}` : null
     },
@@ -80,8 +81,8 @@ const RULES: Rule[] = [
   },
 ]
 
-export function audit(input: AuditInput): import('../types').AuditReport {
-  const findings = []
+export function audit(input: AuditInput): AuditReport {
+  const findings: AuditReport['findings'] = []
   for (const rule of RULES) {
     const evidence = rule.check(input)
     if (evidence) {

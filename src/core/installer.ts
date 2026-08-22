@@ -7,7 +7,7 @@
  * 3. 默认锁定 commit,防供应链投毒;
  * 4. 骨架阶段 dryRun 默认开启,只生成命令不执行。
  */
-import { AuditReport } from '../types'
+import { AuditReport } from '../types.js'
 
 export interface InstallRequest {
   /** "owner/repo" */

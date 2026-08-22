@@ -4,9 +4,9 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { Schema } from '@deepseek-ai/schemastery'
-import { DeepAtlasConfig } from '../config'
-import { Scanner } from '../core/scanner'
-import { IndexStore, defaultDataDir } from '../core/index-store'
+import { DeepAtlasConfig } from '../config.js'
+import { Scanner } from '../core/scanner.js'
+import { IndexStore, defaultDataDir } from '../core/index-store.js'
 
 export function scannerFor(config: DeepAtlasConfig) {
   const store = new IndexStore(defaultDataDir(config.dataDir))

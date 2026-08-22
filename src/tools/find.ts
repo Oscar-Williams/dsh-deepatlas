@@ -4,9 +4,9 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { Schema } from '@deepseek-ai/schemastery'
-import { DeepAtlasConfig } from '../config'
-import { PluginMeta, Recommendation } from '../types'
-import { scannerFor } from './scan'
+import { DeepAtlasConfig } from '../config.js'
+import { PluginMeta, Recommendation } from '../types.js'
+import { scannerFor } from './scan.js'
 
 /** 关键词预筛:分词后在 name/description/topics 中计数 */
 function prescore(meta: PluginMeta, tokens: string[]): number {

@@ -2,8 +2,8 @@
  * 独立 CLI 入口(npm run scan / npm run status)
  * 不依赖 DSH 运行时,便于脚本化与 CI 中维护索引。
  */
-import { Scanner } from './core/scanner'
-import { IndexStore, defaultDataDir } from './core/index-store'
+import { Scanner } from './core/scanner.js'
+import { IndexStore, defaultDataDir } from './core/index-store.js'
 
 const command = process.argv[2] ?? ''
 const ttlHours = Number(process.env.DEEPATLAS_TTL_HOURS ?? '24')

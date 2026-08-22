@@ -9,11 +9,11 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
-import { Config, DeepAtlasConfig } from './config'
-import { buildScanTool, buildStatusTool } from './tools/scan'
-import { buildFindTool } from './tools/find'
-import { buildAuditTool } from './tools/audit'
-import { buildInstallTool } from './tools/install'
+import { Config, DeepAtlasConfig } from './config.js'
+import { buildScanTool, buildStatusTool } from './tools/scan.js'
+import { buildFindTool } from './tools/find.js'
+import { buildAuditTool } from './tools/audit.js'
+import { buildInstallTool } from './tools/install.js'
 
 export const name = 'dsh-deepatlas'
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { audit } from '../src/core/auditor'
+import { audit } from '../src/core/auditor.js'
 
 describe('audit', () => {
   it('生命周期脚本命中即红色,拒绝自动安装', () => {

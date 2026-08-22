@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { activityScore, communityScore, trustScore, rank } from '../src/core/ranker'
-import { PluginMeta } from '../src/types'
+import { activityScore, communityScore, trustScore, rank } from '../src/core/ranker.js'
+import { PluginMeta } from '../src/types.js'
 
 const NOW = new Date('2026-08-22T00:00:00Z')
 

@@ -47,6 +47,20 @@ dsh plugin --profile <你的profile> add github:<owner>/dsh-deepatlas#<commit>
 - name: 'F:/Agent_Related/ZCode_Related/plugin1/src/index.ts'
 ```
 
+## 开发环境
+
+```bash
+# WSL2 + Miniconda(本仓库当前工作方式)
+conda create -n dsh-deepatlas -c conda-forge nodejs=22 -y
+conda activate dsh-deepatlas
+npm install
+npm test          # vitest,4 文件 21 用例
+npm run typecheck # tsc --noEmit(NodeNext,导入需带 .js 后缀)
+npm run build     # 产物 lib/
+```
+
+无 DSH 运行时也能完整开发:`types/dsh-stubs.d.ts` 提供离线类型桩。
+
 ## 工具命令
 
 | 工具 | 对应模块 | 说明 |

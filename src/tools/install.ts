@@ -5,9 +5,9 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { Schema } from '@deepseek-ai/schemastery'
-import { DeepAtlasConfig } from '../config'
-import { planInstall, executeInstall } from '../core/installer'
-import { AuditLevel } from '../types'
+import { DeepAtlasConfig } from '../config.js'
+import { planInstall, executeInstall } from '../core/installer.js'
+import { AuditLevel } from '../types.js'
 
 export function buildInstallTool(_ctx: Context, config: DeepAtlasConfig) {
   return {

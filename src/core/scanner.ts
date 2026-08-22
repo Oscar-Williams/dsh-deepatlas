@@ -1,12 +1,12 @@
 /**
  * 生态扫描器(M1):编排各数据源 → 去重合并 → 白名单标记 → 评分 → 落盘
  */
-import { AtlasIndex, PluginMeta, PluginType, SourceHealth } from '../types'
-import { rank } from './ranker'
-import { EcosystemSource, RawPluginEntry } from './sources/types'
-import { GitHubTopicSource } from './sources/github-topic'
-import { AwesomeListSource, WHITELIST_REPOS } from './sources/awesome-list'
-import { IndexStore, SCHEMA_VERSION } from './index-store'
+import { AtlasIndex, PluginMeta, PluginType, SourceHealth } from '../types.js'
+import { rank } from './ranker.js'
+import { EcosystemSource, RawPluginEntry } from './sources/types.js'
+import { GitHubTopicSource } from './sources/github-topic.js'
+import { AwesomeListSource, WHITELIST_REPOS } from './sources/awesome-list.js'
+import { IndexStore, SCHEMA_VERSION } from './index-store.js'
 
 /** 按仓库自述关键词的粗粒度类型推断;P2 升级为读仓库文件清单判定 */
 function inferType(entry: RawPluginEntry): PluginType {

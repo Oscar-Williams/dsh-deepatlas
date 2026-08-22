@@ -4,7 +4,7 @@
  * 解析 awesome 仓库 README 中 `- [name](url) — desc` 形态的条目,
  * 作为 GitHub topic 的补充与降级来源;同时维护白名单命中标记。
  */
-import { EcosystemSource, RawPluginEntry } from './types'
+import { EcosystemSource, RawPluginEntry } from './types.js'
 
 /** 生态公认的白名单仓库(命中即 whitelisted=true) */
 export const WHITELIST_REPOS = [

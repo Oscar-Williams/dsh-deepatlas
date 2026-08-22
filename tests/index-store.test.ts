@@ -2,8 +2,8 @@ import { describe, expect, it, beforeEach, afterEach } from 'vitest'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
-import { IndexStore, SCHEMA_VERSION } from '../src/core/index-store'
-import { AtlasIndex } from '../src/types'
+import { IndexStore, SCHEMA_VERSION } from '../src/core/index-store.js'
+import { AtlasIndex } from '../src/types.js'
 
 let dir: string
 

@@ -2,7 +2,7 @@
  * 质量评分器(M2):静态分 85(活跃 35 + 社区 25 + 可信 25)+ 匹配预留 15
  * 纯函数实现,便于单元测试;评分只依赖 PluginMeta 静态字段。
  */
-import { PluginMeta, QualityScore } from '../types'
+import { PluginMeta, QualityScore } from '../types.js'
 
 /** 最近提交距今天数 → 活跃度分(0-100):7 天内满分,180 天以上归零 */
 export function activityScore(lastPushedAt: string, now = new Date()): number {

@@ -5,7 +5,7 @@
  * 未认证 10 次/分钟、认证 30 次/分钟;每页 100 条,页间退避。
  * TODO(P2): 失败重试与 awesome-list 兜底降级在 scanner 层编排。
  */
-import { EcosystemSource, RawPluginEntry } from './types'
+import { EcosystemSource, RawPluginEntry } from './types.js'
 
 const API = 'https://api.github.com'
 const TOPIC_QUERY = 'topic:dsh-plugin'

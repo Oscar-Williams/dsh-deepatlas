@@ -2,8 +2,6 @@
  * 数据源统一接口:所有生态扫描来源(GitHub topic、awesome 清单、商店)
  * 都实现该接口,扫描器按序抓取并在仓库维度去重。
  */
-import { PluginMeta } from '../../types'
-
 export interface RawPluginEntry {
   /** "owner/repo" */
   id: string

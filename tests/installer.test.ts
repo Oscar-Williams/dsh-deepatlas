@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildCommand, planInstall, executeInstall } from '../src/core/installer'
-import { AuditReport } from '../src/types'
+import { buildCommand, planInstall, executeInstall } from '../src/core/installer.js'
+import { AuditReport } from '../src/types.js'
 
 function report(level: AuditReport['level']): AuditReport {
   return {

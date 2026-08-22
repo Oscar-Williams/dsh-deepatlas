@@ -4,9 +4,9 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { Schema } from '@deepseek-ai/schemastery'
-import { DeepAtlasConfig } from '../config'
-import { audit } from '../core/auditor'
-import { WHITELIST_REPOS } from '../core/sources/awesome-list'
+import { DeepAtlasConfig } from '../config.js'
+import { audit } from '../core/auditor.js'
+import { WHITELIST_REPOS } from '../core/sources/awesome-list.js'
 
 const RAW = 'https://raw.githubusercontent.com'
 
