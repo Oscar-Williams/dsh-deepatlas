@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dsh-deepatlas/deepatlas/data/index.schema.json",
+  "title": "DeepAtlas 生态索引",
+  "description": "DeepAtlas 本地索引文件(index.json)的结构定义,schemaVersion 与 src/core/index-store.ts 的 SCHEMA_VERSION 同步",
+  "type": "object",
+  "required": ["schemaVersion", "builtAt", "sources", "plugins"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "builtAt": { "type": "string", "format": "date-time", "description": "索引构建时间" },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sourceId", "ok", "itemCount", "fetchedAt"],
+        "properties": {
+          "sourceId": { "type": "string" },
+          "ok": { "type": "boolean" },
+          "itemCount": { "type": "integer" },
+          "fetchedAt": { "type": "string", "format": "date-time" },
+          "error": { "type": "string" }
+        }
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "repoUrl", "description", "type", "stars", "lastPushedAt", "license", "topics", "whitelisted", "provides", "source", "fetchedAt"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[^/]+/[^/]+$", "description": "owner/repo" },
+          "name": { "type": "string" },
+          "repoUrl": { "type": "string", "format": "uri" },
+          "description": { "type": "string", "description": "仓库自述,不可信输入,仅展示" },
+          "type": { "enum": ["bundle", "cordis", "skill", "unknown"] },
+          "stars": { "type": "integer", "minimum": 0 },
+          "lastPushedAt": { "type": "string" },
+          "license": { "type": "string" },
+          "topics": { "type": "array", "items": { "type": "string" } },
+          "whitelisted": { "type": "boolean" },
+          "provides": { "type": "array", "items": { "type": "string" } },
+          "quality": {
+            "type": "object",
+            "required": ["total", "activity", "community", "trust", "match"],
+            "properties": {
+              "total": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "activity": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "community": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "trust": { "type": "integer", "minimum": 0, "maximum": 100 },
+              "match": { "type": "integer", "minimum": 0, "maximum": 100 }
+            }
+          },
+          "source": { "type": "string" },
+          "fetchedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}

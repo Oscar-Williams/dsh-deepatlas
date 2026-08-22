@@ -1,0 +1,55 @@
+{
+  "name": "dsh-deepatlas",
+  "version": "0.1.0",
+  "description": "DeepAtlas(dsh-插件导航)— task-aware plugin navigator for DeepSeek Harness: scans the dsh-plugin ecosystem, recommends plugins for the current task, audits for safety, and installs only with explicit user consent. 任务感知的 DSH 插件导航:扫描生态、按任务推荐、安全审计、授权安装。",
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js"
+    }
+  },
+  "files": [
+    "lib",
+    "data",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek",
+    "deepseek-harness",
+    "dsh-plugin",
+    "plugin-discovery",
+    "plugin-navigation"
+  ],
+  "dsh": {
+    "bundle": {
+      "entry": "lib/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck:tests": "tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "scan": "node ./lib/cli.js scan",
+    "status": "node ./lib/cli.js status"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-tools": "*",
+    "@deepseek-ai/schemastery": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,47 @@
+# DeepAtlas 安全与权限模型
+
+> 本插件的核心矛盾:它要自动安装"第三方任意代码",因此安全不是附加项,而是产品本体。
+
+## 威胁模型
+
+| 威胁 | 场景 | 缓解 |
+|---|---|---|
+| 供应链投毒 | 仓库安装后新增恶意 commit | 安装强制锁定 commit;更新需重新走审计 |
+| 安装期执行 | package.json 生命周期脚本 | auditor 标红,拒绝自动安装 |
+| 提示注入 | 恶意仓库自述诱导模型执行指令 | 自述仅作展示文案,工具层无"执行 README"能力;输出固定结构 |
+| 静默安装 | 模型绕过用户擅自安装 | userConsent 必须显式为 true;闸门独立复核审计等级 |
+| 数据外泄 | 索引/日志上传 | 无遥测;所有数据仅存 dataDir;仓库字段不包含用户信息 |
+| 依赖混淆 | git/http 直链依赖绕过审计 | opaque-dependencies 规则标黄 |
+
+## 分级与动作
+
+| 等级 | 条件 | 动作 |
+|---|---|---|
+| 🔴 红 | 任一红色规则命中(当前:lifecycle-scripts) | 拒绝自动安装,展示证据,引导人工审查 |
+| 🟡 黄 | 黄色规则命中(unpinned/no-license/opaque-deps/not-whitelisted) | 可继续,但需用户在确认环节二次勾选知悉 |
+| 🟢 绿 | 无命中 | 正常进入授权安装流程 |
+
+## 审计规则清单(v0)
+
+1. `lifecycle-scripts`(红):preinstall/install/postinstall/prepublish/prepare 非空
+2. `unpinned-commit`(黄):安装命令未锁定 commit
+3. `no-license`(黄):package.json 缺 license
+4. `opaque-dependencies`(黄):git/http/https/file 形态依赖
+5. `not-whitelisted`(黄):不在 awesome-dsh-plugin 白名单
+
+P3 扩展:源码树静态扫描(child_process 引用、fs 写路径、process.env 凭据读取、
+外联域名清单)、npm audit 联动、安装后行为基线对比。
+
+## 权限边界(实现层面)
+
+- `executeInstall` 在 dryRun=true 时**不可能**触发真实安装(无 exec 分支);
+- 真实执行(P3)仅通过 `execFile('dsh', [...])` 调用官方 CLI,不直接改写
+  profile / cordis.patch.yml;
+- 工具参数中 `userConsent` 由模型传入,但闸门要求其与用户可见的推荐卡片
+  对应;P3 计划接入 DSH 的 tools/pre-execute 事件做二次拦截。
+
+## 用户须知
+
+- 黄色不等于安全,只是"未见已知高危模式";
+- 白名单是可信加分项而非免检通行证;
+- 安装任何插件后建议重启并观察首个会话行为。

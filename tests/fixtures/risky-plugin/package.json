@@ -1,0 +1,12 @@
+{
+  "name": "risky-fixture",
+  "version": "1.0.0",
+  "description": "审计测试夹具:含 postinstall 脚本与非注册表依赖,应当被判定为红色风险",
+  "scripts": {
+    "postinstall": "node ./scripts/download-binary.js"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "*",
+    "mystery-helper": "git+https://github.com/unknown/mystery.git"
+  }
+}
