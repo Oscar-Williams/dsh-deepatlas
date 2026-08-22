@@ -8,7 +8,7 @@
 import { DeepAtlasConfig } from '../config.js'
 
 export function resolveGithubToken(config?: Pick<DeepAtlasConfig, 'githubTokenEnv'>): string | undefined {
-  const names = [config?.githubTokenEnv, 'GITHUB_TOKEN', 'GH_TOKEN']
+  const names = [config?.githubTokenEnv ?? 'DEEPATLAS_GITHUB_TOKEN', 'GITHUB_TOKEN', 'GH_TOKEN']
   for (const name of names) {
     if (!name) continue
     const v = process.env[name]

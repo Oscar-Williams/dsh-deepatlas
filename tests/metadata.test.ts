@@ -45,6 +45,10 @@ describe('resolveGithubToken(三级解析)', () => {
     expect(resolveGithubToken(cfg)).toBe('ghenv-token')
     delete process.env.GH_TOKEN
     expect(resolveGithubToken(cfg)).toBeUndefined()
+    // 默认(无配置)也应检查 DEEPATLAS_GITHUB_TOKEN
+    process.env.DEEPATLAS_GITHUB_TOKEN = 'default-name-token'
+    expect(resolveGithubToken()).toBe('default-name-token')
+    delete process.env.DEEPATLAS_GITHUB_TOKEN
   })
 })
 
