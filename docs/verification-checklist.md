@@ -16,8 +16,10 @@
   (源:官方 docs/cookbook/adding-a-package.md + bundle 实例)
 - ☐ `@deepseek-ai/cordis` / `@deepseek-ai/dsh-tools` 真实导出与 defineTool 签名
   (本地已有官方源码 clone:reference/deepseek-harness,P1 末核对 types/dsh-stubs.d.ts)
-- ☐ 运行时实测:`dsh --version` / `dsh plugin --help` 输出(镜像安装完成后)
+- ☑ 运行时实测:`dsh --version`(0.1.1-rc.1)/ `dsh --help` / `dsh plugin`
+  必须绑定 --profile(详见 docs/cli-capture/0002,WSL2 + pnpm 11.22.0)
 - ☐ 端到端:真实 `dsh plugin add github:` 安装本插件并重启生效
+  (headless 模式 `dsh --profile headless "..."` 可脚本化验证)
 
 ## 生态数据
 
@@ -29,4 +31,4 @@
 
 - ☑ node ≥22 可用(WSL conda 环境 dsh-deepatlas,v22.23.2)
 - ☑ vitest + tsc NodeNext(.js 后缀)工作流打通
-- ☐ pnpm 可用性(dsh plugin 依赖;WSL/Windows 均未装,任务 1.1 运行时实测项)
+- ☑ pnpm 可用性(WSL conda env 内安装 pnpm 11.22.0;dsh plugin 即 pnpm 转发)
