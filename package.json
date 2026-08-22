@@ -9,11 +9,14 @@
     ".": {
       "types": "./lib/index.d.ts",
       "import": "./lib/index.js"
-    }
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
   },
   "files": [
     "lib",
     "data",
+    "cordis.patch.yml",
     "README.md",
     "LICENSE"
   ],
@@ -27,7 +30,7 @@
   ],
   "dsh": {
     "bundle": {
-      "entry": "lib/index.js"
+      "patch": "./cordis.patch.yml"
     }
   },
   "scripts": {
@@ -40,7 +43,9 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "*",
-    "@deepseek-ai/dsh-tools": "*",
+    "@deepseek-ai/dsh-tools": "*"
+  },
+  "dependencies": {
     "@deepseek-ai/schemastery": "*"
   },
   "devDependencies": {

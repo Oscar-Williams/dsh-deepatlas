@@ -1,0 +1,15 @@
+# DeepAtlas bundle patch(dsh-插件导航)
+#
+# 依据官方架构笔记 2026-08-05-profile-plugin-bundles:
+# 声明 "dsh": { "bundle": { "patch": "./cordis.patch.yml" } } 的 npm 包即 bundle,
+# `dsh plugin --profile <name> add github:Oscar-Williams/dsh-deepatlas#<commit>`
+# 安装后由 dsh 将本 patch 并入 dsh.profile.bundles 层序。
+# 行按 npm 包名解析(经由 profile 目录的 node_modules),此处挂载自身。
+#
+# 开发模式(源码直挂,不装包):把下面整段 insert 复制进目标 profile 的
+# cordis.patch.yml,将 name 改为指向源码目录的绝对路径即可
+# (例:name: 'F:/Agent_Related/ZCode_Related/plugin1/src/index.ts')。
+
+- insert:
+    - id: deepatlas
+      name: 'dsh-deepatlas'

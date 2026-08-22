@@ -1,19 +1,23 @@
 # 对照真实环境的核实清单
 
-> 骨架基于公开教程与社区文档编写,以下事项在接入真实 dsh 环境时**必须逐一核实**。
-> 状态:☐ 待核实 ☑ 已核实
+> 状态:☐ 待核实 ☑ 已核实。核实记录见 docs/cli-capture/。
 
 ## 插件机制
 
-- ☐ `package.json` 的 `dsh.bundle` 字段结构(entry 键名/是否需要额外字段),
-  对照官方仓库 `docs/cookbook/adding-a-package.md`
-- ☐ `@deepseek-ai/cordis` / `@deepseek-ai/dsh-tools` / `@deepseek-ai/schemastery`
-  的真实包名与导出(defineTool 签名、Schema API)
-- ☐ `ctx.tools.register` 的调用形态(单注册 vs 批量)
-- ☐ 安装命令准确形态:`dsh plugin --profile X add github:owner/repo#ref`
-  (运行 `dsh plugin --help` 截图存档)
-- ☐ 源码直挂开发模式的配置写法(cordis.yml 格式)
-- ☐ 插件数据目录惯例(~/.dsh/ vs 其他)
+- ☑ `package.json` 的 `dsh.bundle` 字段结构:`{ "bundle": { "patch": "./cordis.patch.yml" } }`
+  (源:官方仓库架构笔记 2026-08-05-profile-plugin-bundles + packages/bundle/base 实例)
+- ☑ `dsh plugin` 命令形态:`dsh plugin --profile <name> <pnpm args...>`,
+  为 pnpm 转发器并 reconcile bundles 层序(源:apps/cli/src/plugin.ts)
+- ☑ git 源安装的 prepare 脚本被 pnpm≥10 拦截,需 profile 的
+  pnpm-workspace.yaml `allowBuilds` 放行(源:plugin.ts 150-157 行)
+- ☑ profile 布局:`$DSH_HOME/profiles/<name>/package.json` + 用户 `cordis.patch.yml`
+- ☑ patch 行格式:`- insert: [- id, name, config]`,整行替换语义
+- ☑ schemastery 应放 dependencies(运行时校验器),cordis 放 peerDependencies
+  (源:官方 docs/cookbook/adding-a-package.md + bundle 实例)
+- ☐ `@deepseek-ai/cordis` / `@deepseek-ai/dsh-tools` 真实导出与 defineTool 签名
+  (本地已有官方源码 clone:reference/deepseek-harness,P1 末核对 types/dsh-stubs.d.ts)
+- ☐ 运行时实测:`dsh --version` / `dsh plugin --help` 输出(镜像安装完成后)
+- ☐ 端到端:真实 `dsh plugin add github:` 安装本插件并重启生效
 
 ## 生态数据
 
@@ -23,5 +27,6 @@
 
 ## 工程
 
-- ☐ node/pnpm 版本要求;Windows 路径兼容(cli.ts 已用 path.join)
-- ☐ vitest 版本与 tsx/esbuild 转译(vitest 2.x 原生支持 TS)
+- ☑ node ≥22 可用(WSL conda 环境 dsh-deepatlas,v22.23.2)
+- ☑ vitest + tsc NodeNext(.js 后缀)工作流打通
+- ☐ pnpm 可用性(dsh plugin 依赖;WSL/Windows 均未装,任务 1.1 运行时实测项)

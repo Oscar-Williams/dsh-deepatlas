@@ -40,12 +40,9 @@ dsh plugin --profile <你的profile> add github:<owner>/dsh-deepatlas#<commit>
 
 装完**重启 dsh web 并刷新页面**方可生效。
 
-开发模式(源码直挂):
-
-```yaml
-# 加入你的自定义配置(cordis 机制)
-- name: 'F:/Agent_Related/ZCode_Related/plugin1/src/index.ts'
-```
+开发模式(源码直挂,不装包):把根目录 `cordis.patch.yml` 中的 insert 行
+复制进目标 profile 的 `cordis.patch.yml`,将 `name` 改为指向本仓库源码入口
+(如 `'F:/Agent_Related/ZCode_Related/plugin1/src/index.ts'`)。
 
 ## 开发环境
 
