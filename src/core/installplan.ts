@@ -55,14 +55,19 @@ export function approve(plan: InstallPlan, input: PlanGateInput): InstallPlan {
   return advance(plan, 'APPROVED')
 }
 
+/** 行匹配:name: 行内任意位置含插件名(兼容 @scope/name 形态) */
+function rowMatches(dumpConfigOutput: string, pluginName: string): boolean {
+  const esc = pluginName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`name:[^\\n]*${esc}`).test(dumpConfigOutput)
+}
+
 /** 装前查重(#2889):dump-config 输出已含目标插件行则拒绝 */
 export function checkDuplicate(
   plan: InstallPlan,
   dumpConfigOutput: string,
   pluginName: string,
 ): InstallPlan {
-  const re = new RegExp(`name:\\s*'?${pluginName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'?`)
-  if (re.test(dumpConfigOutput)) {
+  if (rowMatches(dumpConfigOutput, pluginName)) {
     return advance(plan, 'REJECTED_DUPLICATE', `组合树已存在 ${pluginName} 行,再装将触发 duplicate loader entry(#2889)`)
   }
   return plan
@@ -87,8 +92,7 @@ export async function install(
 /** INSTALLED → COMPOSED:dump-config 断言目标行存在 */
 export function verifyComposed(plan: InstallPlan, dumpConfigOutput: string, pluginName: string): InstallPlan {
   if (plan.state !== 'INSTALLED') return plan
-  const re = new RegExp(`name:\\s*'?${pluginName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'?`)
-  if (!re.test(dumpConfigOutput)) return advance(plan, 'INSTALLED', '组合树未见目标行,COMPOSED 失败(回退 INSTALLED)')
+  if (!rowMatches(dumpConfigOutput, pluginName)) return advance(plan, 'INSTALLED', '组合树未见目标行,COMPOSED 失败(回退 INSTALLED)')
   return advance(plan, 'COMPOSED')
 }
 
