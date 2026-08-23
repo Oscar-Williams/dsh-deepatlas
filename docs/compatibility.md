@@ -1,6 +1,6 @@
 # DeepAtlas 兼容契约(Compatibility Contract)
 
-当前 DeepAtlas 发布线：`v0.2.1`。
+当前 DeepAtlas 发布线：`v0.2.2`。
 
 评审第八轮 P0:依赖范围不得用 `*`,host-facing 包与宿主保持受控范围。
 
