@@ -21,7 +21,7 @@ export function dshInvocation(
 ): DshInvocation {
   const launcher = runtime.argv[1]
   const normalized = launcher ? launcher.replaceAll('\\', '/') : ''
-  const packagedLauncher = normalized.includes('/@deepseek-ai/dsh/') && path.basename(launcher ?? '') === 'bin.js'
+  const packagedLauncher = normalized.includes('/@deepseek-ai/dsh/') && path.posix.basename(normalized) === 'bin.js'
   const sourceLauncher = /\/apps\/cli\/(?:lib\/bin\.js|src\/bin\.ts)$/.test(normalized)
   if (launcher && (packagedLauncher || sourceLauncher)) {
     return { command: runtime.execPath, args: [launcher, ...args] }
