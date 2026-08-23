@@ -127,7 +127,7 @@ awesome 清单/白名单 ────┤→ M1 扫描器 → 本地索引(~/.dsh
 - **P1**:✅ 全量分页扫描 + 增量刷新 + 类型精判 + CI;✅ 官方形态实测核实
 - **P2**:✅ 质量分校准/死链清理/重叠结构化/兼容闸门/PluginRecord/元数据回填(3016 条,Top10 修复)
 - **P3**:✅ InstallPlan 状态机 + 真实端到端(modlens 双平台 ACTIVE)
-- **P3.5 工程化闸门**:✅ 主人格场景(已有 DSH 用户从 GitHub 安装 DeepAtlas→COMPOSED→BOOT 5s);✅ lib 产物入库(发布级缺陷修复);✅ 吸收探针 + 快照回滚;⏳ 完整 InstallEnvironment 探针、四环境 clean-room、事务化回滚实操
+- **P3.5 工程化闸门**:✅ ①分发完整性 CI(build 后 lib/ 零漂移)✅ ②分发 E2E(archive→pack→tarball 安装→组合→HTTP 200,CI Run23 三闸门全绿)✅ ③故障注入回滚三场景 ✅ 主人格场景 GitHub 安装 ACTIVE ✅ 吸收探针+快照回滚;⏳ 完整 InstallEnvironment、fixture persona、事务化回滚实操
 - **P3.8 推荐质量基准**:⏳ 50-100 任务语料 + Top1/Top3 命中率 + 不兼容/死链率(改排名公式必跑,防 star 绑架推荐)
 - **P4 Intelligent Advisor**:⏳ 能力缺口检测(安静顾问)+ 显式/隐式反馈(exposure 感知)+ 本地偏好与全局分分离
 - **RC1**:⏳ 双平台 clean 安装/密钥扫描/回滚测试/发布冻结 → **Release**:双语 README、demo、架构与安全文档、生态收录

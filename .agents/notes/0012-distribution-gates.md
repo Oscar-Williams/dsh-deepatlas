@@ -23,6 +23,16 @@ P4 设进入门槛)。全盘采纳其顺序:①分发完整性 CI ②分发 E2E 
   (临时 DSH_HOME + 占位 Key);
 - 真实用户 profile 的 3080 实例重启后才会加载新装 DeepAtlas。
 
+## CI 首跑连环修复(2026-08-23 补)
+- Run20 失败:link: 目录安装不解析 dependencies,分发物缺 dsh-tools
+  → peers 补入 dependencies(分发物自洽);
+- 本地忠实模拟又复现"Already up to date"假象 → 根因:pnpm 对目录
+  link: 依赖不装其依赖,与 github:/registry 安装语义不等价;
+- 正解:**git archive → npm pack → tarball 安装**(与用户真实安装同语义),
+  本地实测通过(6 依赖装齐、dump-config 断言、boot t=40s HTTP 200);
+- CI 与本地共用 scripts/verify-distribution.sh,Run23 三 job 全绿。
+- 原则升级:测试方法本身也会制造语义差异,分发验证必须用分发语义。
+
 ## 待续(按评审顺序)
 ④ AuditReport v1(npm audit + 源码 risk signals) ⑤ 内容寻址审计缓存
 ⑥ P3.8 黄金集(30 条,冻结 baseline,含 popularity-overfit 对抗样本)
