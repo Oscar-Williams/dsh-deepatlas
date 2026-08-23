@@ -6,7 +6,7 @@
 |---|---|
 | tested DSH | 0.1.1-rc.1 / 0.1.1-rc.2(双平台 E2E 实证) |
 | Node | ^22.19.0 \|\| >=24.0.0(官方 engines) |
-| @deepseek-ai/cordis | >=0.1.1-rc.0 <0.2.0(peer + dependency 双声明) |
+| @deepseek-ai/cordis | >=4.0.1 <5.0.0(peer + dependency 双声明;cordis 为独立 4.x 版本线) |
 | @deepseek-ai/dsh-tools | >=0.1.1-rc.0 <0.2.0(同上) |
 | @deepseek-ai/schemastery | >=3.0.0 <4.0.0 |
 
