@@ -44,9 +44,14 @@ export function buildInstallTool(_ctx: Context, config: DeepAtlasConfig) {
       commit: string
       auditLevel: AuditLevel
       userConsent: boolean
+      auditCommit?: string
       enginesNode?: string
-    }): Promise<{ ok: boolean; plan: InstallPlan }> {
+    }): Promise<{ ok: boolean; plan: InstallPlan; error?: string }> {
       const target = args.target.toLowerCase().replace(/^github:/, '')
+      // TOCTOU 不变量:被审计的 commit === 将安装的 commit(评审第八轮 P0)
+      if (args.auditCommit !== args.commit) {
+        return { ok: false, error: `TOCTOU 拒绝:审计 commit(${args.auditCommit ?? '未提供'})与安装 commit(${args.commit})不一致`, plan: newPlan(target, config.installProfile, args.commit) }
+      }
       const record = buildPluginRecord(target, {
         name: target.split('/')[1], version: '0', description: '', type: 'unknown',
         license: 'unknown', engines: args.enginesNode ? { node: args.enginesNode } : {},

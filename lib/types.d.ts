@@ -18,6 +18,10 @@ export interface PluginMeta {
     description: string;
     /** 插件类型 */
     type: PluginType;
+    /** 实体分类(⑦.0-d):plugin/framework/collection/application/documentation/unknown */
+    kind?: 'plugin' | 'framework' | 'collection' | 'application' | 'documentation' | 'unknown';
+    /** 展示名(保留原始大小写;内部 join 一律用全小写 id,⑦.0-c) */
+    displayName?: string;
     /** 类型判定证据:heuristic=名称/描述关键词;contents=仓库文件清单精判 */
     typeSource?: 'heuristic' | 'contents';
     /** GitHub star 数 */

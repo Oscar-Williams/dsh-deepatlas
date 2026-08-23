@@ -13,6 +13,7 @@ import { EcosystemSource, RawPluginEntry } from './sources/types.js'
 import { GitHubTopicSource } from './sources/github-topic.js'
 import { AwesomeListSource, WHITELIST_REPOS } from './sources/awesome-list.js'
 import { enrichTopN } from './sources/enrich.js'
+import { classifyKind } from './kind.js'
 import { IndexStore, SCHEMA_VERSION } from './index-store.js'
 
 /** 按仓库自述关键词的粗粒度类型推断(精判兜底,证据弱于 contents API) */
@@ -31,6 +32,8 @@ function toMeta(entry: RawPluginEntry, sourceId: string): PluginMeta {
     repoUrl: entry.repoUrl,
     description: entry.description,
     type: inferType(entry),
+    kind: classifyKind({ id: entry.id, name: entry.name, description: entry.description }),
+    displayName: entry.name,
     typeSource: 'heuristic',
     stars: entry.stars,
     lastPushedAt: entry.lastPushedAt,

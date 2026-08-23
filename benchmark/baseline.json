@@ -1,339 +1,979 @@
 {
-  "frozenAt": "2026-08-23T06:09:50.423Z",
+  "frozenAt": "2026-08-23T06:25:08.663Z",
   "metrics": {
     "tasks": 30,
+    "candidateRecallAt20": 0.467,
     "top1HitRate": 0.133,
     "top3StrongRate": 0.3,
-    "mustNotAt3": 1,
-    "deadAt3": 0,
-    "popularityOverfit": {
-      "total": 7,
-      "violated": 0
+    "mustNotAt3": 0,
+    "failClass": {
+      "recall": 0,
+      "filter": 16,
+      "rank": 5
+    },
+    "byCategory": {
+      "消息平台": "0/3",
+      "记忆": "0/3",
+      "浏览器": "1/3",
+      "Token优化": "0/3",
+      "UI美化": "2/2",
+      "终端": "1/2",
+      "Git": "3/3",
+      "数据库": "0/3",
+      "图片": "1/3",
+      "远程": "1/2",
+      "自动化": "0/3"
     },
     "gate_P4": "FAIL"
   },
   "rows": [
     {
       "id": "t01",
+      "category": "消息平台",
       "need": "帮我把 DeepSeek Harness 接入微信收发消息",
       "top3": [
-        "deepseek-ai/deepseek-harness",
         "prism-shadow/penguin-harness",
-        "memtensor/memos"
+        "memtensor/memos",
+        "xiufengsun/tokentracker"
+      ],
+      "ids20": [
+        "prism-shadow/penguin-harness",
+        "memtensor/memos",
+        "xiufengsun/tokentracker",
+        "javis603/token-monitor",
+        "edison7009/echobird",
+        "liustack/modlens",
+        "tt-a1i/archify",
+        "zhukunpenglinyutong/desktop-cc-gui",
+        "anywhere-labs/deepseek-harness-desktop",
+        "hairyf/deepseek-harness-desktop",
+        "nanmicoder/dsh-agent-teams",
+        "shanliuling/dsh-image-gen",
+        "xmanrui/dsh-im",
+        "myyangyunfan/dsh_desktop",
+        "fufankeji/deepseek-harness-studio",
+        "nwflower/dsh-chat-import",
+        "lencx/minke",
+        "dhicoc/dsh-reverse-skill",
+        "firstintent/ccteam",
+        "op7418/pilot-harness"
       ],
       "ok1": false,
       "ok3": false,
-      "violated": true
+      "in20": true,
+      "violated": false,
+      "failure": "rank",
+      "expected": [
+        "xmanrui/dsh-im"
+      ]
     },
     {
       "id": "t02",
+      "category": "消息平台",
       "need": "微信机器人通知推送构建结果",
       "top3": [],
+      "ids20": [],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "xmanrui/dsh-im",
+        "yyh-001/dsh-meme"
+      ]
     },
     {
       "id": "t03",
+      "category": "消息平台",
       "need": "深度阅读网页并生成摘要发给我",
       "top3": [
         "chiang21fcb/cn-linebreak"
       ],
+      "ids20": [
+        "chiang21fcb/cn-linebreak"
+      ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "xiehuan123/dsh-deepread"
+      ]
     },
     {
       "id": "t04",
+      "category": "记忆",
       "need": "给 DSH 加跨会话长期记忆,记住项目约定和踩过的坑",
       "top3": [
         "z-col/dsh-workspace-groups",
         "flymysql/dsh-memory",
         "dsh-external/dsh-better-sidebar"
       ],
+      "ids20": [
+        "z-col/dsh-workspace-groups",
+        "flymysql/dsh-memory",
+        "dsh-external/dsh-better-sidebar",
+        "bowenliang123/dsh-context",
+        "dsh-external/dsh-ads",
+        "dsh-external/dsh-browser",
+        "whiteguo233/openbiliclaw",
+        "zhu1090093659/dsh-web-ui",
+        "omdsh-dev/dsh-better-sidebar",
+        "ccch1mneyyy/dsh-cc-tui",
+        "ccch1mneyyy/dsh-tui",
+        "zhukunpenglinyutong/desktop-cc-gui",
+        "anywhere-labs/deepseek-harness-desktop",
+        "dsh-external/dsh-memory-evolve",
+        "amap-ml/longhorizon-harness",
+        "anionex/dsh-vision-toolkit",
+        "ysr666/dsh-vision-router",
+        "nanmicoder/dsh-agent-teams",
+        "han-1413141/dsh-cost-meter",
+        "dsh-external/dsh-mnemon"
+      ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": "rank",
+      "expected": [
+        "csyangwen/dsh-memory-evolve",
+        "dsh-external/dsh-memory-evolve",
+        "memtensor/memos"
+      ]
     },
     {
       "id": "t05",
+      "category": "记忆",
       "need": "轻量的记忆插件,能记住上次进度就行",
       "top3": [],
+      "ids20": [],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "csyangwen/dsh-memory-evolve",
+        "memtensor/memos"
+      ]
     },
     {
       "id": "t06",
+      "category": "记忆",
       "need": "知识库向量存储与检索",
       "top3": [],
+      "ids20": [],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "memtensor/memos"
+      ]
     },
     {
       "id": "t07",
+      "category": "浏览器",
       "need": "让 Agent 操作真实 Chrome 浏览器,保留登录状态",
       "top3": [
         "dsh-external/dsh-better-sidebar",
         "dsh-external/dsh-browser",
         "esengine/deepseek-reasonix"
       ],
+      "ids20": [
+        "dsh-external/dsh-better-sidebar",
+        "dsh-external/dsh-browser",
+        "esengine/deepseek-reasonix",
+        "memtensor/memos",
+        "edison7009/echobird",
+        "liustack/modlens",
+        "tt-a1i/archify",
+        "whiteguo233/openbiliclaw",
+        "omdsh-dev/dsh-better-sidebar",
+        "ysr666/dsh-vision-router",
+        "nanmicoder/dsh-agent-teams",
+        "dsh-external/dsh-data-agent",
+        "sandbaseai/sandbase-harness",
+        "vibeinging/dsh-work",
+        "toolclub/dsh-agent-team-gui",
+        "hashgraph-online/hol-guard",
+        "enderfga/claw-orchestrator",
+        "ikalus1988/misakanet",
+        "nwflower/dsh-chat-import",
+        "lum1104/dsh-browser"
+      ],
       "ok1": false,
       "ok3": true,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "dsh-external/dsh-browser",
+        "lum1104/dsh-browser"
+      ]
     },
     {
       "id": "t08",
+      "category": "浏览器",
       "need": "网页自动化填表和截图",
       "top3": [
         "chiang21fcb/cn-linebreak"
       ],
+      "ids20": [
+        "chiang21fcb/cn-linebreak"
+      ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "dsh-external/dsh-browser",
+        "lum1104/dsh-browser"
+      ]
     },
     {
       "id": "t09",
+      "category": "浏览器",
       "need": "任务看板可视化",
       "top3": [],
+      "ids20": [],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "chuspeeism/dashi-taskboard",
+        "zhukunpenglinyutong/desktop-cc-gui"
+      ]
     },
     {
       "id": "t10",
+      "category": "Token优化",
       "need": "监控 token 花费和余额",
       "top3": [
         "bowenliang123/dsh-context",
         "prism-shadow/penguin-harness",
         "xiufengsun/tokentracker"
       ],
+      "ids20": [
+        "bowenliang123/dsh-context",
+        "prism-shadow/penguin-harness",
+        "xiufengsun/tokentracker",
+        "javis603/token-monitor",
+        "zhu1090093659/dsh-web-ui",
+        "toolclub/dsh-agent-team-gui",
+        "vivekchand/clawmetry",
+        "alibaba/loongsuite-pilot",
+        "ychris12138/dsh-usage-stats",
+        "zh667/tokenledger",
+        "revolutionla/dsh-dream-skin",
+        "bpc-oss/dsh-web-billing",
+        "acefun29/dsh-file-mount",
+        "a903067276-rgb/dsh-hud",
+        "hyqhyq3/dsh-mcp-manager",
+        "nonewind/dsh-spend",
+        "deeptrial/dsh-bash-rtk",
+        "ziyou979/dsh-llm-oauth",
+        "polinnizhong/dsh-personal-center",
+        "make0209/dsh-usage-stats"
+      ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": "rank",
+      "expected": [
+        "javis603/token-monitor",
+        "prism-shadow/penguin-harness"
+      ]
     },
     {
       "id": "t11",
+      "category": "Token优化",
       "need": "省 token 的上下文压缩",
       "top3": [
         "bowenliang123/dsh-context",
         "prism-shadow/penguin-harness",
         "xiufengsun/tokentracker"
       ],
+      "ids20": [
+        "bowenliang123/dsh-context",
+        "prism-shadow/penguin-harness",
+        "xiufengsun/tokentracker",
+        "javis603/token-monitor",
+        "zhu1090093659/dsh-web-ui",
+        "toolclub/dsh-agent-team-gui",
+        "vivekchand/clawmetry",
+        "alibaba/loongsuite-pilot",
+        "ychris12138/dsh-usage-stats",
+        "zh667/tokenledger",
+        "revolutionla/dsh-dream-skin",
+        "bpc-oss/dsh-web-billing",
+        "acefun29/dsh-file-mount",
+        "a903067276-rgb/dsh-hud",
+        "hyqhyq3/dsh-mcp-manager",
+        "nonewind/dsh-spend",
+        "deeptrial/dsh-bash-rtk",
+        "ziyou979/dsh-llm-oauth",
+        "polinnizhong/dsh-personal-center",
+        "make0209/dsh-usage-stats"
+      ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": "rank",
+      "expected": [
+        "javis603/token-monitor",
+        "prism-shadow/penguin-harness"
+      ]
     },
     {
       "id": "t12",
+      "category": "Token优化",
       "need": "API 成本统计面板",
       "top3": [
         "dsh-external/dsh-better-sidebar",
         "chuspeeism/dashi-taskboard",
         "han-1413141/dsh-cost-meter"
       ],
+      "ids20": [
+        "dsh-external/dsh-better-sidebar",
+        "chuspeeism/dashi-taskboard",
+        "han-1413141/dsh-cost-meter",
+        "shanliuling/dsh-image-gen",
+        "v1ki/dsh-plugin-subscriptions",
+        "liustack/modsearch",
+        "perrylink/dsh-plugin-guide",
+        "wxkingstar/specfusion",
+        "dddmuc/dsh-free-search",
+        "beizi6/dsh-opencodego-usage",
+        "sunshine-lang/dsh-weather",
+        "sunshine-lang/dsh-pdf",
+        "khellendros97/dsh-subscription-auth",
+        "raullenchai/rapid-mlx-dsh-provider",
+        "yingjunnan/dsh-deepseek-quota",
+        "tdf1995/dsh-plugin-vision",
+        "delef/dsh-free-web-search",
+        "anweat/dsh-voice-webspeech",
+        "khellendros97/dsh-launch",
+        "adonissheldon/dsh-openai-oauth"
+      ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "javis603/token-monitor"
+      ]
     },
     {
       "id": "t13",
+      "category": "UI美化",
       "need": "给 Web 界面换皮肤美化",
       "top3": [
         "dsh-external/dsh-ads",
         "zhu1090093659/dsh-web-ui",
         "zhukunpenglinyutong/desktop-cc-gui"
       ],
+      "ids20": [
+        "dsh-external/dsh-ads",
+        "zhu1090093659/dsh-web-ui",
+        "zhukunpenglinyutong/desktop-cc-gui",
+        "anywhere-labs/deepseek-harness-desktop",
+        "anionex/dsh-vision-toolkit",
+        "vibeinging/dsh-work",
+        "vlln/whale-girl",
+        "laplace-bit/dsh-smooth-stream",
+        "flashingchen/dsh-desktop-hub",
+        "v1ki/dsh-plugin-subscriptions",
+        "liustack/modsearch",
+        "anysearch-team/anysearch-dsh",
+        "d-dev0101/open-sea-skin",
+        "ruler4396/dsh-launcher",
+        "anweat/dsh-web-search-pro",
+        "hsiangnianian/dsh-auto-continue",
+        "ychris12138/dsh-usage-stats",
+        "small-tailqwq/dsh-deep-whale",
+        "chisaalter/deepseek-harness-desktop",
+        "nagi-ovo/voyager"
+      ],
       "ok1": false,
       "ok3": true,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "nagi-ovo/voyager",
+        "zhu1090093659/dsh-web-ui"
+      ]
     },
     {
       "id": "t14",
+      "category": "UI美化",
       "need": "桌面客户端 GUI",
       "top3": [
         "prism-shadow/penguin-harness",
         "zhukunpenglinyutong/desktop-cc-gui",
         "toolclub/dsh-agent-team-gui"
       ],
+      "ids20": [
+        "prism-shadow/penguin-harness",
+        "zhukunpenglinyutong/desktop-cc-gui",
+        "toolclub/dsh-agent-team-gui",
+        "vlln/whale-girl",
+        "perrylink/dsh-plugin-guide",
+        "lire1131/dsh-undo",
+        "ychris12138/dsh-usage-stats",
+        "bradegithub/dsh-plugins-marketplace",
+        "lire1131/dsh-undo-plugin",
+        "cocode-agency/cocode",
+        "flyvhidbwo/dsh-vision-proxy",
+        "vlln/plugin-registry",
+        "omdsh-dev/dsh-open-in-vscode",
+        "dsh-external/plugin-registry",
+        "amlyczz/dsh-agy-link",
+        "leon0555/dsh-lan-access",
+        "beizi6/dsh-opencodego-usage",
+        "xuboboo/dsh-gui",
+        "beizi6/dsh-theme-plugin",
+        "mhfire/dsh-im-bridge"
+      ],
       "ok1": false,
       "ok3": true,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "zhukunpenglinyutong/desktop-cc-gui",
+        "dabaicai001/star-deepseek-harness-desktop"
+      ]
     },
     {
       "id": "t15",
+      "category": "终端",
       "need": "终端 TUI 界面跑 DSH",
       "top3": [
         "ccch1mneyyy/dsh-cc-tui",
         "ccch1mneyyy/dsh-tui",
         "openma-ai/deepseek-harness-tui"
       ],
+      "ids20": [
+        "ccch1mneyyy/dsh-cc-tui",
+        "ccch1mneyyy/dsh-tui",
+        "openma-ai/deepseek-harness-tui",
+        "huiliyi37/dsh-tianshu-tui",
+        "chen-001/dsh-grok-tui",
+        "lqhl/dsh-pi-tui",
+        "xmoon/dsh-pi-tui",
+        "boxeryao/dsh-mini-tui",
+        "baobaolaodie/dsh-tui-vscode",
+        "dsh-blue/blue",
+        "tomowang/dsh-tui",
+        "ethanz11-creat/dsh-billing-tui",
+        "wtstarmark/dsh-qaq",
+        "miyazawai/dsh-whale",
+        "orriduck/dsh-tui",
+        "xiaoshihou514/dsh-tui",
+        "edabchann/dsh-neotui",
+        "xituisuany-max/dsh-client-ui-pet",
+        "yhfgyyf/dsh-tui-app",
+        "lk251066/dsh-tui-pro"
+      ],
       "ok1": false,
       "ok3": true,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "ccch1mneyyy/dsh-tui",
+        "esengine/deepseek-reasonix"
+      ]
     },
     {
       "id": "t16",
+      "category": "终端",
       "need": "会话分叉回退的终端 UI",
       "top3": [
         "prism-shadow/penguin-harness",
         "edison7009/echobird",
         "zhu1090093659/dsh-web-ui"
       ],
+      "ids20": [
+        "prism-shadow/penguin-harness",
+        "edison7009/echobird",
+        "zhu1090093659/dsh-web-ui",
+        "omdsh-dev/dsh-better-sidebar",
+        "ccch1mneyyy/dsh-cc-tui",
+        "chuspeeism/dashi-taskboard",
+        "ccch1mneyyy/dsh-tui",
+        "zhukunpenglinyutong/desktop-cc-gui",
+        "anionex/dsh-vision-toolkit",
+        "ysr666/dsh-vision-router",
+        "toolclub/dsh-agent-team-gui",
+        "xmanrui/dsh-im",
+        "fufankeji/deepseek-harness-studio",
+        "nwflower/dsh-chat-import",
+        "noob-stupid/dsh-plugin-hub",
+        "omdsh-dev/dsh-genui",
+        "op7418/pilot-harness",
+        "vlln/whale-girl",
+        "perrylink/dsh-memento",
+        "openma-ai/deepseek-harness-tui"
+      ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": "rank",
+      "expected": [
+        "ccch1mneyyy/dsh-tui"
+      ]
     },
     {
       "id": "t17",
+      "category": "Git",
       "need": "侧边栏集成 Git 面板看提交历史",
       "top3": [
         "dsh-external/dsh-better-sidebar",
         "prism-shadow/penguin-harness",
         "zhu1090093659/dsh-web-ui"
       ],
+      "ids20": [
+        "dsh-external/dsh-better-sidebar",
+        "prism-shadow/penguin-harness",
+        "zhu1090093659/dsh-web-ui",
+        "omdsh-dev/dsh-better-sidebar",
+        "dsh-external/dsh-memory-evolve",
+        "ikalus1988/misakanet",
+        "anweat/dsh-web-search-pro",
+        "bradegithub/dsh-plugins-marketplace",
+        "sjh9714/dsh-win32",
+        "lixiaoyiao/deepseek-harness-action",
+        "perrylink/dsh-checkpoint-rewind",
+        "a903067276-rgb/dsh-hud",
+        "xiaoyuyu6420/dsh-backup",
+        "civitasv/dsh-plugin-diff-review",
+        "awesomehou/dsh-plugin-marketplace",
+        "ziyou979/dsh-llm-oauth",
+        "make0209/dsh-usage-stats",
+        "perrylink/dsh-github",
+        "lxj808624/dsh-tool-git",
+        "huey1in/trio"
+      ],
       "ok1": true,
       "ok3": true,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "dsh-external/dsh-better-sidebar",
+        "omdsh-dev/dsh-better-sidebar",
+        "zhu1090093659/dsh-web-ui"
+      ]
     },
     {
       "id": "t18",
+      "category": "Git",
       "need": "把侧边栏变成 IDE 工作台,文件终端都在",
       "top3": [
         "dsh-external/dsh-better-sidebar",
         "dsh-external/dsh-browser",
         "edison7009/echobird"
       ],
+      "ids20": [
+        "dsh-external/dsh-better-sidebar",
+        "dsh-external/dsh-browser",
+        "edison7009/echobird",
+        "liustack/modlens",
+        "zhu1090093659/dsh-web-ui",
+        "omdsh-dev/dsh-better-sidebar",
+        "toolclub/dsh-agent-team-gui",
+        "nwflower/dsh-chat-import",
+        "lum1104/dsh-browser",
+        "perrylink/dsh-memento",
+        "laplace-bit/dsh-smooth-stream",
+        "v1ki/dsh-plugin-subscriptions",
+        "liustack/modsearch",
+        "anysearch-team/anysearch-dsh",
+        "perrylink/dsh-plugin-guide",
+        "orziz/odai",
+        "mars-sea/dsh-commandcode-provider",
+        "anoslide/dsh-vscode-layout",
+        "wsl043/dsh-codex-subscription",
+        "lixxx1/dsh-vscode"
+      ],
       "ok1": true,
       "ok3": true,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "dsh-external/dsh-better-sidebar",
+        "omdsh-dev/dsh-better-sidebar"
+      ]
     },
     {
       "id": "t19",
+      "category": "Git",
       "need": "git graph 可视化",
       "top3": [
         "zhu1090093659/dsh-web-ui",
         "wongzexu/dsh-git-status",
         "chouyong/dsh-fork-graph"
       ],
+      "ids20": [
+        "zhu1090093659/dsh-web-ui",
+        "wongzexu/dsh-git-status",
+        "chouyong/dsh-fork-graph",
+        "sjh9714/repo-cover",
+        "happy2git/dsh-compass",
+        "whiteplusms/dsh-git-graph",
+        "luis1232023/dsh-workspace-enhance",
+        "tangrj-git/trajectory-graph",
+        "a792883583/dsh-git-panel",
+        "zzyyyds88/dsh-solo-leveling",
+        "dsh-external/dsh-better-sidebar",
+        "prism-shadow/penguin-harness",
+        "omdsh-dev/dsh-better-sidebar",
+        "dsh-external/dsh-memory-evolve",
+        "hashgraph-online/hol-guard",
+        "ikalus1988/misakanet",
+        "anweat/dsh-web-search-pro",
+        "bradegithub/dsh-plugins-marketplace",
+        "sjh9714/dsh-win32",
+        "lixiaoyiao/deepseek-harness-action"
+      ],
       "ok1": true,
       "ok3": true,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "zhu1090093659/dsh-web-ui",
+        "dsh-external/dsh-better-sidebar"
+      ]
     },
     {
       "id": "t20",
+      "category": "数据库",
       "need": "查询本地 SQLite 数据库",
       "top3": [
         "perrylink/dsh-memento",
         "anweat/dsh-web-search-pro",
         "modusensus/dsh-mneme"
       ],
-      "ok1": false,
-      "ok3": false,
-      "violated": false
-    },
-    {
-      "id": "t21",
-      "need": "操作数据库表结构",
-      "top3": [],
-      "ok1": false,
-      "ok3": false,
-      "violated": false
-    },
-    {
-      "id": "t22",
-      "need": "表格文档处理",
-      "top3": [
-        "hiccupgeng/dsh-doc-skill"
+      "ids20": [
+        "perrylink/dsh-memento",
+        "anweat/dsh-web-search-pro",
+        "modusensus/dsh-mneme",
+        "phant0meow/dsh-meow-memory",
+        "git121995/dsh-memory-gate",
+        "git121995/dsh-memory-cbdc-plugin",
+        "xiaohj233/dsh-magic-context",
+        "zeromadlife/boss-watch-agent",
+        "hanloney/codexshift",
+        "johnxu22786/codegraph",
+        "wang-lin-chang/schedule-core",
+        "johnxu22786/memory-vault"
       ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "dsh-external/dsh-data-agent",
+        "omdsh-dev/dsh-data-agent"
+      ]
+    },
+    {
+      "id": "t21",
+      "category": "数据库",
+      "need": "操作数据库表结构",
+      "top3": [],
+      "ids20": [],
+      "ok1": false,
+      "ok3": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "dsh-external/dsh-data-agent",
+        "omdsh-dev/dsh-data-agent"
+      ]
+    },
+    {
+      "id": "t22",
+      "category": "数据库",
+      "need": "表格文档处理",
+      "top3": [],
+      "ids20": [],
+      "ok1": false,
+      "ok3": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "dream-num/dsh-univer-office"
+      ]
     },
     {
       "id": "t23",
+      "category": "图片",
       "need": "图片理解和视觉识别路由",
       "top3": [],
+      "ids20": [],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "ysr666/dsh-vision-router",
+        "anionex/dsh-vision-toolkit"
+      ]
     },
     {
       "id": "t24",
+      "category": "图片",
       "need": "截图预览增强",
       "top3": [],
+      "ids20": [],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "liustack/modlens",
+        "ysr666/dsh-vision-router"
+      ]
     },
     {
       "id": "t25",
+      "category": "图片",
       "need": "OCR 识别截图里的文字",
       "top3": [
         "liustack/modlens",
         "anionex/dsh-vision-toolkit",
         "ysr666/dsh-vision-router"
       ],
+      "ids20": [
+        "liustack/modlens",
+        "anionex/dsh-vision-toolkit",
+        "ysr666/dsh-vision-router",
+        "tdf1995/dsh-plugin-vision",
+        "thu-maic/dsh-openmaic",
+        "maxwell-feng/dsh-windows-ocr",
+        "byyy-eng/deepseek-harness-file-upload-ocr-plugin",
+        "alllllllllli/living-dream-dsh",
+        "maxwell-feng/dsh-tesseract-ocr",
+        "ethanout/computer-use-plus",
+        "shaking/dsh-vision",
+        "dddfxyqiming/dsh-pseudo-vision",
+        "kevoyuan/dsh-mac-vision",
+        "plocr/dsh-desktop",
+        "1710782766/dsh-llm-vision",
+        "alsj213/local-ocr-cli",
+        "leozou320-ai/dsh-macos-vision-ocr",
+        "satan9394/dsh-grill-me",
+        "zoahdev/dsh-kirocrew",
+        "balcoz/dsh-ocr-local"
+      ],
       "ok1": false,
       "ok3": true,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "anionex/dsh-vision-toolkit",
+        "ysr666/dsh-vision-router"
+      ]
     },
     {
       "id": "t26",
+      "category": "远程",
       "need": "SSH 连远程服务器执行命令",
       "top3": [
         "flymysql/dsh-remote",
         "chenw2759-wq/dsh-ide",
         "dsh-ssh/dsh-ssh"
       ],
+      "ids20": [
+        "flymysql/dsh-remote",
+        "chenw2759-wq/dsh-ide",
+        "dsh-ssh/dsh-ssh",
+        "jmcc-guo/dsh-ssh",
+        "adonissheldon/dsh-openai-oauth",
+        "uynajgi/dsh-ssh",
+        "polaris-smart/dsh-devices",
+        "polaris-smart/dph-fleet",
+        "zhangfengshun/dsh-remote-ssh",
+        "mrzhuh/dsh-remote-server",
+        "lnabc03/dsh-remote-gate",
+        "missher12/deepseek-harness-desktop",
+        "zhaimingyou/aisync",
+        "lance-kanglu/dsh-ssh-bridge",
+        "thirsty5034/dsh-ssh-tunnel",
+        "artificialnotimbecile/dsh-remote-runtime",
+        "qsjzqssh/mc-hud",
+        "junqingv587/dsh-ssh-hub",
+        "liangyou09/lyshell",
+        "dmz2922990/dsh-ssh"
+      ],
       "ok1": true,
       "ok3": true,
-      "violated": false
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "flymysql/dsh-remote"
+      ]
     },
     {
       "id": "t27",
+      "category": "远程",
       "need": "手机远程访问 DSH",
       "top3": [
         "dsh-external/dsh-better-sidebar",
         "bowenliang123/dsh-context",
         "dsh-external/dsh-ads"
       ],
+      "ids20": [
+        "dsh-external/dsh-better-sidebar",
+        "bowenliang123/dsh-context",
+        "dsh-external/dsh-ads",
+        "dsh-external/dsh-browser",
+        "whiteguo233/openbiliclaw",
+        "zhu1090093659/dsh-web-ui",
+        "omdsh-dev/dsh-better-sidebar",
+        "ccch1mneyyy/dsh-cc-tui",
+        "ccch1mneyyy/dsh-tui",
+        "zhukunpenglinyutong/desktop-cc-gui",
+        "anywhere-labs/deepseek-harness-desktop",
+        "dsh-external/dsh-memory-evolve",
+        "amap-ml/longhorizon-harness",
+        "anionex/dsh-vision-toolkit",
+        "ysr666/dsh-vision-router",
+        "nanmicoder/dsh-agent-teams",
+        "han-1413141/dsh-cost-meter",
+        "dsh-external/dsh-mnemon",
+        "dsh-external/dsh-openpencil",
+        "dsh-external/dsh-data-agent"
+      ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "flymysql/dsh-remote",
+        "dabaicai001/star-deepseek-harness-desktop"
+      ]
     },
     {
       "id": "t28",
+      "category": "自动化",
       "need": "定时任务自动化执行",
       "top3": [],
+      "ids20": [],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "titanwings/dsh-automation"
+      ]
     },
     {
       "id": "t29",
+      "category": "自动化",
       "need": "备份我的 DSH 配置和数据",
       "top3": [
         "dsh-external/dsh-better-sidebar",
         "bowenliang123/dsh-context",
         "dsh-external/dsh-ads"
       ],
+      "ids20": [
+        "dsh-external/dsh-better-sidebar",
+        "bowenliang123/dsh-context",
+        "dsh-external/dsh-ads",
+        "dsh-external/dsh-browser",
+        "whiteguo233/openbiliclaw",
+        "zhu1090093659/dsh-web-ui",
+        "omdsh-dev/dsh-better-sidebar",
+        "ccch1mneyyy/dsh-cc-tui",
+        "ccch1mneyyy/dsh-tui",
+        "zhukunpenglinyutong/desktop-cc-gui",
+        "anywhere-labs/deepseek-harness-desktop",
+        "dsh-external/dsh-memory-evolve",
+        "amap-ml/longhorizon-harness",
+        "anionex/dsh-vision-toolkit",
+        "ysr666/dsh-vision-router",
+        "nanmicoder/dsh-agent-teams",
+        "han-1413141/dsh-cost-meter",
+        "dsh-external/dsh-mnemon",
+        "dsh-external/dsh-openpencil",
+        "dsh-external/dsh-data-agent"
+      ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "xiaoyuyu6420/dsh-backup"
+      ]
     },
     {
       "id": "t30",
+      "category": "自动化",
       "need": "工作流编排多 Agent 调度",
       "top3": [
         "dsh-external/dsh-better-sidebar",
         "esengine/deepseek-reasonix",
         "memtensor/memos"
       ],
+      "ids20": [
+        "dsh-external/dsh-better-sidebar",
+        "esengine/deepseek-reasonix",
+        "memtensor/memos",
+        "edison7009/echobird",
+        "liustack/modlens",
+        "tt-a1i/archify",
+        "whiteguo233/openbiliclaw",
+        "omdsh-dev/dsh-better-sidebar",
+        "ysr666/dsh-vision-router",
+        "nanmicoder/dsh-agent-teams",
+        "dsh-external/dsh-data-agent",
+        "sandbaseai/sandbase-harness",
+        "vibeinging/dsh-work",
+        "toolclub/dsh-agent-team-gui",
+        "hashgraph-online/hol-guard",
+        "enderfga/claw-orchestrator",
+        "ikalus1988/misakanet",
+        "nwflower/dsh-chat-import",
+        "perrylink/dsh-auto-review",
+        "firstintent/ccteam"
+      ],
       "ok1": false,
       "ok3": false,
-      "violated": false
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "titanwings/dsh-automation",
+        "chuspeeism/dashi-taskboard"
+      ]
     }
   ]
 }

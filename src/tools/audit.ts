@@ -73,12 +73,20 @@ export function buildAuditTool(_ctx: Context, config: DeepAtlasConfig) {
       // 兼容性闸门:PluginRecord + 当前运行时对照
       const record = buildPluginRecord(target, manifest)
       const compatibility = checkCompatibility(toRequirement(record), getRuntimeInfo())
-      const payload = { ...report, pluginRecord: record, compatibility }
+      const payload = {
+        ...report,
+        auditedRef: args.commit ?? 'HEAD',
+        pluginRecord: record,
+        compatibility,
+      }
 
       if (args.commit) await cache.put(target, args.commit, payload as never)
 
       if (report.risk.level === 'red') {
         return { ...payload, action: '红色风险:拒绝自动安装,请人工审查源码后手动处理' }
+      }
+      if (!args.commit) {
+        return { ...payload, action: '注意:本次审计基于 HEAD(漂移对象)。安装前必须锁定 commit 并重新审计,审计对象与安装对象必须一致(TOCTOU 防护)' }
       }
       return {
         ...payload,

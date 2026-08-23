@@ -51,9 +51,11 @@ export declare function buildInstallTool(_ctx: Context, config: DeepAtlasConfig)
         commit: string;
         auditLevel: AuditLevel;
         userConsent: boolean;
+        auditCommit?: string;
         enginesNode?: string;
     }): Promise<{
         ok: boolean;
         plan: InstallPlan;
+        error?: string;
     }>;
 };

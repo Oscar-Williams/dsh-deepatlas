@@ -60,6 +60,7 @@ export declare function buildAuditTool(_ctx: Context, config: DeepAtlasConfig): 
         auditedAt: string;
     } | {
         action: string;
+        auditedRef: string;
         pluginRecord: import("../core/record.js").PluginRecord;
         compatibility: import("../core/compat.js").CompatibilityResult;
         provenance: {
