@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased（v0.2.1 candidate）
+
+### Release integrity
+
+- 纳入 `v0.2.0` tag 之后的测试修复与 nightly YAML 修复；公开 tag 保持不可变，不移动或重打 `v0.2.0`。
+- `deepatlas_find` 与 `deepatlas_advise` 改为共用 capability 单一事实源；工具参数使用 DSH 支持的 `array + enum`，补齐 `messaging-telegram`、`web-search`，并为旧逗号字符串保留内部兼容。
+- README 中英文版完成事实校准：六个工具、78 项测试、`dryRun=true` 默认行为、DSH Developer Preview 兼容边界与真实评测含义。
+- 新增 `docs/v0.2.1-release-checklist.md`；只有 release commit、tag、CI、构建产物与 GitHub Release 完全一致后才发布。
+
 ## v0.2.0(2026-08-23)
 
 ### Retrieval v3:TaskIntent 混合归一 + 能力证据
@@ -8,10 +17,11 @@
   搜索/审计/排序/安装仍由确定性代码掌控(零外部服务);
 - 能力证据固化入索引(capsEv:字段来源+命中别名+置信度,1767/3016);
   advise 已装能力改为 ID→索引精确 join(v0.1.1 遗留项闭环);
-- **三 Gate(全部实测)**:RetrievalDev PASS(回归一致);Generalization
-  PASS——Paraphrase Suite 120 查询对照:静态 SA 50.8%→混合 **85.0%**,
-  稳定率 6.7%→**56.7%**,mustNot@3=0;AdvisorSafety **PASS**(静默 5/5,
-  推荐 5/5,零误报)。
+- **Gate 结果**:RetrievalDev PASS(回归一致);NormalizedIntentRetrieval
+  PASS——Paraphrase Suite 120 查询对照:静态 SA 50.8%→注入标准 capability 后
+  **85.0%**,稳定率 6.7%→**56.7%**,mustNot@3=0。该结果证明 capability
+  通道有效,不代表宿主模型意图识别已经通过;AdvisorSafety fixture **PASS**
+  (静默 5/5,推荐 5/5,零误报)。
 
 ## v0.1.1(2026-08-23)
 
