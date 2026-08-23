@@ -14,6 +14,7 @@ import { buildScanTool, buildStatusTool } from './tools/scan.js'
 import { buildFindTool } from './tools/find.js'
 import { buildAuditTool } from './tools/audit.js'
 import { buildInstallTool } from './tools/install.js'
+import { buildAdviseTool } from './tools/advise.js'
 
 export const name = 'dsh-deepatlas'
 
@@ -26,13 +27,13 @@ export type { DeepAtlasConfig }
 export function apply(ctx: Context, config: DeepAtlasConfig) {
   ctx.logger.info('DeepAtlas(dsh-插件导航)挂载完成,dryRun=%s', config.dryRun)
 
-  // 五个工具对齐任务书 M1–M5:
-  // scan/status(扫描/索引/体检) find(任务推荐) audit(安全审计) install(授权安装)
+  // 六个工具:scan/status find audit install + advise(P4.1 能力缺口顾问)
   ctx.tools.register(defineTool(buildScanTool(ctx, config)))
   ctx.tools.register(defineTool(buildStatusTool(ctx, config)))
   ctx.tools.register(defineTool(buildFindTool(ctx, config)))
   ctx.tools.register(defineTool(buildAuditTool(ctx, config)))
   ctx.tools.register(defineTool(buildInstallTool(ctx, config)))
+  ctx.tools.register(defineTool(buildAdviseTool(ctx, config)))
 
   ctx.on('dispose', () => {
     ctx.logger.info('DeepAtlas 卸载')

@@ -1,0 +1,432 @@
+{
+  "version": "golden-v1",
+  "note": "P3.8 推荐质量黄金集。expectedStrong/Acceptable 为索引真实 id(2026-08-23 校准);mustNotRecommend 系统性含官方 harness 本体(框架非能力插件,star 王者不得绑架推荐)。tags 含 popularity-overfit 的条目为对抗样本。",
+  "tasks": [
+    {
+      "id": "t01",
+      "category": "消息平台",
+      "need": "帮我把 DeepSeek Harness 接入微信收发消息",
+      "expectedStrong": [
+        "xmanrui/dsh-im"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness",
+        "nagi-ovo/voyager"
+      ]
+    },
+    {
+      "id": "t02",
+      "category": "消息平台",
+      "need": "微信机器人通知推送构建结果",
+      "expectedStrong": [
+        "xmanrui/dsh-im"
+      ],
+      "expectedAcceptable": [
+        "yyh-001/dsh-meme"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t03",
+      "category": "消息平台",
+      "need": "深度阅读网页并生成摘要发给我",
+      "expectedStrong": [
+        "xiehuan123/dsh-deepread"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ],
+      "tags": [
+        "popularity-overfit"
+      ]
+    },
+    {
+      "id": "t04",
+      "category": "记忆",
+      "need": "给 DSH 加跨会话长期记忆,记住项目约定和踩过的坑",
+      "expectedStrong": [
+        "csyangwen/dsh-memory-evolve",
+        "dsh-external/dsh-memory-evolve"
+      ],
+      "expectedAcceptable": [
+        "memtensor/memos"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness",
+        "nagi-ovo/voyager"
+      ],
+      "tags": [
+        "popularity-overfit"
+      ]
+    },
+    {
+      "id": "t05",
+      "category": "记忆",
+      "need": "轻量的记忆插件,能记住上次进度就行",
+      "expectedStrong": [
+        "csyangwen/dsh-memory-evolve"
+      ],
+      "expectedAcceptable": [
+        "memtensor/memos"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t06",
+      "category": "记忆",
+      "need": "知识库向量存储与检索",
+      "expectedStrong": [
+        "memtensor/memos"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t07",
+      "category": "浏览器",
+      "need": "让 Agent 操作真实 Chrome 浏览器,保留登录状态",
+      "expectedStrong": [
+        "dsh-external/dsh-browser",
+        "lum1104/dsh-browser"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness",
+        "nagi-ovo/voyager"
+      ]
+    },
+    {
+      "id": "t08",
+      "category": "浏览器",
+      "need": "网页自动化填表和截图",
+      "expectedStrong": [
+        "dsh-external/dsh-browser"
+      ],
+      "expectedAcceptable": [
+        "lum1104/dsh-browser"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t09",
+      "category": "浏览器",
+      "need": "任务看板可视化",
+      "expectedStrong": [
+        "chuspeeism/dashi-taskboard"
+      ],
+      "expectedAcceptable": [
+        "zhukunpenglinyutong/desktop-cc-gui"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ],
+      "tags": [
+        "popularity-overfit"
+      ]
+    },
+    {
+      "id": "t10",
+      "category": "Token优化",
+      "need": "监控 token 花费和余额",
+      "expectedStrong": [
+        "javis603/token-monitor"
+      ],
+      "expectedAcceptable": [
+        "prism-shadow/penguin-harness"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness",
+        "zhu1090093659/dsh-web-ui"
+      ],
+      "tags": [
+        "popularity-overfit"
+      ]
+    },
+    {
+      "id": "t11",
+      "category": "Token优化",
+      "need": "省 token 的上下文压缩",
+      "expectedStrong": [],
+      "expectedAcceptable": [
+        "javis603/token-monitor",
+        "prism-shadow/penguin-harness"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t12",
+      "category": "Token优化",
+      "need": "API 成本统计面板",
+      "expectedStrong": [
+        "javis603/token-monitor"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t13",
+      "category": "UI美化",
+      "need": "给 Web 界面换皮肤美化",
+      "expectedStrong": [
+        "nagi-ovo/voyager",
+        "zhu1090093659/dsh-web-ui"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t14",
+      "category": "UI美化",
+      "need": "桌面客户端 GUI",
+      "expectedStrong": [
+        "zhukunpenglinyutong/desktop-cc-gui"
+      ],
+      "expectedAcceptable": [
+        "dabaicai001/star-deepseek-harness-desktop"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t15",
+      "category": "终端",
+      "need": "终端 TUI 界面跑 DSH",
+      "expectedStrong": [
+        "ccch1mneyyy/dsh-tui"
+      ],
+      "expectedAcceptable": [
+        "esengine/deepseek-reasonix"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t16",
+      "category": "终端",
+      "need": "会话分叉回退的终端 UI",
+      "expectedStrong": [
+        "ccch1mneyyy/dsh-tui"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t17",
+      "category": "Git",
+      "need": "侧边栏集成 Git 面板看提交历史",
+      "expectedStrong": [
+        "dsh-external/dsh-better-sidebar",
+        "omdsh-dev/dsh-better-sidebar"
+      ],
+      "expectedAcceptable": [
+        "zhu1090093659/dsh-web-ui"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness",
+        "memtensor/memos"
+      ]
+    },
+    {
+      "id": "t18",
+      "category": "Git",
+      "need": "把侧边栏变成 IDE 工作台,文件终端都在",
+      "expectedStrong": [
+        "dsh-external/dsh-better-sidebar"
+      ],
+      "expectedAcceptable": [
+        "omdsh-dev/dsh-better-sidebar"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t19",
+      "category": "Git",
+      "need": "git graph 可视化",
+      "expectedStrong": [
+        "zhu1090093659/dsh-web-ui"
+      ],
+      "expectedAcceptable": [
+        "dsh-external/dsh-better-sidebar"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t20",
+      "category": "数据库",
+      "need": "查询本地 SQLite 数据库",
+      "expectedStrong": [
+        "dsh-external/dsh-data-agent",
+        "omdsh-dev/dsh-data-agent"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness",
+        "nagi-ovo/voyager"
+      ]
+    },
+    {
+      "id": "t21",
+      "category": "数据库",
+      "need": "操作数据库表结构",
+      "expectedStrong": [
+        "dsh-external/dsh-data-agent"
+      ],
+      "expectedAcceptable": [
+        "omdsh-dev/dsh-data-agent"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t22",
+      "category": "数据库",
+      "need": "表格文档处理",
+      "expectedStrong": [
+        "dream-num/dsh-univer-office"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ],
+      "tags": [
+        "popularity-overfit"
+      ]
+    },
+    {
+      "id": "t23",
+      "category": "图片",
+      "need": "图片理解和视觉识别路由",
+      "expectedStrong": [
+        "ysr666/dsh-vision-router"
+      ],
+      "expectedAcceptable": [
+        "anionex/dsh-vision-toolkit"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t24",
+      "category": "图片",
+      "need": "截图预览增强",
+      "expectedStrong": [
+        "liustack/modlens"
+      ],
+      "expectedAcceptable": [
+        "ysr666/dsh-vision-router"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t25",
+      "category": "图片",
+      "need": "OCR 识别截图里的文字",
+      "expectedStrong": [
+        "anionex/dsh-vision-toolkit"
+      ],
+      "expectedAcceptable": [
+        "ysr666/dsh-vision-router"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t26",
+      "category": "远程",
+      "need": "SSH 连远程服务器执行命令",
+      "expectedStrong": [
+        "flymysql/dsh-remote"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness",
+        "nagi-ovo/voyager"
+      ],
+      "tags": [
+        "popularity-overfit"
+      ]
+    },
+    {
+      "id": "t27",
+      "category": "远程",
+      "need": "手机远程访问 DSH",
+      "expectedStrong": [],
+      "expectedAcceptable": [
+        "flymysql/dsh-remote",
+        "dabaicai001/star-deepseek-harness-desktop"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t28",
+      "category": "自动化",
+      "need": "定时任务自动化执行",
+      "expectedStrong": [
+        "titanwings/dsh-automation"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    },
+    {
+      "id": "t29",
+      "category": "自动化",
+      "need": "备份我的 DSH 配置和数据",
+      "expectedStrong": [
+        "xiaoyuyu6420/dsh-backup"
+      ],
+      "expectedAcceptable": [],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ],
+      "tags": [
+        "popularity-overfit"
+      ]
+    },
+    {
+      "id": "t30",
+      "category": "自动化",
+      "need": "工作流编排多 Agent 调度",
+      "expectedStrong": [],
+      "expectedAcceptable": [
+        "titanwings/dsh-automation",
+        "chuspeeism/dashi-taskboard"
+      ],
+      "mustNotRecommend": [
+        "deepseek-ai/deepseek-harness"
+      ]
+    }
+  ]
+}

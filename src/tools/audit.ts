@@ -4,11 +4,13 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { DeepAtlasConfig } from '../config.js'
-import { audit } from '../core/auditor.js'
 import { WHITELIST_REPOS } from '../core/sources/awesome-list.js'
 import { looseObjectOutput, renderJson } from './common.js'
 import { buildPluginRecord, toRequirement } from '../core/record.js'
 import { checkCompatibility, getRuntimeInfo } from '../core/compat.js'
+import { buildAuditReportV1 } from '../core/audit-v1.js'
+import { AuditCache } from '../core/audit-cache.js'
+import { defaultDataDir } from '../core/index-store.js'
 
 const RAW = 'https://raw.githubusercontent.com'
 
@@ -24,7 +26,18 @@ async function fetchManifest(target: string, commit?: string): Promise<Record<st
   }
 }
 
-export function buildAuditTool(_ctx: Context, _config: DeepAtlasConfig) {
+async function fetchRaw(target: string, file: string, commit?: string): Promise<string | null> {
+  const ref = commit ?? 'HEAD'
+  try {
+    const res = await fetch(`${RAW}/${target}/${ref}/${file}`)
+    if (!res.ok) return null
+    return await res.text()
+  } catch {
+    return null
+  }
+}
+
+export function buildAuditTool(_ctx: Context, config: DeepAtlasConfig) {
   return {
     name: 'deepatlas_audit',
     description:
@@ -36,26 +49,45 @@ export function buildAuditTool(_ctx: Context, _config: DeepAtlasConfig) {
     output: { schema: looseObjectOutput, render: renderJson },
     async execute(args: { target: string; commit?: string }) {
       const target = args.target.toLowerCase().replace(/^github:/, '')
+
+      // ⑤ 内容寻址缓存:同 repo+commit+版本 直接复用
+      const cache = new AuditCache(defaultDataDir(config.dataDir))
+      if (args.commit) {
+        const cached = await cache.get(target, args.commit)
+        if (cached) return { ...cached, action: '(来自审计缓存,同 commit 复用)' }
+      }
+
       const manifest = await fetchManifest(target, args.commit)
-      const report = audit({
-        target,
-        manifest,
-        commitPinned: Boolean(args.commit),
-        whitelisted: WHITELIST_REPOS.includes(target),
-      })
-      // 兼容性闸门(P2):PluginRecord + 当前运行时对照
+      // v1 源码信号:抓 main 入口与 patch 文件(失败静默,清单层仍可用)
+      const files: Record<string, string> = {}
+      const main = typeof manifest?.main === 'string' ? manifest.main : 'lib/index.js'
+      for (const f of [main, 'cordis.patch.yml']) {
+        const text = await fetchRaw(target, f, args.commit)
+        if (text !== null) files[f] = text
+      }
+      const report = buildAuditReportV1(
+        { target, manifest, commitPinned: Boolean(args.commit), whitelisted: WHITELIST_REPOS.includes(target) },
+        files,
+      )
+
+      // 兼容性闸门:PluginRecord + 当前运行时对照
       const record = buildPluginRecord(target, manifest)
       const compatibility = checkCompatibility(toRequirement(record), getRuntimeInfo())
       const payload = { ...report, pluginRecord: record, compatibility }
-      if (report.level === 'red') {
+
+      if (args.commit) await cache.put(target, args.commit, payload as never)
+
+      if (report.risk.level === 'red') {
         return { ...payload, action: '红色风险:拒绝自动安装,请人工审查源码后手动处理' }
       }
       return {
         ...payload,
         action:
-          report.level === 'yellow'
-            ? '黄色风险:可在用户二次确认后继续安装流程'
-            : '绿色:可进入用户确认与安装流程',
+          report.risk.level === 'elevated'
+            ? 'Elevated(源码信号):可继续,但请阅读信号清单——是风险提示而非安全判定'
+            : report.level === 'yellow'
+              ? '黄色风险:可在用户二次确认后继续安装流程'
+              : '绿色:可进入用户确认与安装流程',
       }
     },
   }

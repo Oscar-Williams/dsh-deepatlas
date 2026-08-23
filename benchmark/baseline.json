@@ -1,0 +1,339 @@
+{
+  "frozenAt": "2026-08-23T06:09:50.423Z",
+  "metrics": {
+    "tasks": 30,
+    "top1HitRate": 0.133,
+    "top3StrongRate": 0.3,
+    "mustNotAt3": 1,
+    "deadAt3": 0,
+    "popularityOverfit": {
+      "total": 7,
+      "violated": 0
+    },
+    "gate_P4": "FAIL"
+  },
+  "rows": [
+    {
+      "id": "t01",
+      "need": "帮我把 DeepSeek Harness 接入微信收发消息",
+      "top3": [
+        "deepseek-ai/deepseek-harness",
+        "prism-shadow/penguin-harness",
+        "memtensor/memos"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": true
+    },
+    {
+      "id": "t02",
+      "need": "微信机器人通知推送构建结果",
+      "top3": [],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t03",
+      "need": "深度阅读网页并生成摘要发给我",
+      "top3": [
+        "chiang21fcb/cn-linebreak"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t04",
+      "need": "给 DSH 加跨会话长期记忆,记住项目约定和踩过的坑",
+      "top3": [
+        "z-col/dsh-workspace-groups",
+        "flymysql/dsh-memory",
+        "dsh-external/dsh-better-sidebar"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t05",
+      "need": "轻量的记忆插件,能记住上次进度就行",
+      "top3": [],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t06",
+      "need": "知识库向量存储与检索",
+      "top3": [],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t07",
+      "need": "让 Agent 操作真实 Chrome 浏览器,保留登录状态",
+      "top3": [
+        "dsh-external/dsh-better-sidebar",
+        "dsh-external/dsh-browser",
+        "esengine/deepseek-reasonix"
+      ],
+      "ok1": false,
+      "ok3": true,
+      "violated": false
+    },
+    {
+      "id": "t08",
+      "need": "网页自动化填表和截图",
+      "top3": [
+        "chiang21fcb/cn-linebreak"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t09",
+      "need": "任务看板可视化",
+      "top3": [],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t10",
+      "need": "监控 token 花费和余额",
+      "top3": [
+        "bowenliang123/dsh-context",
+        "prism-shadow/penguin-harness",
+        "xiufengsun/tokentracker"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t11",
+      "need": "省 token 的上下文压缩",
+      "top3": [
+        "bowenliang123/dsh-context",
+        "prism-shadow/penguin-harness",
+        "xiufengsun/tokentracker"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t12",
+      "need": "API 成本统计面板",
+      "top3": [
+        "dsh-external/dsh-better-sidebar",
+        "chuspeeism/dashi-taskboard",
+        "han-1413141/dsh-cost-meter"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t13",
+      "need": "给 Web 界面换皮肤美化",
+      "top3": [
+        "dsh-external/dsh-ads",
+        "zhu1090093659/dsh-web-ui",
+        "zhukunpenglinyutong/desktop-cc-gui"
+      ],
+      "ok1": false,
+      "ok3": true,
+      "violated": false
+    },
+    {
+      "id": "t14",
+      "need": "桌面客户端 GUI",
+      "top3": [
+        "prism-shadow/penguin-harness",
+        "zhukunpenglinyutong/desktop-cc-gui",
+        "toolclub/dsh-agent-team-gui"
+      ],
+      "ok1": false,
+      "ok3": true,
+      "violated": false
+    },
+    {
+      "id": "t15",
+      "need": "终端 TUI 界面跑 DSH",
+      "top3": [
+        "ccch1mneyyy/dsh-cc-tui",
+        "ccch1mneyyy/dsh-tui",
+        "openma-ai/deepseek-harness-tui"
+      ],
+      "ok1": false,
+      "ok3": true,
+      "violated": false
+    },
+    {
+      "id": "t16",
+      "need": "会话分叉回退的终端 UI",
+      "top3": [
+        "prism-shadow/penguin-harness",
+        "edison7009/echobird",
+        "zhu1090093659/dsh-web-ui"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t17",
+      "need": "侧边栏集成 Git 面板看提交历史",
+      "top3": [
+        "dsh-external/dsh-better-sidebar",
+        "prism-shadow/penguin-harness",
+        "zhu1090093659/dsh-web-ui"
+      ],
+      "ok1": true,
+      "ok3": true,
+      "violated": false
+    },
+    {
+      "id": "t18",
+      "need": "把侧边栏变成 IDE 工作台,文件终端都在",
+      "top3": [
+        "dsh-external/dsh-better-sidebar",
+        "dsh-external/dsh-browser",
+        "edison7009/echobird"
+      ],
+      "ok1": true,
+      "ok3": true,
+      "violated": false
+    },
+    {
+      "id": "t19",
+      "need": "git graph 可视化",
+      "top3": [
+        "zhu1090093659/dsh-web-ui",
+        "wongzexu/dsh-git-status",
+        "chouyong/dsh-fork-graph"
+      ],
+      "ok1": true,
+      "ok3": true,
+      "violated": false
+    },
+    {
+      "id": "t20",
+      "need": "查询本地 SQLite 数据库",
+      "top3": [
+        "perrylink/dsh-memento",
+        "anweat/dsh-web-search-pro",
+        "modusensus/dsh-mneme"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t21",
+      "need": "操作数据库表结构",
+      "top3": [],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t22",
+      "need": "表格文档处理",
+      "top3": [
+        "hiccupgeng/dsh-doc-skill"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t23",
+      "need": "图片理解和视觉识别路由",
+      "top3": [],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t24",
+      "need": "截图预览增强",
+      "top3": [],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t25",
+      "need": "OCR 识别截图里的文字",
+      "top3": [
+        "liustack/modlens",
+        "anionex/dsh-vision-toolkit",
+        "ysr666/dsh-vision-router"
+      ],
+      "ok1": false,
+      "ok3": true,
+      "violated": false
+    },
+    {
+      "id": "t26",
+      "need": "SSH 连远程服务器执行命令",
+      "top3": [
+        "flymysql/dsh-remote",
+        "chenw2759-wq/dsh-ide",
+        "dsh-ssh/dsh-ssh"
+      ],
+      "ok1": true,
+      "ok3": true,
+      "violated": false
+    },
+    {
+      "id": "t27",
+      "need": "手机远程访问 DSH",
+      "top3": [
+        "dsh-external/dsh-better-sidebar",
+        "bowenliang123/dsh-context",
+        "dsh-external/dsh-ads"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t28",
+      "need": "定时任务自动化执行",
+      "top3": [],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t29",
+      "need": "备份我的 DSH 配置和数据",
+      "top3": [
+        "dsh-external/dsh-better-sidebar",
+        "bowenliang123/dsh-context",
+        "dsh-external/dsh-ads"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    },
+    {
+      "id": "t30",
+      "need": "工作流编排多 Agent 调度",
+      "top3": [
+        "dsh-external/dsh-better-sidebar",
+        "esengine/deepseek-reasonix",
+        "memtensor/memos"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "violated": false
+    }
+  ]
+}

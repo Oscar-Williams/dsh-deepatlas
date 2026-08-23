@@ -5,7 +5,7 @@
 import { Context } from '@deepseek-ai/cordis';
 import { DeepAtlasConfig } from '../config.js';
 import { renderJson } from './common.js';
-export declare function buildAuditTool(_ctx: Context, _config: DeepAtlasConfig): {
+export declare function buildAuditTool(_ctx: Context, config: DeepAtlasConfig): {
     name: string;
     description: string;
     parameters: {
@@ -32,8 +32,56 @@ export declare function buildAuditTool(_ctx: Context, _config: DeepAtlasConfig):
         commit?: string;
     }): Promise<{
         action: string;
+        provenance: {
+            repository: string;
+            commitPinned: boolean;
+            archived?: boolean;
+            dead?: boolean;
+        };
+        package_: {
+            installScripts: string[];
+            nativeDependencies: string[];
+            dependencyCount: number;
+        };
+        sourceSignals: import("../core/audit-v1.js").SourceSignal[];
+        dependencyAudit: {
+            opaqueDependencies: string[];
+            note: string;
+        };
+        risk: {
+            level: "green" | "yellow" | "red" | "elevated";
+            reasons: string[];
+        };
+        target: string;
+        level: import("../types.js").AuditLevel;
+        findings: import("../types.js").AuditFinding[];
+        scope: string[];
+        commitPinned: boolean;
+        auditedAt: string;
+    } | {
+        action: string;
         pluginRecord: import("../core/record.js").PluginRecord;
         compatibility: import("../core/compat.js").CompatibilityResult;
+        provenance: {
+            repository: string;
+            commitPinned: boolean;
+            archived?: boolean;
+            dead?: boolean;
+        };
+        package_: {
+            installScripts: string[];
+            nativeDependencies: string[];
+            dependencyCount: number;
+        };
+        sourceSignals: import("../core/audit-v1.js").SourceSignal[];
+        dependencyAudit: {
+            opaqueDependencies: string[];
+            note: string;
+        };
+        risk: {
+            level: "green" | "yellow" | "red" | "elevated";
+            reasons: string[];
+        };
         target: string;
         level: import("../types.js").AuditLevel;
         findings: import("../types.js").AuditFinding[];
