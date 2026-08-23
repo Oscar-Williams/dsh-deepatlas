@@ -3,6 +3,7 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
 import { buildAdviseTool } from '../src/tools/advise.js'
+import { extractCapabilityRecords } from '../src/core/capabilities.js'
 import { IndexStore, SCHEMA_VERSION } from '../src/core/index-store.js'
 import { DeepAtlasConfig } from '../src/config.js'
 
@@ -29,7 +30,10 @@ async function seedIndex(installed: string[] = []) {
   })
   await new IndexStore(dir).save({
     schemaVersion: SCHEMA_VERSION, builtAt: new Date().toISOString(), sources: [],
-    plugins: [plugin('a/im', 'dsh-im', '微信 收发消息 wechat 机器人'), plugin('a/mem', 'dsh-memory', '跨会话 长期记忆 记住 进度')],
+    plugins: [
+      { ...plugin('a/im', 'dsh-im', '微信 收发消息 wechat 机器人'), displayName: 'dsh-im', capsEv: extractCapabilityRecords([{ source: 'name', text: 'dsh-im' }, { source: 'description', text: '微信 收发消息 wechat 机器人' }]) },
+      { ...plugin('a/mem', 'dsh-memory', '跨会话 长期记忆 记住 进度'), displayName: 'dsh-memory', capsEv: extractCapabilityRecords([{ source: 'name', text: 'dsh-memory' }, { source: 'description', text: '跨会话 长期记忆 记住 进度' }]) },
+    ],
   })
   const dump = installed.map((n) => `- id: x\n  name: '${n}'`).join('\n')
   return async () => dump
@@ -49,8 +53,7 @@ describe('deepatlas_advise(P4.1 安静顾问)', () => {
     await seedIndex()
     const tool = buildAdviseTool({} as never, mkConfig())
     const r = await (tool as { execute: (a: unknown, d: () => Promise<string>) => Promise<Record<string, unknown>> })
-      .execute({ task: '帮我把 DSH 接入微信收消息' }, async () => "- id: im
-  name: 'dsh-im'")
+      .execute({ task: '帮我把 DSH 接入微信收消息' }, async () => "- id: im\n  name: 'dsh-im'")
     expect(r.silent).toBe(true)
     expect(r.reason).toContain('已具备')
   })
