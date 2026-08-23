@@ -2,6 +2,16 @@
 
 > 本插件的核心矛盾:它要自动安装"第三方任意代码",因此安全不是附加项,而是产品本体。
 
+## 产品红线(P3.5 固化)
+
+1. **绝不修改用户全局环境**:`~/.gitconfig`、`~/.npmrc`、全局 pnpm config
+   一律不碰;所有代理/镜像/隔离需求以进程级环境变量或临时配置注入,
+   安装失败后用户机器零副作用(评审意见采纳,Note 0011);
+2. **源码扫描结论只称 risk signals,不称安全证明**——"Risk: Elevated
+   — executes child processes" 而非 "Unsafe plugin";
+3. **审计缓存内容寻址**(repo+commit+manifest/lockfile hash+auditor 版本),
+   commit 变更自动失效,规则升级自动失效。
+
 ## 生态安全事实(已核实)
 
 - **discussion #587(2026-08-14)**:DSH 第三方插件运行于核心进程内,可在

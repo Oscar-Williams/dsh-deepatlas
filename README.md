@@ -123,11 +123,14 @@ awesome 清单/白名单 ────┤→ M1 扫描器 → 本地索引(~/.dsh
 
 ## Roadmap
 
-- **M0 Real Harness Integration**:✅ 本地安装→dump-config→启动冒烟(HTTP 200)打通(2026-08-22);⏳ 能力真实执行(待 API Key);CI 双平台集成测试
-- **P1**:✅ 全量分页扫描 + 增量刷新 + 类型精判(文件清单) + CI;✅ 官方形态实测核实(cli-capture 0001-0003)
-- **P2**:推荐卡片完善(重叠对比/中文理由);质量分校准;**兼容性检测**(平台/架构/Node/DSH 版本进推荐卡,采纳外部评审意见);PluginRecord 知识模型
-- **P3**:✅ InstallPlan 状态机(RESOLVED→ACTIVE,含装前查重#2889);✅ 真实端到端:liustack/modlens(3515⭐)双平台 ACTIVE(Note 0010);⏳ npm audit 联动/源码树扫描/审计缓存
-- **P4**:主动推荐触发 + 反馈日志个性化降权
+- **M0 Real Harness Integration**:✅ 双平台真实插件(M0/M0-win)
+- **P1**:✅ 全量分页扫描 + 增量刷新 + 类型精判 + CI;✅ 官方形态实测核实
+- **P2**:✅ 质量分校准/死链清理/重叠结构化/兼容闸门/PluginRecord/元数据回填(3016 条,Top10 修复)
+- **P3**:✅ InstallPlan 状态机 + 真实端到端(modlens 双平台 ACTIVE)
+- **P3.5 工程化闸门**:✅ 主人格场景(已有 DSH 用户从 GitHub 安装 DeepAtlas→COMPOSED→BOOT 5s);✅ lib 产物入库(发布级缺陷修复);✅ 吸收探针 + 快照回滚;⏳ 完整 InstallEnvironment 探针、四环境 clean-room、事务化回滚实操
+- **P3.8 推荐质量基准**:⏳ 50-100 任务语料 + Top1/Top3 命中率 + 不兼容/死链率(改排名公式必跑,防 star 绑架推荐)
+- **P4 Intelligent Advisor**:⏳ 能力缺口检测(安静顾问)+ 显式/隐式反馈(exposure 感知)+ 本地偏好与全局分分离
+- **RC1**:⏳ 双平台 clean 安装/密钥扫描/回滚测试/发布冻结 → **Release**:双语 README、demo、架构与安全文档、生态收录
 
 ## 参考与致谢
 
