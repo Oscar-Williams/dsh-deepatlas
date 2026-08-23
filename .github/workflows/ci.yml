@@ -40,7 +40,8 @@ jobs:
             exit 1
           fi
 
-  # ② 分发 E2E:测试对象必须是 Git 能交付的内容(git archive),禁止复用工作区产物
+  # ② 分发 E2E:测试对象必须是 Git 能交付的内容,安装语义必须与用户一致
+  # (tarball;目录 link: 不装 dependencies,语义不等价——2026-08-23 实测)
   distribution-e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -51,21 +52,5 @@ jobs:
           node-version: 22
       - name: 安装 dsh 与 pnpm
         run: npm i -g pnpm @deepseek-ai/dsh --no-fund --no-audit
-      - name: 构造分发物(git archive = 用户 clone 到的全部内容)
-        run: mkdir -p /tmp/dist && git archive HEAD | tar -x -C /tmp/dist
-      - name: 全新 DSH_HOME 安装 DeepAtlas 并验证组合
-        run: |
-          export DSH_HOME=/tmp/dshhome
-          dsh plugin --profile web add /tmp/dist
-          dsh --profile web --dump-config | tee /tmp/dump.yml
-          grep -A2 "== dsh-deepatlas" /tmp/dump.yml
-      - name: 启动冒烟(HTTP 200)
-        run: |
-          export DSH_HOME=/tmp/dshhome
-          (dsh web --port 3082 --no-open > /tmp/boot.log 2>&1 &)
-          for i in $(seq 1 24); do
-            sleep 5
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://127.0.0.1:3082 || true)
-            if [ "$code" = "200" ]; then echo "t=$((i*5))s HTTP 200"; exit 0; fi
-          done
-          echo "::error::boot smoke failed"; cat /tmp/boot.log; exit 1
+      - name: 分发验证(archive→pack→安装→组合→启动)
+        run: bash scripts/verify-distribution.sh

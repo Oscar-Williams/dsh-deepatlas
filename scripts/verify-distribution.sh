@@ -11,11 +11,16 @@ DSH="${1:-$(command -v dsh || true)}"
 DIST="$(mktemp -d /tmp/deepatlas-dist-XXXX)"
 export DSH_HOME="$(mktemp -d /tmp/deepatlas-home-XXXX)"
 PORT="${DEEPATLAS_VERIFY_PORT:-3085}"
-echo "[1/4] 构造分发物(git archive = 用户 clone 的全部内容)→ $DIST"
+echo "[1/4] 构造分发物(git archive → npm pack tarball,安装语义=用户真实安装)"
+# 注:不能用目录 link: 安装——pnpm 对 link: 不装 dependencies,语义与
+# github:/registry 安装不同(2026-08-23 实测);tarball 才是忠实等价物。
 git -C "$ROOT" archive HEAD | tar -x -C "$DIST"
+TGZ="$(cd "$DIST" && npm pack --silent 2>/dev/null)"
+[ -n "$TGZ" ] || { echo "FAIL: npm pack"; exit 1; }
+echo "  tarball: $TGZ"
 
-echo "[2/4] 全新 DSH_HOME=$DSH_HOME 安装"
-"$DSH" plugin --profile web add "$DIST" || { echo "FAIL: plugin add"; exit 1; }
+echo "[2/4] 全新 DSH_HOME=$DSH_HOME 安装 tarball"
+"$DSH" plugin --profile web add "$DIST/$TGZ" || { echo "FAIL: plugin add"; exit 1; }
 
 echo "[3/4] 组合验证(dump-config 断言)"
 DUMP="$("$DSH" --profile web --dump-config)" || { echo "FAIL: dump-config"; exit 1; }
