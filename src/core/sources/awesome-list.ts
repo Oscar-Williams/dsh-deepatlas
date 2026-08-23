@@ -62,6 +62,11 @@ export class AwesomeListSource implements EcosystemSource {
           lastPushedAt: '',
           license: 'unknown',
           topics: [],
+          provenance: {
+            sourceId: list.sourceId, sourceKind: 'awesome-list', authority: 'community',
+            repository: list.repo.toLowerCase(), ref: { kind: 'branch', value: list.ref }, path: list.path,
+            observedAt: new Date().toISOString(), originGroup: `community:${list.repo.toLowerCase()}`,
+          },
         }
       }
     }

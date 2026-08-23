@@ -6,6 +6,7 @@ import { buildFindTool } from '../src/tools/find.js'
 import { IndexStore, SCHEMA_VERSION } from '../src/core/index-store.js'
 import { DeepAtlasConfig } from '../src/config.js'
 import { AtlasIndex, PluginMeta } from '../src/types.js'
+import { extractCapabilityEvidence } from '../src/core/capabilities.js'
 
 let dir: string
 
@@ -62,7 +63,7 @@ describe('deepatlas_find 工具', () => {
       schemaVersion: SCHEMA_VERSION,
       builtAt: new Date().toISOString(),
       sources: [],
-      plugins: [meta({ id: 'a/skin', name: 'dsh-skin', description: '界面 皮肤 美化 theme', stars: 10 })],
+      plugins: [meta({ id: 'a/skin', name: 'dsh-skin', description: '界面 皮肤 美化 theme', stars: 10, evidence: extractCapabilityEvidence([{ source: 'topics', text: 'ui-theme' }]) })],
     }
     await new IndexStore(dir).save(index)
     const tool = buildFindTool({} as never, mkConfig())

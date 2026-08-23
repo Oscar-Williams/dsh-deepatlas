@@ -8,6 +8,65 @@
 /** DSH 插件类型(与生态三分法一致:bundle / Cordis / Skill) */
 export type PluginType = 'bundle' | 'cordis' | 'skill' | 'unknown'
 
+export type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue }
+
+export interface EvidenceProvenance {
+  sourceId: string
+  sourceKind: 'github-search' | 'github-contents' | 'awesome-list' | 'manifest' | 'legacy-index'
+  authority: 'publisher' | 'platform' | 'community' | 'legacy'
+  repository: string
+  ref?: { kind: 'commit' | 'branch' | 'snapshot'; value: string }
+  path?: string
+  jsonPointer?: string
+  query?: string
+  observedAt: string
+  upstreamUpdatedAt?: string
+  contentSha256?: string
+  originGroup: string
+}
+
+export interface PluginObservation {
+  values: { name: string; description: string; topics: string[]; provides: string[] }
+  provenance: EvidenceProvenance
+}
+
+export interface EvidenceAtom {
+  evidenceId: string
+  subject: `capability:${string}` | `field:${string}`
+  polarity: 'supports' | 'contradicts'
+  signal: {
+    kind: 'manifest-declaration' | 'implementation' | 'exact-topic' | 'publisher-text' | 'curation' | 'legacy'
+    matchedAlias?: string
+    rawValue?: JsonValue
+    excerpt?: string
+  }
+  provenance: EvidenceProvenance
+  extractor: { id: string; version: string; taxonomyVersion: string }
+}
+
+export interface CapabilityClaim {
+  id: string
+  decision: 'accepted' | 'provisional' | 'conflicted' | 'rejected'
+  confidence: number
+  supportEvidenceIds: string[]
+  contradictionEvidenceIds: string[]
+  computedBy: { ruleVersion: string; taxonomyVersion: string; extractorVersion: string }
+}
+
+export interface PluginEvidence {
+  schemaVersion: 2
+  state: 'complete' | 'legacy-partial'
+  atoms: EvidenceAtom[]
+  capabilities: CapabilityClaim[]
+}
+
+/** 仅供 v1 索引读取；所有新写入使用 PluginEvidence。 */
+export interface LegacyCapabilityRecord {
+  id: string
+  confidence: number
+  ev: { source: string; text: string }[]
+}
+
 /** 索引条目:单个社区插件的全部静态元数据 */
 export interface PluginMeta {
   /** 规范化标识,如 "owner/repo" */
@@ -24,8 +83,12 @@ export interface PluginMeta {
   kind?: 'plugin' | 'framework' | 'collection' | 'application' | 'documentation' | 'unknown'
   /** 展示名(保留原始大小写;内部 join 一律用全小写 id,⑦.0-c) */
   displayName?: string
-  /** 能力证据记录(v3-B,扫描期固化;查询期不再从文本猜) */
-  capsEv?: { id: string; confidence: number; ev: { source: string; text: string }[] }[]
+  /** Evidence v2：来源观察、原子证据与派生能力结论。 */
+  evidence?: PluginEvidence
+  /** 源字段观察值在合并时无损保留。 */
+  observations?: PluginObservation[]
+  /** @deprecated Evidence v1 兼容输入；v2 扫描不会写入。 */
+  capsEv?: LegacyCapabilityRecord[]
   /** 类型判定证据:heuristic=名称/描述关键词;contents=仓库文件清单精判 */
   typeSource?: 'heuristic' | 'contents'
   /** GitHub star 数 */
@@ -76,6 +139,13 @@ export interface QualityScore {
 export interface AtlasIndex {
   /** 索引结构版本,破坏性变更时递增 */
   schemaVersion: number
+  evidenceMeta?: {
+    taxonomyVersion: string
+    extractorVersion: string
+    ruleVersion: string
+    state: 'complete' | 'legacy-partial'
+    migratedFrom?: 1
+  }
   /** 全量重建 / 增量刷新时间 */
   builtAt: string
   /** 各数据源最近一次抓取状态 */

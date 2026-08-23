@@ -87,6 +87,7 @@ async function fetchPage(url: string, headers: Record<string, string>, signal?: 
 }
 
 function toEntry(repo: GhRepo): RawPluginEntry {
+  const observedAt = new Date().toISOString()
   return {
     id: repo.full_name.toLowerCase(),
     name: repo.name,
@@ -96,6 +97,12 @@ function toEntry(repo: GhRepo): RawPluginEntry {
     lastPushedAt: repo.pushed_at,
     license: repo.license?.spdx_id ?? 'none',
     topics: repo.topics ?? [],
+    provenance: {
+      sourceId: 'github-topic', sourceKind: 'github-search', authority: 'publisher',
+      repository: repo.full_name.toLowerCase(), ref: { kind: 'snapshot', value: repo.pushed_at },
+      query: TOPIC_QUERY, observedAt, upstreamUpdatedAt: repo.pushed_at,
+      originGroup: `publisher:${repo.full_name.toLowerCase()}`,
+    },
   }
 }
 

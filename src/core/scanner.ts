@@ -7,14 +7,14 @@
  * - 进度回调(onProgress)透传到 CLI。
  * 降级链:github-topic 失败 → awesome-list 兜底;全部失败 → 保留旧索引。
  */
-import { AtlasIndex, PluginMeta, PluginType, SourceHealth } from '../types.js'
+import { AtlasIndex, EvidenceProvenance, PluginMeta, PluginObservation, PluginType, SourceHealth } from '../types.js'
 import { rank } from './ranker.js'
 import { EcosystemSource, RawPluginEntry } from './sources/types.js'
 import { GitHubTopicSource } from './sources/github-topic.js'
 import { AwesomeListSource, WHITELIST_REPOS } from './sources/awesome-list.js'
 import { enrichTopN } from './sources/enrich.js'
 import { classifyKind } from './kind.js'
-import { extractCapabilityRecords } from './capabilities.js'
+import { EVIDENCE_EXTRACTOR_VERSION, EVIDENCE_RULE_VERSION, TAXONOMY_VERSION, evidenceFromObservations } from './capabilities.js'
 import { IndexStore, SCHEMA_VERSION } from './index-store.js'
 
 /** 按仓库自述关键词的粗粒度类型推断(精判兜底,证据弱于 contents API) */
@@ -27,6 +27,14 @@ function inferType(entry: RawPluginEntry): PluginType {
 }
 
 function toMeta(entry: RawPluginEntry, sourceId: string): PluginMeta {
+  const provenance: EvidenceProvenance = entry.provenance ?? {
+    sourceId, sourceKind: 'legacy-index', authority: 'legacy', repository: entry.id,
+    observedAt: new Date().toISOString(), originGroup: `legacy:${sourceId}:${entry.id}`,
+  }
+  const observation: PluginObservation = {
+    values: { name: entry.name, description: entry.description, topics: entry.topics, provides: entry.provides ?? [] },
+    provenance,
+  }
   return {
     id: entry.id,
     name: entry.name,
@@ -42,6 +50,7 @@ function toMeta(entry: RawPluginEntry, sourceId: string): PluginMeta {
     topics: entry.topics,
     whitelisted: WHITELIST_REPOS.includes(entry.id),
     provides: entry.provides ?? [],
+    observations: [observation],
     source: sourceId,
     fetchedAt: new Date().toISOString(),
   }
@@ -66,6 +75,12 @@ export interface ScanOptions {
 
 /** 合并策略:新条目字段优先,空值回落旧值;白名单命中保留 */
 function mergeMeta(existing: PluginMeta, incoming: PluginMeta): PluginMeta {
+  const observations = [...(existing.observations ?? []), ...(incoming.observations ?? [])]
+  const uniqueObservations = [...new Map(observations.map((observation) => {
+    const key = JSON.stringify([observation.provenance.sourceId, observation.provenance.repository,
+      observation.provenance.ref, observation.provenance.path, observation.values])
+    return [key, observation]
+  })).values()].sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
   return {
     ...existing,
     name: incoming.name || existing.name,
@@ -80,6 +95,7 @@ function mergeMeta(existing: PluginMeta, incoming: PluginMeta): PluginMeta {
     provides: incoming.provides.length ? incoming.provides : existing.provides,
     source: incoming.source || existing.source,
     fetchedAt: incoming.fetchedAt,
+    observations: uniqueObservations,
   }
 }
 
@@ -187,20 +203,24 @@ export class Scanner {
       }
     }
 
-    // v3-B:能力证据固化(name/description/topics 三字段,一次扫描终身使用)
+    // Evidence v2:保留各来源观察值，再生成可追踪 atoms 与 capability claims。
     const plugins = [...merged.values()].map((meta) => ({
       ...meta,
-      capsEv: extractCapabilityRecords([
-        { source: 'name', text: meta.displayName ?? meta.name },
-        { source: 'description', text: meta.description },
-        { source: 'topics', text: meta.topics.join(' ') },
-      ]),
+      capsEv: undefined,
+      evidence: evidenceFromObservations(meta.observations ?? [],
+        meta.observations?.some((observation) => observation.provenance.authority !== 'legacy') ? 'complete' : 'legacy-partial'),
       quality: rank(meta),
     }))
     plugins.sort((a, b) => (b.quality?.total ?? 0) - (a.quality?.total ?? 0))
 
     const index: AtlasIndex = {
       schemaVersion: SCHEMA_VERSION,
+      evidenceMeta: {
+        taxonomyVersion: TAXONOMY_VERSION,
+        extractorVersion: EVIDENCE_EXTRACTOR_VERSION,
+        ruleVersion: EVIDENCE_RULE_VERSION,
+        state: plugins.every((plugin) => plugin.evidence.state === 'complete') ? 'complete' : 'legacy-partial',
+      },
       builtAt: new Date().toISOString(),
       sources: healths,
       plugins,

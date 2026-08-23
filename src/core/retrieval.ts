@@ -8,7 +8,7 @@
  */
 import { PluginMeta } from '../types.js'
 import { classifyKind, isInstallable } from './kind.js'
-import { extractCapabilities } from './capabilities.js'
+import { extractCapabilities, resolveCapabilityClaims } from './capabilities.js'
 
 export interface RetrievalCandidate {
   plugin: PluginMeta
@@ -16,6 +16,7 @@ export interface RetrievalCandidate {
   capOverlap: string[]
   lexScore: number
   nameBonus: number
+  capabilityEvidence: { id: string; confidence: number; decision: string; evidenceIds: string[] }[]
 }
 
 export function tokenize(need: string): string[] {
@@ -50,12 +51,14 @@ export function retrieve(
     const topics = p.topics.join(' ').toLowerCase()
 
     // v3-B:索引期固化的能力证据优先;旧索引回退到查询期抽取
-    const pluginCaps = new Set<string>(
-      p.capsEv?.length
-        ? p.capsEv.map((c) => c.id)
-        : [...extractCapabilities(`${p.displayName ?? p.name} ${p.description} ${p.topics.join(' ')}`)],
-    )
-    const capOverlap = [...taskCaps].filter((c) => pluginCaps.has(c))
+    const claims = resolveCapabilityClaims(p)
+    const usableClaims = claims.filter((claim) => claim.decision === 'accepted' || claim.decision === 'provisional')
+    const byCapability = new Map(usableClaims.map((claim) => [claim.id, claim]))
+    const capOverlap = [...taskCaps].filter((capability) => byCapability.has(capability))
+    const capabilityEvidence = capOverlap.map((id) => {
+      const claim = byCapability.get(id)!
+      return { id, confidence: claim.confidence, decision: claim.decision, evidenceIds: claim.supportEvidenceIds }
+    })
 
     // 字段加权 lexical:name 命中 ×4,description ×3,topics ×2
     let lexScore = 0
@@ -66,9 +69,10 @@ export function retrieve(
       if (topics.includes(t)) lexScore += 2
     }
 
-    const taskScore = capOverlap.length * 5 + lexScore
+    const capabilityScore = capabilityEvidence.reduce((sum, claim) => sum + 5 * claim.confidence, 0)
+    const taskScore = capabilityScore + lexScore
     if (taskScore <= 0) continue
-    scored.push({ plugin: p, taskScore, capOverlap, lexScore, nameBonus })
+    scored.push({ plugin: p, taskScore, capOverlap, lexScore, nameBonus, capabilityEvidence })
   }
 
   return scored

@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
 import { buildAdviseTool } from '../src/tools/advise.js'
-import { extractCapabilityRecords } from '../src/core/capabilities.js'
+import { extractCapabilityEvidence } from '../src/core/capabilities.js'
 import { IndexStore, SCHEMA_VERSION } from '../src/core/index-store.js'
 import { DeepAtlasConfig } from '../src/config.js'
 
@@ -30,9 +30,10 @@ async function seedIndex(installed: string[] = []) {
   })
   await new IndexStore(dir).save({
     schemaVersion: SCHEMA_VERSION, builtAt: new Date().toISOString(), sources: [],
+    evidenceMeta: { taxonomyVersion: 'capability-taxonomy-v1', extractorVersion: 'capability-evidence-v2.0.0', ruleVersion: 'capability-claims-v2.0.0', state: 'complete' },
     plugins: [
-      { ...plugin('a/im', 'dsh-im', '微信 收发消息 wechat 机器人'), displayName: 'dsh-im', capsEv: extractCapabilityRecords([{ source: 'name', text: 'dsh-im' }, { source: 'description', text: '微信 收发消息 wechat 机器人' }]) },
-      { ...plugin('a/mem', 'dsh-memory', '跨会话 长期记忆 记住 进度'), displayName: 'dsh-memory', capsEv: extractCapabilityRecords([{ source: 'name', text: 'dsh-memory' }, { source: 'description', text: '跨会话 长期记忆 记住 进度' }]) },
+      { ...plugin('a/im', 'dsh-im', '微信 收发消息 wechat 机器人'), displayName: 'dsh-im', evidence: extractCapabilityEvidence([{ source: 'provides', text: 'messaging-wechat' }]) },
+      { ...plugin('a/mem', 'dsh-memory', '跨会话 长期记忆 记住 进度'), displayName: 'dsh-memory', evidence: extractCapabilityEvidence([{ source: 'provides', text: 'long-term-memory' }]) },
     ],
   })
   const dump = installed.map((n) => `- id: x\n  name: '${n}'`).join('\n')

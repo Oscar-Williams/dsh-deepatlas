@@ -13,6 +13,12 @@ export interface RetrievalCandidate {
     capOverlap: string[];
     lexScore: number;
     nameBonus: number;
+    capabilityEvidence: {
+        id: string;
+        confidence: number;
+        decision: string;
+        evidenceIds: string[];
+    }[];
 }
 export declare function tokenize(need: string): string[];
 export declare function eligible(p: PluginMeta): boolean;

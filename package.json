@@ -39,7 +39,8 @@
     "typecheck:tests": "tsc -p tsconfig.test.json",
     "test": "vitest run",
     "scan": "node ./lib/cli.js scan",
-    "status": "node ./lib/cli.js status"
+    "status": "node ./lib/cli.js status",
+    "benchmark:evidence": "npm run build && node ./scripts/evidence-gate.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": ">=4.0.1 <5.0.0",

@@ -7,6 +7,10 @@ export interface CapabilityDef {
     id: string;
     aliases: string[];
 }
+import type { CapabilityClaim, EvidenceAtom, EvidenceProvenance, PluginEvidence, PluginMeta, PluginObservation } from '../types.js';
+export declare const TAXONOMY_VERSION = "capability-taxonomy-v1";
+export declare const EVIDENCE_EXTRACTOR_VERSION = "capability-evidence-v2.0.0";
+export declare const EVIDENCE_RULE_VERSION = "capability-claims-v2.0.0";
 export declare const CAPABILITIES: CapabilityDef[];
 /** 模型可传入的规范能力 ID。工具 schema 与运行时校验共用这一事实源。 */
 export declare const CAPABILITY_IDS: string[];
@@ -27,17 +31,19 @@ export type CapabilityInput = string[] | string | undefined;
 export declare function normalizeCapabilityIds(input: CapabilityInput): string[];
 /** 从任意文本抽取能力:中文 alias 子串匹配;拉丁 alias 词边界匹配(防 word→keywords 误伤) */
 export declare function extractCapabilities(text: string): Set<string>;
-export interface CapEvidence {
-    source: string;
+export interface CapabilityTextPart {
+    source: 'name' | 'description' | 'topics' | 'provides' | 'manifest-capability' | 'package-keyword' | 'readme' | 'legacy';
     text: string;
+    provenance?: EvidenceProvenance;
 }
-export interface PluginCapRecord {
-    id: string;
-    confidence: number;
-    ev: CapEvidence[];
-}
-/** v3-B 证据化抽取:按字段记录命中别名;confidence 1 证据 0.6 / 2+ 证据 0.9(确定性) */
-export declare function extractCapabilityRecords(parts: {
-    source: string;
-    text: string;
-}[]): PluginCapRecord[];
+/**
+ * Evidence v2：事实 atom 与派生 claim 分离。同一 originGroup 内只采用最强信号，
+ * 只有独立 authority 的佐证才增加最多 0.10，避免同一仓库堆叠关键词抬分。
+ */
+export declare function extractCapabilityEvidence(parts: CapabilityTextPart[], state?: PluginEvidence['state']): PluginEvidence;
+export declare function computeCapabilityClaims(atoms: EvidenceAtom[], state: PluginEvidence['state']): CapabilityClaim[];
+export declare function evidenceFromObservations(observations: PluginObservation[], state?: PluginEvidence['state']): PluginEvidence;
+/** 业务层统一解析；v2 空 claims 保持为空，不回退文本猜测。 */
+export declare function resolveCapabilityClaims(plugin: PluginMeta): CapabilityClaim[];
+/** 兼容旧测试/调用点；返回完整 Evidence v2 的 capability claims。 */
+export declare function extractCapabilityRecords(parts: CapabilityTextPart[]): CapabilityClaim[];
