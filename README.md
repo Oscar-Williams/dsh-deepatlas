@@ -70,7 +70,17 @@ dsh web
 
 > 调用 `deepatlas_status` 查看索引状态；若索引尚未建立，请执行一次完整扫描。
 
-首次完整扫描会读取数千个生态条目。所需时间受 GitHub API 配额和网络状况影响，繁忙或匿名访问环境下可能接近 50 分钟。扫描支持取消；已有索引后可使用增量模式完成日常刷新。
+首次完整扫描会自动完成 GitHub 时间分片、社区清单合并、仓库去重和本地落盘。2026-08-23 的专用 WSL 环境实测读取 10,914 条 GitHub topic 结果与 5,175 条社区清单记录，去重后生成 11,700 条索引。
+
+匿名模式耗时 15 分 46 秒，主要时间用于等待 GitHub Search API 配额。配置 GitHub Token 并保持网络连接稳定后，Search 配额由每分钟 10 次提升到 30 次，完整扫描通常在数分钟内完成。启动后保持 DSH 进程运行，完成时会返回条目数、来源健康度和索引位置。
+
+保持扫描顺畅：
+
+- 确保 `api.github.com`、`github.com` 与 `codeload.github.com` 可稳定访问。
+- 在启动 DSH 的环境中设置 `DEEPATLAS_GITHUB_TOKEN`，再用 `deepatlas_status` 确认 `githubAuth` 为 `authenticated`；配额规则见 [GitHub REST API 文档](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api)。
+- 扫描期间保持网络出口稳定；完成首份索引后，日常刷新使用 `incremental=true`。
+- 扫描支持取消；完整结果通过临时文件原子替换，已有索引会在数据源异常时继续保留。
+- 维护者可运行 `npm run scan` 查看分片页数和实时读取进度。
 
 完成后可以直接描述任务，例如：
 
