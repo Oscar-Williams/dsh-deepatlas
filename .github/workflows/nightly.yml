@@ -1,5 +1,5 @@
 name: nightly
-# 每日(北京时间 03:00)或手动触发:真实 github:#SHA 分发 E2E(双平台)
+# 每日(北京时间 03:00)或手动触发:真实 HTTPS SHA 分发 E2E(双平台)
 # 这是最高保真的分发验证——与用户安装路径 100% 同构(评审第六/九轮)。
 "on":
   schedule:
@@ -15,8 +15,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - name: 安装 dsh 与 pnpm
@@ -27,7 +27,7 @@ jobs:
           export DSH_HOME="$(mktemp -d)"
           echo "DSH_HOME=$DSH_HOME" >> "$GITHUB_ENV"
           SHA="${{ github.sha }}"
-          dsh plugin --profile web add "github:Oscar-Williams/dsh-deepatlas#$SHA"
+          dsh plugin --profile web add "https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/$SHA"
       - name: 组合验证
         shell: bash
         run: |
@@ -40,6 +40,6 @@ jobs:
           for i in $(seq 1 24); do
             sleep 5
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://127.0.0.1:3090 || true)
-            if [ "$code" = "200" ]; then echo "t=$((i*5))s HTTP 200 — nightly github:#SHA E2E PASS"; exit 0; fi
+            if [ "$code" = "200" ]; then echo "t=$((i*5))s HTTP 200 — nightly HTTPS SHA E2E PASS"; exit 0; fi
           done
           echo "::error::boot smoke failed"; tail -30 boot.log; exit 1

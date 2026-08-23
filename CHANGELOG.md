@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.2（2026-08-23）
+
+### 安装体验
+
+- README 中英文安装与更新命令统一改用 GitHub Codeload HTTPS 锁定版本地址，覆盖 Windows、WSL 与限制 GitHub SSH 连接的网络环境。
+- 全新 WSL DSH_HOME 已完成公开标签安装、`dump-config` 组合验证与 Web HTTP 200 启动验证。
+- `v0.2.1` 标签保持不可变；`v0.2.2` 汇入同一批运行时稳定性改进并作为当前推荐版本。
+
 ## v0.2.1（2026-08-23）
 
 ### 运行时稳定性

@@ -1,14 +1,11 @@
 # DeepAtlas 安全与权限模型
 
-> 本插件的核心矛盾:它要自动安装"第三方任意代码",因此安全不是附加项,而是产品本体。
+DeepAtlas 面向会进入 DSH 核心进程的第三方代码，安全检查贯穿发现、审计、授权、安装和恢复的完整流程。
 
 ## 产品边界
 
-1. **绝不修改用户全局环境**:`~/.gitconfig`、`~/.npmrc`、全局 pnpm config
-   一律不碰;所有代理/镜像/隔离需求以进程级环境变量或临时配置注入,
-   安装失败后用户机器零副作用(评审意见采纳,Note 0011);
-2. **源码扫描结论只称 risk signals,不称安全证明**——"Risk: Elevated
-   — executes child processes" 而非 "Unsafe plugin";
+1. **保持用户全局环境完整**：代理、镜像与隔离配置均通过进程级环境变量或临时配置注入，`~/.gitconfig`、`~/.npmrc` 与全局 pnpm 配置维持原状；
+2. **源码扫描输出可复核的 risk signals**：例如 `Risk: Elevated — executes child processes`，并附带规则与证据位置；
 3. **审计缓存内容寻址**：授权键绑定 repo、完整 commit 与 auditor 版本；
    commit 或规则版本变化会生成新的缓存身份。
 

@@ -47,10 +47,10 @@ npx -y @deepseek-ai/dsh@0.1.1-rc.2 web
 以下示例安装到 `web` profile，并锁定公开版本：
 
 ```bash
-dsh plugin --profile web add github:Oscar-Williams/dsh-deepatlas#v0.2.1
+dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.2
 ```
 
-使用 `headless` 或其他 profile 时，将两处 `web` 替换为对应名称。
+该地址通过 HTTPS 获取锁定版本，在 Windows、WSL 与常见受限网络中保持一致。使用 `headless` 或其他 profile 时，将两处 `web` 替换为对应名称。
 
 ### 3. 核对组合树
 
@@ -182,7 +182,7 @@ DSH 每个新 RC 会先进入 compatibility canary：依赖契约、Windows/Linu
 
 ```bash
 dsh plugin --profile web remove dsh-deepatlas
-dsh plugin --profile web add github:Oscar-Williams/dsh-deepatlas#v0.2.1
+dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.2
 ```
 
 卸载：
@@ -207,7 +207,7 @@ npm run build
 
 ## 路线图
 
-- **v0.2.1**：发布完整性、完整生态分片扫描、DSH rc.2 lossless JSON、审计授权收口、Windows CLI 与安装恢复链路。
+- **v0.2.2**：HTTPS 锁定版本安装、发布完整性、完整生态分片扫描、DSH rc.2 lossless JSON、审计授权收口、Windows CLI 与安装恢复链路。
 - **v0.3.x**：完整 HostIntentGate、Evidence v2、真实会话误报监测与可解释性报告。
 - **v0.4.x**：DSH RC canary 自动化、审计规则扩展、增量索引维护与长期兼容策略。
 - **1.0 准入**：DSH 稳定 API、可重复的跨版本验证、明确的数据迁移政策与安全响应流程。

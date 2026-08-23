@@ -47,10 +47,10 @@ npx -y @deepseek-ai/dsh@0.1.1-rc.2 web
 This example installs the pinned public release into `web`:
 
 ```bash
-dsh plugin --profile web add github:Oscar-Williams/dsh-deepatlas#v0.2.1
+dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.2
 ```
 
-Replace both `web` occurrences with `headless` or another profile name when appropriate.
+This HTTPS address fetches the pinned release consistently across Windows, WSL, and common restricted networks. Replace both `web` occurrences with `headless` or another profile name when appropriate.
 
 ### 3. Verify the composed tree
 
@@ -184,7 +184,7 @@ Update to another pinned release:
 
 ```bash
 dsh plugin --profile web remove dsh-deepatlas
-dsh plugin --profile web add github:Oscar-Williams/dsh-deepatlas#v0.2.1
+dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.2
 ```
 
 Uninstall:
@@ -209,7 +209,7 @@ The current regression baseline is **22 test files and 108 tests**. CI covers No
 
 ## Roadmap
 
-- **v0.2.1**: release integrity, complete partitioned discovery, DSH rc.2 lossless JSON, audit authorization hardening, Windows CLI handling, and install recovery.
+- **v0.2.2**: pinned HTTPS installation, release integrity, complete partitioned discovery, DSH rc.2 lossless JSON, audit authorization hardening, Windows CLI handling, and install recovery.
 - **v0.3.x**: complete HostIntentGate, Evidence v2, real-session false-positive monitoring, and explainability reports.
 - **v0.4.x**: automated DSH RC canaries, expanded audit rules, incremental index maintenance, and long-term compatibility policy.
 - **1.0 criteria**: stable DSH APIs, repeatable cross-version verification, defined data migrations, and a security-response process.
