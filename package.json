@@ -46,7 +46,9 @@
     "@deepseek-ai/dsh-tools": "*"
   },
   "dependencies": {
-    "@deepseek-ai/schemastery": "*"
+    "@deepseek-ai/schemastery": "*",
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-tools": "*"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
