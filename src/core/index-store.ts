@@ -5,13 +5,14 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
+import { randomUUID } from 'node:crypto'
 import { AtlasIndex } from '../types.js'
 
 export const SCHEMA_VERSION = 1
 
 export function defaultDataDir(explicit?: string): string {
   if (explicit && explicit.trim()) return explicit
-  const base = process.env.DEEPATLAS_HOME ?? path.join(os.homedir(), '.dsh')
+  const base = process.env.DEEPATLAS_HOME ?? process.env.DSH_HOME ?? path.join(os.homedir(), '.dsh')
   return path.join(base, 'deepatlas')
 }
 
@@ -39,9 +40,13 @@ export class IndexStore {
 
   async save(index: AtlasIndex): Promise<void> {
     await fs.mkdir(path.dirname(this.filePath), { recursive: true })
-    const tmp = `${this.filePath}.tmp`
-    await fs.writeFile(tmp, JSON.stringify(index, null, 2), 'utf8')
-    await fs.rename(tmp, this.filePath) // 原子替换,避免写一半损坏索引
+    const tmp = `${this.filePath}.${process.pid}.${randomUUID()}.tmp`
+    try {
+      await fs.writeFile(tmp, JSON.stringify(index, null, 2), 'utf8')
+      await fs.rename(tmp, this.filePath) // 原子替换,避免写一半损坏索引
+    } finally {
+      await fs.rm(tmp, { force: true })
+    }
   }
 
   /** 索引是否已过期(TTL 小时) */

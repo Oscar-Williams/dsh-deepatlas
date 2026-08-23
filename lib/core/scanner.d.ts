@@ -23,6 +23,7 @@ export interface ScanOptions {
     /** 仅供测试注入:替换默认数据源 */
     sources?: EcosystemSource[];
     onProgress?: (p: ScanProgress) => void;
+    signal?: AbortSignal;
 }
 export declare class Scanner {
     private readonly store;

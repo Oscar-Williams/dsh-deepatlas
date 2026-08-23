@@ -44,10 +44,6 @@ export declare function buildFindTool(_ctx: Context, config: DeepAtlasConfig): {
     }): Promise<{
         ok: boolean;
         message: string;
-        need?: undefined;
-        runtime?: undefined;
-        candidates?: undefined;
-        hint?: undefined;
     } | {
         ok: boolean;
         need: string;
@@ -58,6 +54,5 @@ export declare function buildFindTool(_ctx: Context, config: DeepAtlasConfig): {
         };
         candidates: Recommendation[];
         hint: string | undefined;
-        message?: undefined;
     }>;
 };

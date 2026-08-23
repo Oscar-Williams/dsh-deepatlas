@@ -6,9 +6,19 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { createHash } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 import { AuditReportV1 } from './audit-v1.js'
+import type { PluginRecord } from './record.js'
 
-export const AUDITOR_VERSION = 'audit-v1'
+export interface CachedAuditReport extends AuditReportV1 {
+  auditedRef?: string
+  compatibility?: { ok: boolean; reasons?: string[] }
+  pluginRecord?: PluginRecord
+}
+
+// Fail-closed manifest/source coverage and cache-derived install authorization
+// changed the trust contract. Never reuse entries created under older rules.
+export const AUDITOR_VERSION = 'audit-v3'
 
 export function cacheKey(repo: string, commit: string): string {
   return createHash('sha256').update(`${repo}#${commit}|${AUDITOR_VERSION}`).digest('hex').slice(0, 24)
@@ -20,25 +30,29 @@ export class AuditCache {
     this.file = path.join(dataDir, 'audit-cache.json')
   }
 
-  async load(): Promise<Record<string, { at: string; report: AuditReportV1 }>> {
+  async load(): Promise<Record<string, { at: string; report: CachedAuditReport }>> {
     try {
-      return JSON.parse(await fs.readFile(this.file, 'utf8')) as Record<string, { at: string; report: AuditReportV1 }>
+      return JSON.parse(await fs.readFile(this.file, 'utf8')) as Record<string, { at: string; report: CachedAuditReport }>
     } catch {
       return {}
     }
   }
 
-  async get(repo: string, commit: string): Promise<AuditReportV1 | null> {
+  async get(repo: string, commit: string): Promise<CachedAuditReport | null> {
     const all = await this.load()
     return all[cacheKey(repo, commit)]?.report ?? null
   }
 
-  async put(repo: string, commit: string, report: AuditReportV1): Promise<void> {
+  async put(repo: string, commit: string, report: CachedAuditReport): Promise<void> {
     const all = await this.load()
     all[cacheKey(repo, commit)] = { at: new Date().toISOString(), report }
     await fs.mkdir(path.dirname(this.file), { recursive: true })
-    const tmp = `${this.file}.tmp`
-    await fs.writeFile(tmp, JSON.stringify(all, null, 2), 'utf8')
-    await fs.rename(tmp, this.file)
+    const tmp = `${this.file}.${process.pid}.${randomUUID()}.tmp`
+    try {
+      await fs.writeFile(tmp, JSON.stringify(all, null, 2), 'utf8')
+      await fs.rename(tmp, this.file)
+    } finally {
+      await fs.rm(tmp, { force: true })
+    }
   }
 }

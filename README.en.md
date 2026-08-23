@@ -5,75 +5,230 @@
 [![Status](https://img.shields.io/badge/status-public%20preview-blueviolet)](./CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-DeepAtlas is a task-aware plugin navigator for DeepSeek Harness (DSH). It maintains a local index of 3,000+ ecosystem entries, retrieves candidates for the current task, reports risk signals before installation, and constrains installation with explicit consent, commit pinning, and a rollback-aware state machine.
+DeepAtlas is a task-aware plugin navigator for DeepSeek Harness (DSH). It maintains a local index of 3,000+ ecosystem entries: describe the task at hand and DeepAtlas returns capability-matched candidates, quality evidence, and overlap notes. Once you choose a plugin, it continues with commit-level audit, compatibility checks, and a controlled installation flow.
 
-> DeepAtlas and DSH are both previews. DSH may still introduce compatibility-breaking changes, and installing a third-party plugin means running third-party code inside the DSH process. DeepAtlas reports risk signals; it does not certify that a plugin is safe.
+Third-party plugins share the DSH process privileges. DeepAtlas provides reviewable risk signals and an installation trace, while every installation remains subject to explicit user approval.
 
 [中文](./README.md) · [Architecture](./docs/architecture.md) · [Security](./docs/security.md) · [Compatibility](./docs/compatibility.md) · [Changelog](./CHANGELOG.md)
 
-## What it provides
+## Highlights
 
-- **Local ecosystem index** built from the `dsh-plugin` topic, curated lists, and live repository metadata.
-- **Capability retrieval** using 28 bilingual capability classes, weighted fields, and quality signals. The host model may normalize a task into an enum-constrained capability array, but it does not make audit or installation decisions.
-- **Risk-signal audit** covering provenance, lifecycle scripts, dependency shapes, native dependencies, and source patterns, with content-addressed cache invalidation.
-- **Installation invariants** requiring explicit consent, a non-red audit, compatibility, and an exact match between the audited and installed commit.
-- **Transactional state tracking** from RESOLVED to ACTIVE, with a rollback path after failure. Only ACTIVE is reported as a successful installation.
-- **Quiet capability advisor** that remains silent when the task is already covered or evidence is insufficient.
+- **Complete ecosystem discovery** combines the GitHub `dsh-plugin` topic with community lists. Time-range partitioning works around GitHub Search's 1,000-result limit.
+- **Task capability retrieval** combines 28 bilingual capability classes, field-level evidence, and quality signals for natural-language tasks and canonical capability input.
+- **Quiet capability advisor** stays silent when the selected profile already covers the task and returns 1–3 suggestions for clear capability gaps.
+- **Pre-install risk audit** checks lifecycle scripts, dependency shapes, native dependencies, source patterns in the manifest-declared entry and bundle patch, and Node compatibility at a full commit SHA.
+- **Controlled installation and recovery** authorizes from the matching local audit record, snapshots the profile before execution, and enters rollback when verification fails.
+- **Local-first state** keeps indexes, audit cache, and install records in the DSH home or a user-selected directory. A GitHub token is used only to raise API limits.
 
-## Install
+## Quick start
 
-Prerequisites: Node.js `^22.19.0 || >=24.0.0` and a working DSH installation.
+### 1. Prepare the environment
+
+The current compatibility envelope is:
+
+- Node.js `^22.19.0 || >=24.0.0`
+- DeepSeek Harness `0.1.1-rc.1` / `0.1.1-rc.2`
+- `pnpm` available on `PATH` because DSH forwards plugin-management commands to pnpm
 
 ```bash
-npx @deepseek-ai/dsh web
-dsh plugin --profile <profile> add github:Oscar-Williams/dsh-deepatlas#v0.2.0
+node --version
+pnpm --version
+dsh --version
 ```
 
-Restart the selected DSH profile after installation. DeepAtlas registers six tools:
+For a first DSH run, start the shipped Web profile:
 
-`deepatlas_scan` · `deepatlas_status` · `deepatlas_find` · `deepatlas_audit` · `deepatlas_install` · `deepatlas_advise`
+```bash
+npx -y @deepseek-ai/dsh@0.1.1-rc.2 web
+```
 
-Ask the agent to scan the plugin index before the first search. `DEEPATLAS_GITHUB_TOKEN` is optional and only increases the GitHub API limit. Indexes, audit caches, and records stay under the configured local `dataDir`.
+### 2. Install into a profile
 
-`dryRun` defaults to `true`. In that mode, installation produces a command and state trace without invoking the DSH CLI. Real installation must be explicitly enabled and still passes the audit, consent, compatibility, and commit-pin gates.
+This example installs the pinned public release into `web`:
+
+```bash
+dsh plugin --profile web add github:Oscar-Williams/dsh-deepatlas#v0.2.1
+```
+
+Replace both `web` occurrences with `headless` or another profile name when appropriate.
+
+### 3. Verify the composed tree
+
+```bash
+dsh --profile web --dump-config
+```
+
+The output should contain a `dsh-deepatlas` / `deepatlas` layer. Restart the selected profile afterward:
+
+```bash
+dsh web
+```
+
+### 4. Build the first index
+
+Send this request inside DSH:
+
+> Call `deepatlas_status`. If no index exists yet, run one complete scan.
+
+The first scan reads several thousand ecosystem entries. Duration depends on GitHub API quota and network conditions; a busy or anonymous environment may take close to 50 minutes. Scans support cancellation, and later refreshes can use incremental mode.
+
+Example requests:
+
+- “I need cross-session memory in DSH. Compare suitable plugins.”
+- “Find a Telegram integration and show candidates with risk signals.”
+- “Audit this plugin at the specified commit. Show the report and ask before installation.”
+
+## How it works
+
+```text
+GitHub topic / community lists
+              │
+              ▼
+        local ecosystem index ───────→ deepatlas_status
+              │
+task text + canonical capabilities
+              │
+              ├─────────────────────→ deepatlas_find
+              │                        candidates / evidence / overlap
+              │
+              └─────────────────────→ deepatlas_advise
+                                       silent when covered / suggest on gap
+                                                    │
+selected full commit SHA ─→ deepatlas_audit ────────┤
+                                                    ▼
+                                         user reviews and approves
+                                                    │
+                                                    ▼
+                                         deepatlas_install
+                              snapshot → install → compose check → recovery
+```
+
+The host model interprets the task and supplies canonical capabilities. Deterministic code owns indexing, ranking, audit rules, and installation gates.
+
+## Six tools
+
+| Tool | Purpose | Main output |
+|---|---|---|
+| `deepatlas_scan` | Complete or incremental ecosystem scan | Item count, source health, index location |
+| `deepatlas_status` | Index age, TTL, source state, and Top 10 | Current state, auth mode, metadata coverage |
+| `deepatlas_find` | Retrieve by task and capabilities | Match evidence, quality score, overlap notes |
+| `deepatlas_advise` | Compare task needs with installed plugins | Silent result or 1–3 suggestions |
+| `deepatlas_audit` | Audit a repository at a full 40-character SHA | Risk level, evidence, compatibility, `auditedRef` |
+| `deepatlas_install` | Plan or execute from the matching audit record | State trace, command, execution/composition/activation flags |
+
+Recommended order: `status → scan → find → audit → explicit approval → install`.
+
+## Configuration
+
+| Option | Default | Description |
+|---|---:|---|
+| `dataDir` | empty | Uses the active `DSH_HOME/deepatlas`, then `~/.dsh/deepatlas` when `DSH_HOME` is unset |
+| `installProfile` | `web` | Profile used for duplicate detection, installation, and composition checks |
+| `indexTtlHours` | `24` | Age at which status recommends a refresh |
+| `minStars` | `0` | Minimum star threshold for candidates |
+| `githubTokenEnv` | `DEEPATLAS_GITHUB_TOKEN` | Environment variable that contains an optional GitHub token |
+| `dryRun` | `true` | Produces the complete plan and command while preserving the profile |
+
+To enable real installation, override the `deepatlas` row in `$DSH_HOME/profiles/<profile>/cordis.patch.yml`. A DSH row patch replaces the full `config`, so retain every field:
+
+```yaml
+- id: deepatlas
+  config:
+    dataDir: ''
+    installProfile: web
+    indexTtlHours: 24
+    minStars: 0
+    githubTokenEnv: DEEPATLAS_GITHUB_TOKEN
+    dryRun: false
+```
+
+Run `dsh --profile web --dump-config` to inspect the effective value. `DEEPATLAS_HOME` can explicitly share one data directory across profiles; `dataDir` has the highest priority.
+
+## Installation safeguards
+
+DeepAtlas enforces these conditions in the tool layer:
+
+1. Audit and installation use a canonical `owner/repo` and a full 40-character commit SHA.
+2. Installation reads risk facts and compatibility requirements from the `target + commit + audit-v3` content-addressed cache entry, then recalculates compatibility for the current runtime.
+3. Red findings, incompatible runtime, missing audit evidence, or missing user approval block the plan.
+4. Real execution checks the current composed tree and creates a profile snapshot.
+5. A successful command is followed by another composition check; failures enter a recorded recovery state.
+6. `dryRun=true` enters `PLANNED` and returns the exact pinned command for review.
+
+Green and yellow results summarize signals observed by the current rules. Repository provenance, dependencies, and runtime behavior remain part of the overall review.
 
 ## Evaluation status
 
-The gates answer different questions and must not be collapsed into a single “generalization” score.
-
-| Gate / dataset | Current result | What it establishes |
+| Gate / dataset | Current result | Coverage |
 |---|---:|---|
 | RetrievalDev (frozen dev-30) | Recall@20 96.7%; Top3-SA 93.3%; mustNot@3 0 | Deterministic regression on known development intents |
-| Independent holdout-15 | Top3-SA 26.7% | Static retrieval still generalizes poorly to colloquial tasks |
-| NormalizedIntentRetrieval (120 paraphrases) | 50.8% static → 85.0% with gold capability input | The capability channel works; it does **not** prove host-model intent understanding |
-| AdvisorSafety fixture | recommend 5/5; silence 5/5; false positives 0 | A small deterministic regression, not real-session performance |
+| Independent holdout-15 | Top3-SA 26.7% | Static retrieval baseline on colloquial tasks |
+| NormalizedIntentRetrieval (120 paraphrases) | 50.8% static → 85.0% with canonical capabilities | Retrieval gain from the capability channel |
+| AdvisorSafety fixture | recommend 5/5; silence 5/5; false positives 0 | Deterministic quiet-advisor regression |
 
-The next HostIntentGate will measure the missing layer independently: natural language → DSH host model → canonical capability array.
+HostIntentGate will independently measure the live path from natural language through the DSH host model to a capability array. Evidence v2 will calibrate evidence provenance, confidence, and coverage. Both use frozen datasets, replayable records, and independent gates before entering a release line.
 
-## Development
+## Compatibility and current scope
 
-Use Node.js 22.19 or 24, preferably in WSL2/Linux:
+- DeepAtlas is a public preview and DSH is a Developer Preview.
+- The current release line covers DSH `0.1.1-rc.1` / `0.1.1-rc.2` and Node 22.19 / 24.
+- Distribution uses a GitHub tag or full commit SHA and includes prebuilt `lib/` artifacts.
+- Audit covers static risk signals. Runtime isolation, signature verification, and behavior detection belong to broader security controls.
+- `dryRun=true` provides the safe default; users enable real installation per profile.
+
+Every new DSH RC enters a compatibility canary covering dependency contracts, Windows/Linux distribution, composition, tool calls, and real startup before the compatibility matrix changes.
+
+## Update and uninstall
+
+Update to another pinned release:
+
+```bash
+dsh plugin --profile web remove dsh-deepatlas
+dsh plugin --profile web add github:Oscar-Williams/dsh-deepatlas#v0.2.1
+```
+
+Uninstall:
+
+```bash
+dsh plugin --profile web remove dsh-deepatlas
+```
+
+Local indexes and audit records remain in `dataDir` after package removal.
+
+## Development and verification
 
 ```bash
 npm ci
-npm test                # currently 16 test files, 78 tests
+npm test
 npm run typecheck
 npm run typecheck:tests
-npm run build           # regenerates the committed lib/ payload
+npm run build
 ```
 
-CI also covers Node 22/24, Windows, distribution integrity, tarball installation and boot verification, plus nightly GitHub-by-commit installation. Because `lib/` is part of the GitHub-installed package, every `src/` change must be built and checked for payload drift.
+The current regression baseline is **22 test files and 108 tests**. CI covers Node 22/24, Windows, distribution integrity, tarball installation and boot verification, plus nightly install-by-commit E2E. GitHub installation ships the committed `lib/`, so source changes must include matching build output.
 
-## Known limitations and roadmap
+## Roadmap
 
-- DSH is still a Developer Preview; current evidence covers DSH `0.1.1-rc.1` and `0.1.1-rc.2`.
-- HostIntentGate does not exist yet; the 85.0% result uses pre-supplied canonical capabilities.
-- Capability evidence covers only part of the current index, and its 0.6/0.9 confidence is not yet a full source-weighted scoring model.
-- Static audit findings are risk signals, not sandboxing, signature verification, or proof of benign behavior.
-- Real installation is opt-in because `dryRun=true` is the default.
-- Distribution currently uses commit/tag-pinned GitHub sources; there is no npm release.
+- **v0.2.1**: release integrity, complete partitioned discovery, DSH rc.2 lossless JSON, audit authorization hardening, Windows CLI handling, and install recovery.
+- **v0.3.x**: complete HostIntentGate, Evidence v2, real-session false-positive monitoring, and explainability reports.
+- **v0.4.x**: automated DSH RC canaries, expanded audit rules, incremental index maintenance, and long-term compatibility policy.
+- **1.0 criteria**: stable DSH APIs, repeatable cross-version verification, defined data migrations, and a security-response process.
 
-Planned order: `v0.2.1 release integrity → HostIntentGate → Evidence v2 → upstream DSH compatibility canary`. DeepAtlas will remain on the 0.x line while DSH APIs are still changing.
+## Naming
+
+| Context | Name |
+|---|---|
+| Product | DeepAtlas |
+| Full name | DeepAtlas for DeepSeek Harness |
+| GitHub repository / DSH package | `dsh-deepatlas` |
+| Chinese description | DSH 插件导航 |
+
+## Acknowledgements
+
+- [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)
+- [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin)
+- [Oh-My-DSH](https://github.com/like-study1/Oh-My-DSH)
+- [awesome-deepseek-harness](https://github.com/Dominic789654/awesome-deepseek-harness)
 
 ## License
 

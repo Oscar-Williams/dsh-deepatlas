@@ -42,27 +42,24 @@ async function seedIndex(installed: string[] = []) {
 describe('deepatlas_advise(P4.1 安静顾问)', () => {
   it('缺口存在且未安装 → 给出建议', async () => {
     await seedIndex()
-    const tool = buildAdviseTool({} as never, mkConfig())
-    const r = await (tool as { execute: (a: unknown, d: () => Promise<string>) => Promise<Record<string, unknown>> })
-      .execute({ task: '帮我把 DSH 接入微信收消息' }, async () => '')
+    const tool = buildAdviseTool({} as never, mkConfig(), async () => '')
+    const r = await tool.execute({ task: '帮我把 DSH 接入微信收消息' })
     expect(r.silent).toBe(false)
     expect(JSON.stringify(r.recommendations)).toContain('dsh-im')
   })
 
   it('能力已安装 → 保持安静(按 capabilities 判断)', async () => {
     await seedIndex()
-    const tool = buildAdviseTool({} as never, mkConfig())
-    const r = await (tool as { execute: (a: unknown, d: () => Promise<string>) => Promise<Record<string, unknown>> })
-      .execute({ task: '帮我把 DSH 接入微信收消息' }, async () => "- id: im\n  name: 'dsh-im'")
+    const tool = buildAdviseTool({} as never, mkConfig(), async () => "- id: im\n  name: 'dsh-im'")
+    const r = await tool.execute({ task: '帮我把 DSH 接入微信收消息' })
     expect(r.silent).toBe(true)
     expect(r.reason).toContain('已具备')
   })
 
   it('无匹配 → 安静', async () => {
     await seedIndex()
-    const tool = buildAdviseTool({} as never, mkConfig())
-    const r = await (tool as { execute: (a: unknown, d: () => Promise<string>) => Promise<Record<string, unknown>> })
-      .execute({ task: '帮我做三维建模渲染' }, async () => '')
+    const tool = buildAdviseTool({} as never, mkConfig(), async () => '')
+    const r = await tool.execute({ task: '帮我做三维建模渲染' })
     expect(r.silent).toBe(true)
   })
 })

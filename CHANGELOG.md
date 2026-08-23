@@ -1,13 +1,34 @@
 # Changelog
 
-## Unreleased（v0.2.1 candidate）
+## v0.2.1（2026-08-23）
 
-### Release integrity
+### 运行时稳定性
 
-- 纳入 `v0.2.0` tag 之后的测试修复与 nightly YAML 修复；公开 tag 保持不可变，不移动或重打 `v0.2.0`。
-- `deepatlas_find` 与 `deepatlas_advise` 改为共用 capability 单一事实源；工具参数使用 DSH 支持的 `array + enum`，补齐 `messaging-telegram`、`web-search`，并为旧逗号字符串保留内部兼容。
-- README 中英文版完成事实校准：六个工具、78 项测试、`dryRun=true` 默认行为、DSH Developer Preview 兼容边界与真实评测含义。
-- 新增 `docs/v0.2.1-release-checklist.md`；只有 release commit、tag、CI、构建产物与 GitHub Release 完全一致后才发布。
+- DSH `0.1.1-rc.2` 工具输出统一转换为 lossless JSON，修复可选字段中的 `undefined` 导致工具结果被宿主拒绝。
+- `deepatlas_advise` 的 dump runner 改为构建期闭包注入，使用当前 `installProfile`，并在本地安装环境中复用实际 DSH launcher。
+- Windows CLI fallback 使用受控 `cmd.exe /d /s /c dsh.cmd` 调用；profile、仓库 slug 与完整 SHA 均在执行前校验。
+- 扫描、网络请求、退避等待与子进程贯穿 DSH `AbortSignal`；取消后停止请求并保留最后一份有效索引。
+- `DSH_HOME` 进入默认数据目录解析，索引与审计缓存采用唯一临时文件原子替换。
+
+### 生态扫描
+
+- 新增官方 awesome 清单入口；GitHub topic 发现按创建/推送时间递归分片，完整跨越 Search API 的单查询 1,000 条上限。
+- 数据源健康记录增加 `reportedTotal` 与 `truncated`；完整扫描的主发现源失败时，在旧索引上保守合并降级数据。
+- 增量扫描按稳定的 `created` 时间分片并附加 `pushed` 刷新条件，进度输出报告已读取条目与分片页数。
+
+### 审计与安装
+
+- 审计协议升级为 `audit-v3`：manifest、真实入口或 bundle patch 获取失败均按 fail-closed 处理，旧缓存自动失效。
+- 安装公开参数收口为 `target + 完整 commit + userConsent`；风险等级与兼容结论只从同一 `target + commit` 的内容寻址缓存读取。
+- dry-run 使用独立 `PLANNED` 状态，返回 `executed/composed/active` 事实字段。
+- 真实安装增加 profile 快照、装前查重、安装退出码检查、装后组合验证和恢复流程；恢复失败使用独立 `ROLLBACK_FAILED` 状态。
+
+### 发布与文档
+
+- 纳入 `v0.2.0` tag 之后的测试修复与 nightly YAML 修复；既有公开 tag 保持不可变。
+- `deepatlas_find` 与 `deepatlas_advise` 共用 capability 单一事实源，补齐 `messaging-telegram` 与 `web-search`。
+- 中英文 README 采用一致的 Quick Start、完整配置、安全边界、更新卸载与路线图；明确首次完整扫描在受限环境下可能接近 50 分钟。
+- `package.json`、`package-lock.json`、Node engines 与 tag 版本统一；回归基线更新为 22 个测试文件、108 项测试。
 
 ## v0.2.0(2026-08-23)
 

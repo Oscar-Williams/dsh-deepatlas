@@ -41,6 +41,13 @@ describe('InstallPlan 状态机', () => {
     expect(plan.detail).toContain('#2889')
   })
 
+  it('组合验证按实际包名精确匹配,不接受名称子串', () => {
+    let plan = approve(newPlan('a/foo', 'web', 'abc'), gates)
+    expect(checkDuplicate(plan, "  name: 'dsh-foobar'", 'dsh-foo').state).toBe('APPROVED')
+    plan = checkDuplicate(plan, "  name: '@scope/dsh-foo'", '@scope/dsh-foo')
+    expect(plan.state).toBe('REJECTED_DUPLICATE')
+  })
+
   it('非 APPROVED 状态拒绝执行安装', async () => {
     const plan = await install(newPlan('a/x', 'web', 'abc'), false, async () => ({ code: 0, output: '' }))
     expect(plan.state).toBe('RESOLVED')
@@ -50,18 +57,17 @@ describe('InstallPlan 状态机', () => {
   it('dry-run 只生成命令;真实执行失败保留失败证据', async () => {
     let plan = approve(newPlan('a/x', 'web', 'abc'), gates)
     plan = await install(plan, true)
-    expect(plan.state).toBe('INSTALLED')
+    expect(plan.state).toBe('PLANNED')
     expect(plan.installCommand).toContain('dsh plugin --profile web add github:a/x#abc')
     plan = approve(newPlan('a/y', 'web', 'abc'), gates)
     plan = await install(plan, false, async () => ({ code: 1, output: 'ERR_PNPM_FETCH_404 ...' }))
+    expect(plan.state).toBe('FAILED')
     expect(plan.trace.at(-1)?.note).toContain('退出码 1')
   })
 
-  it('组合树未见目标行:COMPOSED 失败回退 INSTALLED', async () => {
+  it('dry-run 不进入组合验证', async () => {
     let plan = approve(newPlan('a/z', 'web', 'abc'), gates)
     plan = await install(plan, true)
-    plan = verifyComposed(plan, '# 其他插件', 'dsh-z')
-    expect(plan.state).toBe('INSTALLED')
-    expect(plan.trace.at(-1)?.note).toContain('COMPOSED 失败')
+    expect(plan.state).toBe('PLANNED')
   })
 })

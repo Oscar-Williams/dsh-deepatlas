@@ -12,10 +12,11 @@ export const WHITELIST_REPOS = [
   'like-study1/oh-my-dsh',
 ]
 
-/** 骨架阶段收录的清单源,P1 扩展为可配置 */
+/** 当前纳入扫描与健康检查的社区清单源。 */
 export const AWESOME_LISTS = [
-  { sourceId: 'awesome-dominic', url: 'https://raw.githubusercontent.com/Dominic789654/awesome-deepseek-harness/main/README.md' },
-  { sourceId: 'awesome-0xsline', url: 'https://raw.githubusercontent.com/0xsline/awesome-deepseek-harness/main/README.md' },
+  { sourceId: 'awesome-dsh-plugin', repo: 'awesome-dsh-plugin/awesome-dsh-plugin', ref: 'main', path: 'README.md' },
+  { sourceId: 'awesome-dominic', repo: 'Dominic789654/awesome-deepseek-harness', ref: 'main', path: 'README.md' },
+  { sourceId: 'awesome-0xsline', repo: '0xsline/awesome-deepseek-harness', ref: 'main', path: 'README.md' },
 ]
 
 const ENTRY = /^\s*[-*]\s*\[([^\]]+)\]\((https:\/\/github\.com\/([^/\s)]+\/[^/\s)]+))\/?\)\s*[—–-]?\s*(.*)$/
@@ -24,15 +25,29 @@ export class AwesomeListSource implements EcosystemSource {
   readonly id = 'awesome-list'
   readonly label = 'awesome 清单(白名单/目录)'
 
-  async *collect(): AsyncGenerator<RawPluginEntry, void, unknown> {
+  async *collect(token?: string, signal?: AbortSignal): AsyncGenerator<RawPluginEntry, void, unknown> {
+    const headers: Record<string, string> = {
+      Accept: 'application/vnd.github.raw+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    }
+    if (token) headers.Authorization = `Bearer ${token}`
+    const failures: string[] = []
     for (const list of AWESOME_LISTS) {
       let body: string
       try {
-        const res = await fetch(list.url)
-        if (!res.ok) continue
+        signal?.throwIfAborted()
+        const file = list.path.split('/').map(encodeURIComponent).join('/')
+        const url = `https://api.github.com/repos/${list.repo}/contents/${file}?ref=${encodeURIComponent(list.ref)}`
+        const res = await fetch(url, { headers, signal })
+        if (!res.ok) {
+          failures.push(`${list.sourceId}:GitHub API ${res.status}`)
+          continue
+        }
         body = await res.text()
-      } catch {
-        continue // 单个清单失败不阻断整体扫描
+      } catch (error) {
+        if (signal?.aborted) throw error
+        failures.push(`${list.sourceId}:${error instanceof Error ? error.message : String(error)}`)
+        continue
       }
       for (const line of body.split('\n')) {
         const m = ENTRY.exec(line)
@@ -50,5 +65,6 @@ export class AwesomeListSource implements EcosystemSource {
         }
       }
     }
+    if (failures.length > 0) throw new Error(`awesome 清单读取不完整:${failures.join('; ')}`)
   }
 }

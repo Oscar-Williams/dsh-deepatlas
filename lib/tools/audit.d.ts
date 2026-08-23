@@ -4,7 +4,7 @@
  */
 import { Context } from '@deepseek-ai/cordis';
 import { DeepAtlasConfig } from '../config.js';
-import { renderJson } from './common.js';
+import { renderJson, type ToolExecutionContext } from './common.js';
 export declare function buildAuditTool(_ctx: Context, config: DeepAtlasConfig): {
     name: string;
     description: string;
@@ -30,39 +30,18 @@ export declare function buildAuditTool(_ctx: Context, config: DeepAtlasConfig): 
     execute(args: {
         target: string;
         commit?: string;
-    }): Promise<{
+    }, execution?: ToolExecutionContext): Promise<{
+        ok: boolean;
+        level: string;
         action: string;
-        provenance: {
-            repository: string;
-            commitPinned: boolean;
-            archived?: boolean;
-            dead?: boolean;
-        };
-        package_: {
-            installScripts: string[];
-            nativeDependencies: string[];
-            dependencyCount: number;
-        };
-        sourceSignals: import("../core/audit-v1.js").SourceSignal[];
-        dependencyAudit: {
-            opaqueDependencies: string[];
-            note: string;
-        };
-        risk: {
-            level: "green" | "yellow" | "red" | "elevated";
-            reasons: string[];
-        };
-        target: string;
-        level: import("../types.js").AuditLevel;
-        findings: import("../types.js").AuditFinding[];
-        scope: string[];
-        commitPinned: boolean;
-        auditedAt: string;
     } | {
         action: string;
-        auditedRef: string;
-        pluginRecord: import("../core/record.js").PluginRecord;
-        compatibility: import("../core/compat.js").CompatibilityResult;
+        auditedRef?: string;
+        compatibility?: {
+            ok: boolean;
+            reasons?: string[];
+        };
+        pluginRecord?: import("../core/record.js").PluginRecord;
         provenance: {
             repository: string;
             commitPinned: boolean;

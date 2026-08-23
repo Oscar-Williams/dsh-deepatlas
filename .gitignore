@@ -4,6 +4,7 @@
 # 发版流程:npm run build → 提交 lib/ → 打 tag。sourcemap 不入库。
 lib/**/*.map
 dist/
+*.tgz
 
 # 依赖
 node_modules/

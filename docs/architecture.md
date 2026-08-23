@@ -1,71 +1,109 @@
-# DeepAtlas 架构设计
+# DeepAtlas 架构
 
-> 本文档描述 P0 骨架的模块划分与数据流,P1–P4 演进在各模块 TODO 中标注。
+DeepAtlas 以 DSH bundle 形式挂载六个工具，将生态发现、检索、审计和安装拆成相互约束的确定性模块。宿主模型负责理解自然语言，所有改变 profile 的动作仍由工具层闸门控制。
 
-## 模块总览
+## 模块图
 
-```
+```text
 src/
-├── index.ts              插件入口(name/inject/Config/apply,注册 5 个工具)
-├── config.ts             schemastery 配置定义(安全默认值:dryRun=true)
-├── cli.ts                独立 CLI(scan/status),不依赖 DSH 运行时
-├── types.ts              共享类型(PluginMeta/QualityScore/AuditReport/...)
+├── index.ts                 DSH 插件入口与六工具注册
+├── config.ts                Schemastery 配置与安全默认值
+├── cli.ts                   独立 scan / status / backfill CLI
+├── types.ts                 索引、风险、推荐与数据源类型
 ├── core/
-│   ├── scanner.ts        M1 编排:多源抓取 → 去重合并 → 白名单标记 → 评分 → 落盘
-│   ├── ranker.ts         M2 纯函数评分:活跃0.35+社区0.25+可信0.25(+匹配0.15预留)
-│   ├── index-store.ts    本地索引 JSON 读写(原子替换、schemaVersion、TTL)
-│   ├── auditor.ts        M4 规则引擎:package.json 快照 → 分级报告
-│   ├── installer.ts      M5 安装闸门:同意+非red+锁commit → 命令生成/执行
-│   └── sources/
-│       ├── types.ts      EcosystemSource 统一接口
-│       ├── github-topic.ts   GitHub search API 分页抓取(速率限制感知)
-│       └── awesome-list.ts   awesome 清单解析(兜底与白名单)
-└── tools/                DSH 工具层(defineTool 定义,参数校验,中文输出)
-    ├── scan.ts           deepatlas_scan / deepatlas_status
-    ├── find.ts           deepatlas_find(关键词预筛,语义排序交给模型)
-    ├── audit.ts          deepatlas_audit(抓 raw package.json)
-    └── install.ts        deepatlas_install(闸门 + dryRun)
+│   ├── scanner.ts           数据源编排、合并、富化、能力证据与落盘
+│   ├── sources/
+│   │   ├── github-topic.ts  时间分片 GitHub Search、分页、限流与取消
+│   │   ├── awesome-list.ts  社区清单发现
+│   │   └── enrich.ts        仓库内容与类型富化
+│   ├── capabilities.ts      28 类 capability 与字段级证据
+│   ├── retrieval.ts         多字段候选检索
+│   ├── ranker.ts            质量与任务匹配评分
+│   ├── audit-v1.ts          静态审计规则模型（报告结构版本）
+│   ├── audit-cache.ts       audit-v3 内容寻址授权缓存
+│   ├── compat.ts            Node/native/build 兼容检查
+│   ├── installplan.ts       安装与恢复状态机
+│   ├── rollback.ts          profile 快照、恢复与清理
+│   ├── dsh-cli.ts           当前 launcher 复用与跨平台 fallback
+│   └── index-store.ts       原子索引持久化与 TTL
+└── tools/
+    ├── scan.ts              deepatlas_scan / deepatlas_status
+    ├── find.ts              deepatlas_find
+    ├── advise.ts            deepatlas_advise
+    ├── audit.ts             deepatlas_audit
+    ├── install.ts           deepatlas_install
+    └── common.ts            DSH lossless JSON 输出边界
 ```
 
-## 关键设计决策
+## 生态索引
 
-### 1. 检索与语义排序分离
-`deepatlas_find` 只做确定性关键词预筛(中英混合分词:英文按词、中文 2-gram),
-返回候选元数据;语义匹配、重叠对比、推荐理由由 DSH 自身模型完成。
-**不引入外部 ML 服务**——生态变化快,模型判断随 DSH 升级自动升级。
+完整扫描以 `topic:dsh-plugin` 为主发现入口。GitHub Search 每个查询最多开放 1,000 条结果，因此数据源从 GitHub 仓库时代起点到当前时间递归切分稳定的 `created` 区间，直到每个分片都可完整分页。增量扫描沿用该创建时间分片，并附加 `pushed:>上次构建时间` 过滤条件。
 
-### 2. 质量分为纯函数
-`ranker.ts` 全部纯函数(时间基准可注入),测试覆盖单调性;
-评分权重集中在模块头注释,校准只改一处。
+扫描器按规范仓库 ID 去重，将 awesome 清单作为补充来源，再对高质量候选读取仓库内容完成类型富化。索引写入前生成 capability evidence 和质量分。每个来源记录抓取模式、条目数、上游报告总数、截断状态和错误信息。
 
-### 3. 审计与安装强隔离
-`installer.planInstall()` 不信任调用方:即使工具层传错,
-闸门仍独立校验 userConsent / audit.level / commit 三条件。
-红色风险的拒绝理由必须包含触发的规则名(可解释性)。
+数据完整性规则：
 
-### 4. 索引原子写与版本化
-`IndexStore.save` 走 tmp+rename 原子替换;`schemaVersion` 不符视为需重建,
-避免旧结构索引被新代码误读。
+- `AbortSignal` 贯穿工具、扫描器、fetch、退避与富化流程。
+- 主发现源异常时，完整扫描在旧索引上保守合并社区来源。
+- 临时文件带 PID 与 UUID，完成写入后原子替换正式索引。
+- schema 版本变化会触发重建，避免新代码读取旧结构。
 
-## 数据流(安装闭环)
+## 任务理解与检索
 
-```
-用户:"帮我接入微信并监控用量"
-  → 模型调 deepatlas_find(need)
-  → 预筛候选(含 quality 分解、重叠提示、安装预览)
-  → 模型语义排序,渲染推荐卡片,征询用户
-  → 用户选定 → deepatlas_audit(target)
-  → 报告(绿/黄/红 + 证据)展示给用户 → 用户显式同意
-  → deepatlas_install(target, commit, auditLevel, userConsent)
-  → 闸门放行 → [P3 真实执行] dsh plugin --profile X add github:owner/repo#commit
-  → 提示重启 → 反馈记录(P4)
+```text
+自然语言任务
+   ├── 静态 capability 抽取
+   └── DSH 宿主模型提供受 enum 约束的 capability
+                    │
+                    ▼
+          capability 并集 + 字段级证据
+                    │
+                    ▼
+        候选预筛 → 任务分 → 质量分 → Top N
 ```
 
-## P1–P4 演进要点
+模型输出只进入规范 capability 通道。候选资格、实体 kind、权重、质量信号与安装预览都由本地代码计算。`deepatlas_advise` 读取当前 profile 的组合树，将已装插件 ID 与索引中的 `capsEv` 精确关联，在能力已覆盖时返回 silent。
 
-- **P1**:github-topic 全量分页(约 80 页/7800 仓库)与 `since` 增量;
-  provides 字段真实抽取(读仓库文件清单判定 bundle/cordis/skill);
-- **P2**:find 返回重叠对比的结构化数据;质量分权重配置化;
-- **P3**:installer 真实执行(execFile + 输出捕获);auditor 扩展源码树扫描
-  (child_process 引用、fs 写范围、env 读取)与 npm audit;
-- **P4**:反馈日志(feedback.json)→ 同类降权;UserPromptSubmit 事件驱动的主动推荐。
+## 审计授权
+
+`deepatlas_audit` 接收规范 `owner/repo` 与完整 40 位 commit SHA。它在该 commit 上获取 manifest 与静态源码信号，生成风险报告和运行时兼容结论。
+
+成功结果以以下键写入缓存：
+
+```text
+sha256(owner/repo#commit | audit-v3)
+```
+
+`deepatlas_install` 的公共参数只有 `target`、`commit` 与 `userConsent`。安装器使用同一 `target + commit` 读取缓存，直接采用缓存中的风险等级和兼容结论。manifest 获取失败、缓存缺失、红色风险、兼容冲突与缺少用户确认都会阻断状态机。
+
+## 安装状态机
+
+```text
+RESOLVED
+   │ 审计缓存 / 兼容性 / 用户确认
+   ▼
+APPROVED ── dryRun ──→ PLANNED
+   │
+   │ 快照 + dsh plugin add
+   ▼
+INSTALLED
+   │ dump-config 组合验证
+   ▼
+COMPOSED ── 外部启动验证 ──→ BOOT_VERIFIED ──→ ACTIVE
+   │
+   └── 执行或验证失败 → FAILED → ROLLING_BACK
+                                      ├──→ ROLLED_BACK
+                                      └──→ ROLLBACK_FAILED
+```
+
+同一 profile 已存在目标行时进入 `REJECTED_DUPLICATE`。真实执行只通过当前 DSH launcher 或经过参数约束的系统 fallback 完成。工具返回 `dryRun`、`executed`、`composed` 与 `active`，让调用方按事实呈现当前阶段。
+
+## DSH 生命周期边界
+
+Web profile 运行中的插件无法在同一端口内重启宿主，因此工具内完成到 `COMPOSED`。用户重启对应 profile 后，外部分发 E2E 负责验证启动与工具注册。公开版本的 CI 同时覆盖 Windows、Node 22/24、tarball 安装、GitHub commit 安装和启动冒烟。
+
+## 下一阶段
+
+- **HostIntentGate**：冻结自然语言改写集，通过真实 DSH 会话捕获模型提交的 capability 参数，输出逐意图准确率、稳定率、混淆矩阵、覆盖率与误报。
+- **Evidence v2**：将 capability 证据扩展为来源可追踪、置信度可校准、字段冲突可解释的索引结构，并提供迁移与回归 Gate。
+- **DSH canary**：每个新 RC 自动执行依赖解析、配置组合、六工具 smoke、Windows/Linux 安装与回滚验证。

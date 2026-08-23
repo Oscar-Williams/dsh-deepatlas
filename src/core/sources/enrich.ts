@@ -22,23 +22,31 @@ interface GhContent {
   type: 'file' | 'dir'
 }
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+const sleep = (ms: number, signal?: AbortSignal) => new Promise<void>((resolve, reject) => {
+  if (signal?.aborted) return reject(signal.reason ?? new DOMException('Aborted', 'AbortError'))
+  const timer = setTimeout(resolve, ms)
+  signal?.addEventListener('abort', () => {
+    clearTimeout(timer)
+    reject(signal.reason ?? new DOMException('Aborted', 'AbortError'))
+  }, { once: true })
+})
 
 export async function enrichType(
   repoId: string,
   token?: string,
-  signal?: { aborted: boolean },
+  signal?: AbortSignal,
 ): Promise<EnrichResult | null> {
-  if (signal?.aborted) return null
+  signal?.throwIfAborted()
   const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
   if (token) headers.Authorization = `Bearer ${token}`
 
   let contents: GhContent[]
   try {
-    const res = await fetch(`${API}/repos/${repoId}/contents`, { headers })
+    const res = await fetch(`${API}/repos/${repoId}/contents`, { headers, signal })
     if (!res.ok) return null
     contents = (await res.json()) as GhContent[]
-  } catch {
+  } catch (error) {
+    if (signal?.aborted) throw error
     return null
   }
 
@@ -48,13 +56,14 @@ export async function enrichType(
   }
   if (names.has('package.json')) {
     try {
-      const pkg = (await (await fetch(`https://raw.githubusercontent.com/${repoId}/HEAD/package.json`)).json()) as {
+      const pkg = (await (await fetch(`https://raw.githubusercontent.com/${repoId}/HEAD/package.json`, { signal })).json()) as {
         dsh?: unknown
       }
       if (pkg && typeof pkg === 'object' && 'dsh' in pkg) {
         return { type: 'cordis', evidence: 'package.json 声明 dsh 字段' }
       }
-    } catch {
+    } catch (error) {
+      if (signal?.aborted) throw error
       /* package.json 读取失败按 unknown 处理 */
     }
   }
@@ -66,13 +75,15 @@ export async function enrichTopN(
   repoIds: string[],
   token?: string,
   onProgress?: (done: number) => void,
+  signal?: AbortSignal,
 ): Promise<Map<string, EnrichResult>> {
   const out = new Map<string, EnrichResult>()
   for (let i = 0; i < repoIds.length; i++) {
-    const r = await enrichType(repoIds[i], token)
+    signal?.throwIfAborted()
+    const r = await enrichType(repoIds[i], token, signal)
     if (r) out.set(repoIds[i], r)
     onProgress?.(i + 1)
-    await sleep(350) // contents API 未认证限额 60/h,认证 5000/h;保守节流
+    await sleep(350, signal) // contents API 未认证限额 60/h,认证 5000/h;保守节流
   }
   return out
 }
