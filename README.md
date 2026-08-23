@@ -34,7 +34,7 @@ DeepAtlas 把"人肉逛 topic + 看帖子推荐 + 手动装"变成一条闭环:*
 前提:已能运行 DSH(`npx @deepseek-ai/dsh web` 可用)。
 
 ```bash
-dsh plugin --profile <你的profile> add github:Oscar-Williams/dsh-deepatlas#v0.1.1
+dsh plugin --profile <你的profile> add github:Oscar-Williams/dsh-deepatlas#v0.2.0
 ```
 
 装完**重启 dsh web**(刷新页面),六个 `deepatlas_*` 工具就位。

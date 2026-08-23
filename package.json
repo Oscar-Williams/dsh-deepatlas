@@ -1,6 +1,6 @@
 {
   "name": "dsh-deepatlas",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "DeepAtlas(dsh-插件导航)— task-aware plugin navigator for DeepSeek Harness: scans the dsh-plugin ecosystem, recommends plugins for the current task, audits for safety, and installs only with explicit user consent. 任务感知的 DSH 插件导航:扫描生态、按任务推荐、安全审计、授权安装。",
   "type": "module",
   "main": "./lib/index.js",

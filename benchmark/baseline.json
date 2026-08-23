@@ -1,5 +1,5 @@
 {
-  "frozenAt": "2026-08-23T07:16:01.801Z",
+  "frozenAt": "2026-08-23T07:29:34.917Z",
   "metrics": {
     "set": "dev",
     "tasks": 30,
@@ -27,7 +27,7 @@
       "远程": "1/2",
       "自动化": "3/3"
     },
-    "gate_P4": "PASS"
+    "gate_RetrievalDev": "PASS"
   },
   "rows": [
     {

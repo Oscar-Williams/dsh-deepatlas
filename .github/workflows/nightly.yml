@@ -1,0 +1,45 @@
+name: nightly
+# 每日(北京时间 03:00)或手动触发:真实 github:#SHA 分发 E2E(双平台)
+# 这是最高保真的分发验证——与用户安装路径 100% 同构(评审第六/九轮)。
+on:
+  schedule:
+    - cron: '0 19 * * *'
+  workflow_dispatch:
+
+jobs:
+  github-sha-e2e:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 安装 dsh 与 pnpm
+        run: npm i -g pnpm @deepseek-ai/dsh --no-fund --no-audit
+      - name: 全新 DSH_HOME 从 GitHub 锁定 SHA 安装
+        shell: bash
+        run: |
+          export DSH_HOME="$(mktemp -d)"
+          echo "DSH_HOME=$DSH_HOME" >> "$GITHUB_ENV"
+          SHA="${{ github.sha }}"
+          dsh plugin --profile web add "github:Oscar-Williams/dsh-deepatlas#$SHA"
+      - name: 组合验证
+        shell: bash
+        run: |
+          dsh --profile web --dump-config | tee dump.yml
+          grep -A2 "== dsh-deepatlas" dump.yml
+      - name: 启动冒烟(HTTP 200)
+        shell: bash
+        run: |
+          (dsh web --port 3090 --no-open > boot.log 2>&1 &)
+          for i in $(seq 1 24); do
+            sleep 5
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://127.0.0.1:3090 || true)
+            if [ "$code" = "200" ]; then echo "t=$((i*5))s HTTP 200 — nightly github:#SHA E2E PASS"; exit 0; fi
+          done
+          echo "::error::boot smoke failed"; tail -30 boot.log; exit 1

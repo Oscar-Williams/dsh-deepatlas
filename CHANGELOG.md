@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.0-rc(开发中,main)
+## v0.2.0(2026-08-23)
 
 ### Retrieval v3:TaskIntent 混合归一 + 能力证据
 - `deepatlas_find`/`deepatlas_advise` 新增 `capabilities` 参数(28 规范 ID):

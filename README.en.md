@@ -20,7 +20,7 @@ DeepAtlas is a task-aware plugin navigator for [DeepSeek Harness](https://github
 ## Install
 
 ```bash
-dsh plugin --profile <profile> add github:Oscar-Williams/dsh-deepatlas#v0.1.1
+dsh plugin --profile <profile> add github:Oscar-Williams/dsh-deepatlas#v0.2.0
 ```
 
 Restart `dsh web` afterwards. Six tools are registered: `deepatlas_scan / status / find / audit / install / advise`.
