@@ -1,0 +1,21 @@
+{
+  "version": "holdout-v1",
+  "note": "独立留出集:算法冻结前不得依据其结果调参。任务措辞刻意避开 golden 用词(同义改写),一次评测一次报告。",
+  "tasks": [
+    { "id": "h01", "category": "消息平台", "need": "想让 agent 在 telegram 上回消息", "expectedStrong": [], "expectedAcceptable": ["hi-wenw/dsh-telegram-channel"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h02", "category": "记忆", "need": "每次重开会话都要重新交代背景,烦", "expectedStrong": ["csyangwen/dsh-memory-evolve", "dsh-external/dsh-memory-evolve"], "expectedAcceptable": ["memtensor/memos"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h03", "category": "浏览器", "need": "自动去网页上抓价格并截图存证", "expectedStrong": ["dsh-external/dsh-browser", "lum1104/dsh-browser"], "expectedAcceptable": ["johnxu22786/browser-automation"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h04", "category": "Token优化", "need": "账单越来越贵,想看看每次对话烧了多少", "expectedStrong": ["javis603/token-monitor"], "expectedAcceptable": ["sev7een/ds-api-usage", "han-1413141/dsh-cost-meter"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h05", "category": "UI美化", "need": "默认界面太素,换个好看的外观", "expectedStrong": ["nagi-ovo/voyager"], "expectedAcceptable": ["zhu1090093659/dsh-web-ui"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h06", "category": "终端", "need": "不想开浏览器,纯命令行里用", "expectedStrong": ["ccch1mneyyy/dsh-tui", "lqhl/dsh-pi-tui"], "expectedAcceptable": ["xmoon/dsh-pi-tui", "boxeryao/dsh-mini-tui"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h07", "category": "Git", "need": "在界面里直接看分支图和提交记录", "expectedStrong": ["whiteplusms/dsh-git-graph"], "expectedAcceptable": ["dsh-external/dsh-better-sidebar", "zhu1090093659/dsh-web-ui"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h08", "category": "数据库", "need": "让模型直接帮我写 SQL 查生产库", "expectedStrong": ["dsh-external/dsh-data-agent", "omdsh-dev/dsh-data-agent"], "expectedAcceptable": [], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h09", "category": "图片", "need": "发张照片给它,能看懂图里内容", "expectedStrong": ["ysr666/dsh-vision-router"], "expectedAcceptable": ["anionex/dsh-vision-toolkit", "linenxi-ctrl/dsh-vision"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h10", "category": "远程", "need": "让它登到我的服务器上部署服务", "expectedStrong": ["dsh-ssh/dsh-ssh"], "expectedAcceptable": ["flymysql/dsh-remote", "jmcc-guo/dsh-ssh"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h11", "category": "自动化", "need": "每天早上自动跑一遍巡检脚本", "expectedStrong": ["titanwings/dsh-automation"], "expectedAcceptable": [], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h12", "category": "自动化", "need": "怕配置弄丢,定期存一份到网盘", "expectedStrong": ["xiaoyuyu6420/dsh-backup"], "expectedAcceptable": ["xiajiajun516/dsh-config-manager"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h13", "category": "消息平台", "need": "公司用企业微信办公,把 agent 挂上去", "expectedStrong": ["fryghost/deepseek-harness-wecom-plus"], "expectedAcceptable": ["xmanrui/dsh-im"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h14", "category": "上下文", "need": "长对话后期质量下降,想压缩历史消息", "expectedStrong": ["bowenliang123/dsh-context"], "expectedAcceptable": [], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] },
+    { "id": "h15", "category": "知识库", "need": "把我的文档建成向量库供检索", "expectedStrong": ["memtensor/memos"], "expectedAcceptable": ["modusensus/dsh-mneme"], "mustNotRecommend": ["deepseek-ai/deepseek-harness"] }
+  ]
+}

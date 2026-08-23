@@ -1,0 +1,474 @@
+{
+  "frozenAt": "2026-08-23T06:45:32.305Z",
+  "metrics": {
+    "set": "holdout",
+    "tasks": 15,
+    "candidateRecallAt20": 0.4,
+    "top1HitRate": 0.2,
+    "top3StrongRate": 0.133,
+    "top3StrongOrAcceptable": 0.267,
+    "mustNotAt3": 0,
+    "nonInstallableAt3": 0,
+    "failClass": {
+      "recall": 0,
+      "filter": 9,
+      "rank": 4
+    },
+    "byCategory": {
+      "消息平台": "0/2",
+      "记忆": "0/1",
+      "浏览器": "0/1",
+      "Token优化": "0/1",
+      "UI美化": "0/1",
+      "终端": "0/1",
+      "Git": "0/1",
+      "数据库": "1/1",
+      "图片": "0/1",
+      "远程": "0/1",
+      "自动化": "0/2",
+      "上下文": "1/1",
+      "知识库": "0/1"
+    },
+    "gate_P4": "FAIL"
+  },
+  "rows": [
+    {
+      "id": "h01",
+      "category": "消息平台",
+      "need": "想让 agent 在 telegram 上回消息",
+      "top3": [
+        "firstintent/ccteam",
+        "hi-wenw/dsh-telegram-channel",
+        "xqicxx/dsh-telegram"
+      ],
+      "ids20": [
+        "firstintent/ccteam",
+        "hi-wenw/dsh-telegram-channel",
+        "xqicxx/dsh-telegram",
+        "emiliagarfield6-bot/dsh-telegram-notify",
+        "citedy/dsh-telegram-bot",
+        "xmanrui/dsh-im",
+        "zhuiyueya/dsh-im-gateway",
+        "nanmicoder/dsh-agent-teams",
+        "threebody6666/dsh-im-hub",
+        "congchuanling-dot/dsh-telegram-relay",
+        "toolclub/dsh-agent-team-gui",
+        "hewzhew/dsh-agent-rp",
+        "omdsh-dev/dsh-data-agent",
+        "dsh-external/dsh-better-sidebar",
+        "jxame/dsh-telegram-bridge",
+        "gum97/dsh-telegram",
+        "winada82/dsh-telegram-bridge",
+        "dbydd/dsh-onlyne",
+        "dsh-external/telegram",
+        "agents-universe/agents-universe"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": true,
+      "in20": true,
+      "violated": false,
+      "failure": "rank",
+      "expected": [
+        "hi-wenw/dsh-telegram-channel"
+      ]
+    },
+    {
+      "id": "h02",
+      "category": "记忆",
+      "need": "每次重开会话都要重新交代背景,烦",
+      "top3": [
+        "z-col/dsh-workspace-groups"
+      ],
+      "ids20": [
+        "z-col/dsh-workspace-groups"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "csyangwen/dsh-memory-evolve",
+        "dsh-external/dsh-memory-evolve",
+        "memtensor/memos"
+      ]
+    },
+    {
+      "id": "h03",
+      "category": "浏览器",
+      "need": "自动去网页上抓价格并截图存证",
+      "top3": [
+        "anionex/dsh-vision-toolkit",
+        "loongsuite/dsh-plugin",
+        "linenxi-ctrl/dsh-vision"
+      ],
+      "ids20": [
+        "anionex/dsh-vision-toolkit",
+        "loongsuite/dsh-plugin",
+        "linenxi-ctrl/dsh-vision",
+        "fakechris/dsh-track",
+        "junnanlys/dsh-layered-memory",
+        "perrylink/dsh-observe",
+        "263311487-ux/dsh-verify",
+        "elementor-i/dsh-agentmemory",
+        "microherox/dsh-kimi-webbridge",
+        "omdsh-dev/dsh-tool-regex",
+        "tinypanda168/specsrelay-dsh",
+        "zhouzhencheng07/dsh-memory",
+        "pangyiming/dsh-screenshot-diff",
+        "skepsun/dsh-loom",
+        "johnxu22786/computer-control",
+        "moeblack/dsh-payload-capture",
+        "wuliliuyue/wxpilot",
+        "lijiajia96/dsh-tool-adb",
+        "menotbobbybrown/dsh-plugin-browser"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "dsh-external/dsh-browser",
+        "lum1104/dsh-browser",
+        "johnxu22786/browser-automation"
+      ]
+    },
+    {
+      "id": "h04",
+      "category": "Token优化",
+      "need": "账单越来越贵,想看看每次对话烧了多少",
+      "top3": [],
+      "ids20": [],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "javis603/token-monitor",
+        "sev7een/ds-api-usage",
+        "han-1413141/dsh-cost-meter"
+      ]
+    },
+    {
+      "id": "h05",
+      "category": "UI美化",
+      "need": "默认界面太素,换个好看的外观",
+      "top3": [],
+      "ids20": [],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "nagi-ovo/voyager",
+        "zhu1090093659/dsh-web-ui"
+      ]
+    },
+    {
+      "id": "h06",
+      "category": "终端",
+      "need": "不想开浏览器,纯命令行里用",
+      "top3": [
+        "dsh-external/dsh-better-sidebar",
+        "ccq1/dsh-side-panel",
+        "dsh-external/dsh-browser"
+      ],
+      "ids20": [
+        "dsh-external/dsh-better-sidebar",
+        "ccq1/dsh-side-panel",
+        "dsh-external/dsh-browser",
+        "esengine/deepseek-reasonix",
+        "omdsh-dev/dsh-better-sidebar",
+        "ccch1mneyyy/dsh-cc-tui",
+        "chuspeeism/dashi-taskboard",
+        "ccch1mneyyy/dsh-tui",
+        "wtstarmark/dsh-qaq",
+        "lum1104/dsh-browser",
+        "firstintent/ccteam",
+        "openma-ai/deepseek-harness-tui",
+        "flashingchen/dsh-desktop-hub",
+        "huiliyi37/dsh-tianshu-tui",
+        "chen7712369/dsh-web-launcher",
+        "fleetingecho/dsh-powerdesk",
+        "ruler4396/dsh-launcher",
+        "anweat/dsh-web-search-pro",
+        "hsiangnianian/dsh-auto-continue",
+        "saya-ch/dsh-mobile"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": true,
+      "violated": false,
+      "failure": "rank",
+      "expected": [
+        "ccch1mneyyy/dsh-tui",
+        "lqhl/dsh-pi-tui",
+        "xmoon/dsh-pi-tui",
+        "boxeryao/dsh-mini-tui"
+      ]
+    },
+    {
+      "id": "h07",
+      "category": "Git",
+      "need": "在界面里直接看分支图和提交记录",
+      "top3": [],
+      "ids20": [],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "whiteplusms/dsh-git-graph",
+        "dsh-external/dsh-better-sidebar",
+        "zhu1090093659/dsh-web-ui"
+      ]
+    },
+    {
+      "id": "h08",
+      "category": "数据库",
+      "need": "让模型直接帮我写 SQL 查生产库",
+      "top3": [
+        "dsh-external/dsh-data-agent",
+        "perrylink/dsh-memento",
+        "omdsh-dev/dsh-data-agent"
+      ],
+      "ids20": [
+        "dsh-external/dsh-data-agent",
+        "perrylink/dsh-memento",
+        "omdsh-dev/dsh-data-agent",
+        "anweat/dsh-web-search-pro",
+        "modusensus/dsh-mneme",
+        "phant0meow/dsh-meow-memory",
+        "git121995/dsh-memory-gate",
+        "dsh-external/dsh-kb-sieve",
+        "zhijiangtang/dsh-fmt",
+        "git121995/dsh-memory-cbdc-plugin",
+        "xiaohj233/dsh-magic-context",
+        "duyanta123/dsh-data-insight",
+        "zeromadlife/boss-watch-agent",
+        "hanloney/codexshift",
+        "chenmo0414/openanalyst",
+        "songyuhui14/dsh-code-vetter",
+        "johnxu22786/codegraph",
+        "wang-lin-chang/schedule-core",
+        "morlay/session-persistence-rdb",
+        "coprexist/dsh-session-recovery"
+      ],
+      "ok1": true,
+      "ok3": true,
+      "ok3sa": true,
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "dsh-external/dsh-data-agent",
+        "omdsh-dev/dsh-data-agent"
+      ]
+    },
+    {
+      "id": "h09",
+      "category": "图片",
+      "need": "发张照片给它,能看懂图里内容",
+      "top3": [],
+      "ids20": [],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "ysr666/dsh-vision-router",
+        "anionex/dsh-vision-toolkit",
+        "linenxi-ctrl/dsh-vision"
+      ]
+    },
+    {
+      "id": "h10",
+      "category": "远程",
+      "need": "让它登到我的服务器上部署服务",
+      "top3": [],
+      "ids20": [],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "dsh-ssh/dsh-ssh",
+        "flymysql/dsh-remote",
+        "jmcc-guo/dsh-ssh"
+      ]
+    },
+    {
+      "id": "h11",
+      "category": "自动化",
+      "need": "每天早上自动跑一遍巡检脚本",
+      "top3": [],
+      "ids20": [],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "titanwings/dsh-automation"
+      ]
+    },
+    {
+      "id": "h12",
+      "category": "自动化",
+      "need": "怕配置弄丢,定期存一份到网盘",
+      "top3": [],
+      "ids20": [],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": false,
+      "violated": false,
+      "failure": "filter",
+      "expected": [
+        "xiaoyuyu6420/dsh-backup",
+        "xiajiajun516/dsh-config-manager"
+      ]
+    },
+    {
+      "id": "h13",
+      "category": "消息平台",
+      "need": "公司用企业微信办公,把 agent 挂上去",
+      "top3": [
+        "nanmicoder/dsh-agent-teams",
+        "toolclub/dsh-agent-team-gui",
+        "hewzhew/dsh-agent-rp"
+      ],
+      "ids20": [
+        "nanmicoder/dsh-agent-teams",
+        "toolclub/dsh-agent-team-gui",
+        "hewzhew/dsh-agent-rp",
+        "omdsh-dev/dsh-data-agent",
+        "dsh-external/dsh-better-sidebar",
+        "xmanrui/dsh-im",
+        "zhuiyueya/dsh-im-gateway",
+        "agents-universe/agents-universe",
+        "threebody6666/dsh-im-hub",
+        "mhfire/dsh-im-bridge",
+        "dsh-external/dsh-data-agent",
+        "zhoushoujianwork/easyeda-agent",
+        "esengine/deepseek-reasonix",
+        "memtensor/memos",
+        "edison7009/echobird",
+        "liustack/modlens",
+        "tt-a1i/archify",
+        "whiteguo233/openbiliclaw",
+        "omdsh-dev/dsh-better-sidebar",
+        "wssfk12138/dsh-wechat-notify"
+      ],
+      "ok1": false,
+      "ok3": false,
+      "ok3sa": false,
+      "in20": true,
+      "violated": false,
+      "failure": "rank",
+      "expected": [
+        "fryghost/deepseek-harness-wecom-plus",
+        "xmanrui/dsh-im"
+      ]
+    },
+    {
+      "id": "h14",
+      "category": "上下文",
+      "need": "长对话后期质量下降,想压缩历史消息",
+      "top3": [
+        "bowenliang123/dsh-context",
+        "ccch1mneyyy/dsh-cc-tui",
+        "ccch1mneyyy/dsh-tui"
+      ],
+      "ids20": [
+        "bowenliang123/dsh-context",
+        "ccch1mneyyy/dsh-cc-tui",
+        "ccch1mneyyy/dsh-tui",
+        "lixxx1/dsh-vscode",
+        "dream12347/dsh-session-manager",
+        "deeptrial/dsh-bash-rtk",
+        "tyan66666/billion-context-dsh",
+        "raullenchai/rapid-mlx-dsh-provider",
+        "lilyblessing/dsh-mcp-skill-panel",
+        "pk7j7sqryy-ops/dsh-token-pet",
+        "semidia/dsh-session-manager",
+        "yj060464-commits/dsh-chat-tools",
+        "dsh-external/dsh-slice-agent-loop",
+        "gooodwei/context-vista",
+        "baihejiangnan/dsh-session-context-menu",
+        "rainow/dsh-simple-wiki-memory",
+        "helloxkk/dsh-scope",
+        "lifeodyssey/dsh-compressor",
+        "kitdoesit/dsh-compaction-instant",
+        "juhe291/dsh-token-panel"
+      ],
+      "ok1": true,
+      "ok3": true,
+      "ok3sa": true,
+      "in20": true,
+      "violated": false,
+      "failure": null,
+      "expected": [
+        "bowenliang123/dsh-context"
+      ]
+    },
+    {
+      "id": "h15",
+      "category": "知识库",
+      "need": "把我的文档建成向量库供检索",
+      "top3": [
+        "modusensus/dsh-mneme",
+        "perrylink/dsh-plugin-guide",
+        "xiehuan123/dsh-deepread"
+      ],
+      "ids20": [
+        "modusensus/dsh-mneme",
+        "perrylink/dsh-plugin-guide",
+        "xiehuan123/dsh-deepread",
+        "yauntyour/dsh-for-vsc",
+        "1na-ko/dsh-hdc-bridge",
+        "laplaceyoung/dsh-directorx",
+        "jiayan-xu/dsh-memoria",
+        "dsh-external/dsh-kb-sieve",
+        "jasen215/dsh-continual-harness",
+        "breeze136/dsh-kb-rag",
+        "wly8691-jpg/knowlp-rag",
+        "eternalnight996/dsh-memory-eternal",
+        "cwbcheng/dsh-knowledge-graph",
+        "zsxh1990/pr-genius",
+        "piccolo123/url-manager",
+        "jingmox/learner-preset",
+        "lemoncat7/dsh-knowledge",
+        "lion-1209/dsh-plugin-wiki-skills",
+        "pasumao/dsh-plugin-dev-kb",
+        "haoyueqin/dsh-better-reasoning-effort"
+      ],
+      "ok1": true,
+      "ok3": false,
+      "ok3sa": true,
+      "in20": true,
+      "violated": false,
+      "failure": "rank",
+      "expected": [
+        "memtensor/memos",
+        "modusensus/dsh-mneme"
+      ]
+    }
+  ]
+}

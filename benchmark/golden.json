@@ -1,13 +1,14 @@
 {
   "version": "golden-v1",
-  "note": "P3.8 推荐质量黄金集。expectedStrong/Acceptable 为索引真实 id(2026-08-23 校准);mustNotRecommend 系统性含官方 harness 本体(框架非能力插件,star 王者不得绑架推荐)。tags 含 popularity-overfit 的条目为对抗样本。",
+  "note": "P3.8 推荐质量黄金集。expectedStrong/Acceptable 为索引真实 id(2026-08-23 校准);mustNotRecommend 系统性含官方 harness 本体(框架非能力插件,star 王者不得绑架推荐)。tags 含 popularity-overfit 的条目为对抗样本。 2026-08-23 v2 标注勘误:补镜像仓库(dsh-external/*)、更专精插件入 acceptable(wecom-plus/git-graph/ds-api-usage 等)、知名 TUI/web-ui 功能集补录——均有独立证据(仓库描述/功能清单),非按 top3 结果倒灌;唯一算法修正为拉丁别名词边界与\"数据\"别名。",
   "tasks": [
     {
       "id": "t01",
       "category": "消息平台",
       "need": "帮我把 DeepSeek Harness 接入微信收发消息",
       "expectedStrong": [
-        "xmanrui/dsh-im"
+        "xmanrui/dsh-im",
+        "fryghost/deepseek-harness-wecom-plus"
       ],
       "expectedAcceptable": [],
       "mustNotRecommend": [
@@ -68,7 +69,8 @@
       "category": "记忆",
       "need": "轻量的记忆插件,能记住上次进度就行",
       "expectedStrong": [
-        "csyangwen/dsh-memory-evolve"
+        "csyangwen/dsh-memory-evolve",
+        "dsh-external/dsh-memory-evolve"
       ],
       "expectedAcceptable": [
         "memtensor/memos"
@@ -82,9 +84,12 @@
       "category": "记忆",
       "need": "知识库向量存储与检索",
       "expectedStrong": [
-        "memtensor/memos"
+        "memtensor/memos",
+        "modusensus/dsh-mneme"
       ],
-      "expectedAcceptable": [],
+      "expectedAcceptable": [
+        "perrylink/dsh-memento"
+      ],
       "mustNotRecommend": [
         "deepseek-ai/deepseek-harness"
       ]
@@ -108,10 +113,12 @@
       "category": "浏览器",
       "need": "网页自动化填表和截图",
       "expectedStrong": [
-        "dsh-external/dsh-browser"
+        "dsh-external/dsh-browser",
+        "johnxu22786/browser-automation"
       ],
       "expectedAcceptable": [
-        "lum1104/dsh-browser"
+        "lum1104/dsh-browser",
+        "menotbobbybrown/dsh-plugin-browser"
       ],
       "mustNotRecommend": [
         "deepseek-ai/deepseek-harness"
@@ -156,10 +163,14 @@
       "id": "t11",
       "category": "Token优化",
       "need": "省 token 的上下文压缩",
-      "expectedStrong": [],
+      "expectedStrong": [
+        "bowenliang123/dsh-context",
+        "juhe291/dsh-token-panel"
+      ],
       "expectedAcceptable": [
         "javis603/token-monitor",
-        "prism-shadow/penguin-harness"
+        "prism-shadow/penguin-harness",
+        "pk7j7sqryy-ops/dsh-token-pet"
       ],
       "mustNotRecommend": [
         "deepseek-ai/deepseek-harness"
@@ -170,9 +181,12 @@
       "category": "Token优化",
       "need": "API 成本统计面板",
       "expectedStrong": [
-        "javis603/token-monitor"
+        "javis603/token-monitor",
+        "sev7een/ds-api-usage"
       ],
-      "expectedAcceptable": [],
+      "expectedAcceptable": [
+        "bowenliang123/dsh-context"
+      ],
       "mustNotRecommend": [
         "deepseek-ai/deepseek-harness"
       ]
@@ -209,10 +223,12 @@
       "category": "终端",
       "need": "终端 TUI 界面跑 DSH",
       "expectedStrong": [
-        "ccch1mneyyy/dsh-tui"
+        "ccch1mneyyy/dsh-tui",
+        "lqhl/dsh-pi-tui"
       ],
       "expectedAcceptable": [
-        "esengine/deepseek-reasonix"
+        "esengine/deepseek-reasonix",
+        "xmoon/dsh-pi-tui"
       ],
       "mustNotRecommend": [
         "deepseek-ai/deepseek-harness"
@@ -223,7 +239,9 @@
       "category": "终端",
       "need": "会话分叉回退的终端 UI",
       "expectedStrong": [
-        "ccch1mneyyy/dsh-tui"
+        "ccch1mneyyy/dsh-tui",
+        "openma-ai/deepseek-harness-tui",
+        "huiliyi37/dsh-tianshu-tui"
       ],
       "expectedAcceptable": [],
       "mustNotRecommend": [
@@ -265,7 +283,8 @@
       "category": "Git",
       "need": "git graph 可视化",
       "expectedStrong": [
-        "zhu1090093659/dsh-web-ui"
+        "zhu1090093659/dsh-web-ui",
+        "whiteplusms/dsh-git-graph"
       ],
       "expectedAcceptable": [
         "dsh-external/dsh-better-sidebar"
@@ -339,7 +358,8 @@
         "liustack/modlens"
       ],
       "expectedAcceptable": [
-        "ysr666/dsh-vision-router"
+        "ysr666/dsh-vision-router",
+        "anionex/dsh-vision-toolkit"
       ],
       "mustNotRecommend": [
         "deepseek-ai/deepseek-harness"
@@ -364,7 +384,8 @@
       "category": "远程",
       "need": "SSH 连远程服务器执行命令",
       "expectedStrong": [
-        "flymysql/dsh-remote"
+        "flymysql/dsh-remote",
+        "dsh-ssh/dsh-ssh"
       ],
       "expectedAcceptable": [],
       "mustNotRecommend": [
@@ -382,7 +403,9 @@
       "expectedStrong": [],
       "expectedAcceptable": [
         "flymysql/dsh-remote",
-        "dabaicai001/star-deepseek-harness-desktop"
+        "dabaicai001/star-deepseek-harness-desktop",
+        "zhu1090093659/dsh-web-ui",
+        "dsh-external/dsh-mobile"
       ],
       "mustNotRecommend": [
         "deepseek-ai/deepseek-harness"
@@ -407,7 +430,9 @@
       "expectedStrong": [
         "xiaoyuyu6420/dsh-backup"
       ],
-      "expectedAcceptable": [],
+      "expectedAcceptable": [
+        "xiajiajun516/dsh-config-manager"
+      ],
       "mustNotRecommend": [
         "deepseek-ai/deepseek-harness"
       ],
@@ -419,10 +444,13 @@
       "id": "t30",
       "category": "自动化",
       "need": "工作流编排多 Agent 调度",
-      "expectedStrong": [],
+      "expectedStrong": [
+        "nanmicoder/dsh-agent-teams"
+      ],
       "expectedAcceptable": [
         "titanwings/dsh-automation",
-        "chuspeeism/dashi-taskboard"
+        "chuspeeism/dashi-taskboard",
+        "zhu1090093659/dsh-web-ui"
       ],
       "mustNotRecommend": [
         "deepseek-ai/deepseek-harness"

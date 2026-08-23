@@ -45,13 +45,14 @@ describe('deepatlas_advise(P4.1 安静顾问)', () => {
     expect(JSON.stringify(r.recommendations)).toContain('dsh-im')
   })
 
-  it('能力已安装 → 保持安静', async () => {
-    await seedIndex(['dsh-im'])
+  it('能力已安装 → 保持安静(按 capabilities 判断)', async () => {
+    await seedIndex()
     const tool = buildAdviseTool({} as never, mkConfig())
     const r = await (tool as { execute: (a: unknown, d: () => Promise<string>) => Promise<Record<string, unknown>> })
-      .execute({ task: '帮我把 DSH 接入微信收消息' }, await seedIndex(['dsh-im']))
+      .execute({ task: '帮我把 DSH 接入微信收消息' }, async () => "- id: im
+  name: 'dsh-im'")
     expect(r.silent).toBe(true)
-    expect(r.reason).toContain('已安装')
+    expect(r.reason).toContain('已具备')
   })
 
   it('无匹配 → 安静', async () => {

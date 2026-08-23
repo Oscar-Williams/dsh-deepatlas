@@ -4,36 +4,11 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { DeepAtlasConfig } from '../config.js'
-import { PluginMeta, Recommendation } from '../types.js'
+import { Recommendation } from '../types.js'
 import { scannerFor } from './scan.js'
 import { looseObjectOutput, renderJson } from './common.js'
 import { getRuntimeInfo } from '../core/compat.js'
-
-/** 关键词预筛:分词后在 name/description/topics 中计数 */
-function prescore(meta: PluginMeta, tokens: string[]): number {
-  const haystack = `${meta.name} ${meta.description} ${meta.topics.join(' ')}`.toLowerCase()
-  return tokens.reduce((acc, t) => acc + (haystack.includes(t) ? 1 : 0), 0)
-}
-
-/** 重叠对比(结构化):同类型且共享关键词的更高分插件 */
-function overlapFor(target: PluginMeta, all: PluginMeta[], tokens: string[]) {
-  const sibling = all.find(
-    (p) =>
-      p.id !== target.id &&
-      p.type === target.type &&
-      prescore(p, tokens) > 0 &&
-      (p.quality?.total ?? 0) > (target.quality?.total ?? 0),
-  )
-  if (!sibling) return undefined
-  const starRatio = target.stars > 0 ? Math.round((sibling.stars / target.stars) * 10) / 10 : Infinity
-  return {
-    id: sibling.id,
-    name: sibling.name,
-    stars: sibling.stars,
-    quality: sibling.quality?.total ?? 0,
-    note: `功能可能重叠:${sibling.name}(⭐${sibling.stars},质量分 ${sibling.quality?.total})高于本条${starRatio !== Infinity ? `约 ${starRatio} 倍 star` : ''},请对比后选择`,
-  }
-}
+import { retrieve } from '../core/retrieval.js'
 
 export function buildFindTool(_ctx: Context, config: DeepAtlasConfig) {
   return {
@@ -60,34 +35,20 @@ export function buildFindTool(_ctx: Context, config: DeepAtlasConfig) {
         (p) => p.stars >= config.minStars && !p.deadLink && p.kind !== 'framework' && p.kind !== 'collection',
       )
 
-      // 中英混合分词:英文按词,中文按 2-gram(轻量方案,不引外部分词依赖)
-      const raw = args.need.toLowerCase()
-      const tokens = [
-        ...new Set(
-          raw
-            .split(/[^\p{Script=Han}\p{L}\p{N}]+/u)
-            .flatMap((w) => (/\p{Script=Han}/u.test(w) ? (w.match(/.{1,2}/gu) ?? []) : [w]))
-            .filter((t) => t.length >= 2),
-        ),
-      ]
-
-      const candidates = plugins
-        .map((p) => ({ p, s: prescore(p, tokens) }))
-        .filter(({ s }) => s > 0)
-        .sort((a, b) => b.s - a.s || (b.p.quality?.total ?? 0) - (a.p.quality?.total ?? 0))
-        .slice(0, args.limit ?? 8)
-        .map(({ p }) => {
-          const [owner, repo] = p.id.split('/')
-          const archivedNote = p.archived ? ';⚠️仓库已归档' : ''
-          const rec: Recommendation = {
-            plugin: p,
-            reason: `命中关键词:${tokens.filter((t) => `${p.name} ${p.description}`.toLowerCase().includes(t)).join(', ') || '(语义匹配)'};质量分 ${p.quality?.total}(活跃 ${p.quality?.activity}/社区 ${p.quality?.community}/可信 ${p.quality?.trust})${archivedNote}`,
-            overlap: overlapFor(p, plugins, tokens),
-            overlapNote: overlapFor(p, plugins, tokens)?.note,
-            installCommandPreview: `dsh plugin --profile ${config.installProfile} add github:${owner}/${repo}#<commit>`,
-          }
-          return rec
-        })
+      // 检索 v2:capability taxonomy + 多字段加权(与基准共用,单一事实源)
+      const pool = retrieve(args.need, plugins, args.limit ?? 8)
+      const candidates = pool.map(({ plugin: p, taskScore, capOverlap }) => {
+        const [owner, repo] = p.id.split('/')
+        const archivedNote = p.archived ? ';⚠️仓库已归档' : ''
+        const rec: Recommendation = {
+          plugin: p,
+          reason: `任务匹配 ${taskScore}(能力:${capOverlap.join(', ') || '词汇命中'});质量分 ${p.quality?.total}(活跃 ${p.quality?.activity}/社区 ${p.quality?.community}/可信 ${p.quality?.trust})${archivedNote}`,
+          overlap: undefined,
+          overlapNote: capOverlap.length > 1 ? `命中 ${capOverlap.length} 项能力,可对比同类候选` : undefined,
+          installCommandPreview: `dsh plugin --profile ${config.installProfile} add github:${owner}/${repo}#<commit>`,
+        }
+        return rec
+      })
 
       const runtime = getRuntimeInfo()
       return {

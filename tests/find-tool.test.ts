@@ -57,19 +57,20 @@ describe('deepatlas_find 工具', () => {
     expect(result.runtime.note).toContain('deepatlas_audit')
   })
 
-  it('归档仓库在理由中带警示', async () => {
+  it('检索 v2:能力命中进理由', async () => {
     const index: AtlasIndex = {
       schemaVersion: SCHEMA_VERSION,
       builtAt: new Date().toISOString(),
       sources: [],
-      plugins: [meta({ id: 'a/old', name: 'dsh-old-skin', description: '皮肤 美化', stars: 10, archived: true })],
+      plugins: [meta({ id: 'a/skin', name: 'dsh-skin', description: '界面 皮肤 美化 theme', stars: 10 })],
     }
     await new IndexStore(dir).save(index)
     const tool = buildFindTool({} as never, mkConfig())
-    const result = (await (tool as { execute: (a: unknown) => Promise<Record<string, unknown>> }).execute({ need: '皮肤' })) as {
+    const result = (await (tool as { execute: (a: unknown) => Promise<Record<string, unknown>> }).execute({ need: '换个好看的主题外观' })) as {
       candidates: { reason: string }[]
     }
-    expect(result.candidates[0].reason).toContain('归档')
+    expect(result.candidates.length).toBeGreaterThan(0)
+    expect(result.candidates[0].reason).toContain('任务匹配')
   })
 
   it('索引不存在时给出引导', async () => {

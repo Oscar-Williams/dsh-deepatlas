@@ -128,9 +128,9 @@ awesome 清单/白名单 ────┤→ M1 扫描器 → 本地索引(~/.dsh
 - **P2**:✅ 质量分校准/死链清理/重叠结构化/兼容闸门/PluginRecord/元数据回填(3016 条,Top10 修复)
 - **P3**:✅ InstallPlan 状态机 + 真实端到端(modlens 双平台 ACTIVE)
 - **P3.5 工程化闸门**:✅ ①分发完整性 CI(build 后 lib/ 零漂移)✅ ②分发 E2E(archive→pack→tarball 安装→组合→HTTP 200,CI Run23 三闸门全绿)✅ ③故障注入回滚三场景 ✅ 主人格场景 GitHub 安装 ACTIVE ✅ 吸收探针+快照回滚;⏳ 完整 InstallEnvironment、fixture persona、事务化回滚实操
-- **P3.8 推荐质量基准**:⏳ 50-100 任务语料 + Top1/Top3 命中率 + 不兼容/死链率(改排名公式必跑,防 star 绑架推荐)
-- **P4 Intelligent Advisor**:⏳ 能力缺口检测(安静顾问)+ 显式/隐式反馈(exposure 感知)+ 本地偏好与全局分分离
-- **RC1**:⏳ 双平台 clean 安装/密钥扫描/回滚测试/发布冻结 → **Release**:双语 README、demo、架构与安全文档、生态收录
+- **P3.8 推荐质量基准**:✅ dev-30 冻结(Recall@20 96.7%/Top3-SA 93.3%/Strong 83.3%/gate PASS);✅ holdout-15 只跑一次如实披露(26.7%,特征过拟合入档,v0.1.1 扩别名+新 holdout)
+- **P4.1 能力缺口顾问**:✅ deepatlas_advise 按 capabilities 判缺口,静默为默认;⏳ 反馈学习等真实用户数据
+- **RC/发布**:✅ RC1(工程闸门)✅ RC2=v0.1.0(检索 v2+gate PASS+holdout 如实披露)✅ 双语 README/CHANGELOG;生态收录进行中
 
 ## 参考与致谢
 

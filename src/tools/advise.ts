@@ -7,9 +7,11 @@
  */
 import { Context } from '@deepseek-ai/cordis'
 import { DeepAtlasConfig } from '../config.js'
-import { PluginMeta } from '../types.js'
+
 import { scannerFor } from './scan.js'
 import { looseObjectOutput, renderJson } from './common.js'
+import { extractCapabilities } from '../core/capabilities.js'
+import { retrieve } from '../core/retrieval.js'
 
 export type DumpRunner = () => Promise<string>
 
@@ -23,21 +25,6 @@ export const defaultDumpRunner: DumpRunner = async () => {
   } catch {
     return ''
   }
-}
-
-function prescore(meta: PluginMeta, tokens: string[]): number {
-  const haystack = `${meta.name} ${meta.description} ${meta.topics.join(' ')}`.toLowerCase()
-  return tokens.reduce((acc, t) => acc + (haystack.includes(t) ? 1 : 0), 0)
-}
-
-function tokenize(need: string): string[] {
-  const raw = need.toLowerCase()
-  return [...new Set(
-    raw
-      .split(/[^\p{Script=Han}\p{L}\p{N}]+/u)
-      .flatMap((w) => (/\p{Script=Han}/u.test(w) ? (w.match(/.{1,2}/gu) ?? []) : [w]))
-      .filter((t) => t.length >= 2),
-  )]
 }
 
 export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
@@ -54,35 +41,39 @@ export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
       const index = await scanner.loadIndex()
       if (!index) return { silent: true, reason: '索引不存在' }
 
-      const tokens = tokenize(args.task)
-      const dumpText = await dumpFn()
-      const installed = new Set(
-        [...dumpText.matchAll(/name:\s*'?([@\w/.-]+)'?/g)].map((m) => m[1].toLowerCase().split('/').pop() ?? ''),
-      )
-
-      const candidates = index.plugins
-        .filter((p) => !p.deadLink && !p.archived)
-        .map((p) => ({ p, s: prescore(p, tokens) }))
-        .filter(({ s }) => s >= 2) // 强候选门槛:至少 2 个词命中
-        .sort((a, b) => b.s - a.s || (b.p.quality?.total ?? 0) - (a.p.quality?.total ?? 0))
-        .slice(0, 3)
-
-      if (candidates.length === 0) {
-        return { silent: true, reason: '索引中无明显匹配能力,不打扰' }
+      // P4.1 正式形态:按 capabilities 判缺口(非插件 ID,评审第八轮 §16)
+      const taskCaps = extractCapabilities(args.task)
+      if (taskCaps.size === 0) {
+        return { silent: true, reason: '任务未识别出能力需求,不打扰' }
       }
-      const missing = candidates.filter(({ p }) => !installed.has(p.name.toLowerCase().split('/').pop() ?? ''))
-      if (missing.length === 0) {
-        return { silent: true, reason: `相关能力已安装(${candidates.map(({ p }) => p.name).join(', ')}),保持安静` }
+      const dumpText = await dumpFn()
+      // 已装能力 = 已装插件(含宿主自身)全部能力之并集
+      const installedCaps = new Set<string>()
+      for (const m of dumpText.matchAll(/name:\s*'?([@\w\/.:-]+)'?/g)) {
+        for (const c of extractCapabilities(m[1])) installedCaps.add(c)
+      }
+      // dump 行文本里往往还有描述性词,直接对全文抽一次兜底
+      for (const c of extractCapabilities(dumpText)) installedCaps.add(c)
+
+      const missingCaps = [...taskCaps].filter((c) => !installedCaps.has(c))
+      if (missingCaps.length === 0) {
+        return { silent: true, reason: `所需能力已具备(${[...taskCaps].join(', ')}),保持安静` }
+      }
+
+      const pool = retrieve(args.task, index.plugins, 3)
+      const recs = pool.filter(({ capOverlap }) => capOverlap.some((c) => missingCaps.includes(c)))
+      if (recs.length === 0) {
+        return { silent: true, reason: `缺能力(${missingCaps.join(', ')})但索引中无强匹配插件` }
       }
       return {
         silent: false,
-        gap: `当前任务可能缺少能力支撑,建议评估 ${missing.length} 个插件`,
-        recommendations: missing.map(({ p }) => ({
+        gap: `任务需要 ${missingCaps.join(', ')} 能力,当前宿主未覆盖`,
+        recommendations: recs.map(({ plugin: p, taskScore, capOverlap }) => ({
           id: p.id,
-          name: p.name,
+          name: p.displayName ?? p.name,
           stars: p.stars,
           quality: p.quality?.total ?? 0,
-          reason: `命中 ${prescore(p, tokens)} 个任务关键词;${p.description.slice(0, 60)}`,
+          reason: `补齐 ${capOverlap.filter((c) => missingCaps.includes(c)).join(', ')};任务匹配 ${taskScore}`,
           installCommandPreview: `dsh plugin --profile ${config.installProfile} add github:${p.id}#<commit>`,
         })),
       }
