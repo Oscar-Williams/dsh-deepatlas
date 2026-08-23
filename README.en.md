@@ -70,7 +70,17 @@ Send this request inside DSH:
 
 > Call `deepatlas_status`. If no index exists yet, run one complete scan.
 
-The first scan reads several thousand ecosystem entries. Duration depends on GitHub API quota and network conditions; a busy or anonymous environment may take close to 50 minutes. Scans support cancellation, and later refreshes can use incremental mode.
+The first complete scan automatically partitions GitHub queries, merges community lists, deduplicates repositories, and writes the local index. A dedicated WSL run on 2026-08-23 read 10,914 GitHub topic results and 5,175 community-list entries, producing 11,700 unique index records.
+
+Anonymous mode completed in 15 minutes 46 seconds, with most of that time spent waiting for GitHub Search API quota. A GitHub token raises the Search budget from 10 to 30 requests per minute, so a stable authenticated connection normally completes the scan within a few minutes. Keep the DSH process running; completion returns the item count, source health, and index location.
+
+For consistently fast scans:
+
+- Keep `api.github.com`, `github.com`, and `codeload.github.com` reachable.
+- Set `DEEPATLAS_GITHUB_TOKEN` in the environment that starts DSH, then confirm `githubAuth: authenticated` with `deepatlas_status`. See [GitHub's REST API rate-limit documentation](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api).
+- Keep the network route stable during the scan and use `incremental=true` for routine refreshes after the first index.
+- Scans support cancellation. Completed results replace the index atomically, and the previous index remains available when a source is unavailable.
+- Maintainers can run `npm run scan` to view partition pages and live fetch progress.
 
 Example requests:
 

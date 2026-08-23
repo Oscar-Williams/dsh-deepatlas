@@ -6,6 +6,8 @@
 
 - README 中英文安装与更新命令统一改用 GitHub Codeload HTTPS 锁定版本地址，覆盖 Windows、WSL 与限制 GitHub SSH 连接的网络环境。
 - 全新 WSL DSH_HOME 已完成公开标签安装、`dump-config` 组合验证与 Web HTTP 200 启动验证。
+- WSL 开发工具统一到 `dsh-deepatlas` Conda 环境；贡献指南同步 Node、pnpm、DSH 与 108 项测试基线。
+- 首次扫描说明同步完整性验证规模、进度反馈、GitHub Token 与网络连通条件，并给出增量刷新建议。
 - `v0.2.1` 标签保持不可变；`v0.2.2` 汇入同一批运行时稳定性改进并作为当前推荐版本。
 
 ## v0.2.1（2026-08-23）
@@ -35,7 +37,7 @@
 
 - 纳入 `v0.2.0` tag 之后的测试修复与 nightly YAML 修复；既有公开 tag 保持不可变。
 - `deepatlas_find` 与 `deepatlas_advise` 共用 capability 单一事实源，补齐 `messaging-telegram` 与 `web-search`。
-- 中英文 README 采用一致的 Quick Start、完整配置、安全边界、更新卸载与路线图；明确首次完整扫描在受限环境下可能接近 50 分钟。
+- 中英文 README 采用一致的 Quick Start、完整配置、安全边界、更新卸载与路线图，并同步完整扫描规模、进度与网络/API 配额条件。
 - `package.json`、`package-lock.json`、Node engines 与 tag 版本统一；回归基线更新为 22 个测试文件、108 项测试。
 
 ## v0.2.0(2026-08-23)

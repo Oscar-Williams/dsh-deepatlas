@@ -1,43 +1,65 @@
 # 贡献指南
 
-## 项目哲学
+DeepAtlas 的开发流程围绕一条原则展开：验证用户实际获得的分发物。源码、提交的构建产物、安装文档和公开标签共同构成一次完整交付。
 
-> **Validate what users install, not what developers run.**
-> 验证用户实际安装的分发物,而不是开发者工作区里的理想状态。
+## 开发环境
 
-lib/ 事故(2026-08-22,Note 0011)证明:开发验证路径(link:/staging 自带产物)
-与用户分发路径(github: 纯 clone,无构建)不一致时,一切本地绿灯都可能是假象。
-commit pinning、Distribution E2E、clean persona、boot verification、rollback
-这些机制都是同一件事:**缩小"推荐成功"与"用户真的获得能力"之间的距离。**
-
-## 目录语义
-
-```
-src/   Source of truth(唯一事实来源)
-lib/   Generated distribution artifact —— GitHub 安装必需,随仓库分发
-```
-
-## 修改代码的标准流程
+推荐在 WSL2 的独立 Conda 环境中安装工具链，确保 Windows、WSL 全局 Node 与项目依赖各自保持清晰：
 
 ```bash
-npm run build          # 重新生成 lib/
-npm test               # 63 项测试
-npm run typecheck && npm run typecheck:tests
-git add src/ lib/      # src 与 lib 必须同一提交(否则分发完整性 CI 会拦截)
-git commit && git push
+conda create -n dsh-deepatlas -c conda-forge nodejs=22.23.2
+conda activate dsh-deepatlas
+npm install -g pnpm @deepseek-ai/dsh@0.1.1-rc.2
+
+node --version
+pnpm --version
+dsh --version
 ```
 
-**不要只提交 src 不提交 lib**——`distribution-integrity` CI 会以
-`git diff --exit-code -- lib/` 拦截产物漂移。
+当前兼容范围与受控依赖版本记录在 [兼容契约](./docs/compatibility.md)。每次开发和验证均从激活该环境开始。
 
-## 发布流程(RC 阶段启用)
+## 目录职责
 
+```text
+src/    TypeScript 源码与唯一实现来源
+lib/    GitHub 安装直接使用的构建产物
+tests/  单元、契约、故障注入与分发回归
+docs/   架构、安全、兼容与发布记录
 ```
-main(开发)→ tag v0.x.y-rc.n(候选)→ tag v0.x.y(正式)
-展示人类可读版本,内部执行不可变 commit(github:owner/repo#<SHA>)
+
+## 修改与验证
+
+一个分支聚焦一个可审阅目标，提交粒度与功能边界保持一致。源码变更同步生成 `lib/`：
+
+```bash
+npm ci
+npm run typecheck
+npm run typecheck:tests
+npm test
+npm run build
+git diff --check
+git status --short
 ```
 
-## 安全红线
+源码改动涉及构建输出时，将对应 `src/` 与 `lib/` 文件放入同一提交。提交完成后再次运行 `npm run build && git diff --exit-code -- lib/`，可确认仓库中的分发产物已经同步。当前回归基线为 22 个测试文件、108 项测试。CI 进一步覆盖 Node 22/24、Windows、分发完整性、全新 DSH_HOME 安装和 Web HTTP 200 启动验证。
 
-见 [docs/security.md](./docs/security.md):绝不修改用户全局 git/npm 配置;
-扫描结论只称 risk signals;密钥绝不入库(含 Note 与 cli-capture 文档)。
+## Pull Request
+
+PR 标题概括单一核心改动，正文说明背景、实现、验证结果和关联资料。评审反馈继续提交到同一分支，GitHub 会自动更新现有 PR 的提交历史与差异。
+
+## 发布流程
+
+```text
+feature/fix branch
+        ↓ Pull Request + CI
+      main
+        ↓ annotated tag
+ GitHub Release
+        ↓ public-tag install + boot acceptance
+```
+
+公开标签对应唯一合并提交。README、CHANGELOG、`package.json`、`package-lock.json` 与 GitHub Release 使用同一版本号。安装验证采用 README 中的 Codeload HTTPS 地址。
+
+## 安全与凭据
+
+安全规则见 [安全与权限模型](./docs/security.md)。仓库仅记录环境变量名和配置示例；API Token、登录信息与本地日志留在各自的安全存储中。提交前运行工作树敏感信息扫描，并在发布检查表中记录结果。
