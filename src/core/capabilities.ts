@@ -39,6 +39,28 @@ export const CAPABILITIES: CapabilityDef[] = [
   { id: 'prompt-enhance', aliases: ['prompt', '提示词', '去 ai 味', '润色'] },
 ]
 
+/** 模型可传入的规范能力 ID。工具 schema 与运行时校验共用这一事实源。 */
+export const CAPABILITY_IDS = CAPABILITIES.map((capability) => capability.id)
+const CAPABILITY_ID_SET = new Set(CAPABILITY_IDS)
+
+/** deepatlas_find 与 deepatlas_advise 共用的模型输入契约。 */
+export const CAPABILITY_PARAMETER_SCHEMA = {
+  type: 'array' as const,
+  items: { type: 'string' as const, enum: CAPABILITY_IDS },
+  description: '模型理解任务后传入的规范能力 ID 数组,可显著提升口语化任务的召回。',
+}
+
+export type CapabilityInput = string[] | string | undefined
+
+/**
+ * 规范化模型传入的能力 ID。数组是公开工具契约；字符串仅用于兼容旧的直接调用。
+ * 未知 ID 会被忽略，避免绕过 schema 的调用污染检索条件。
+ */
+export function normalizeCapabilityIds(input: CapabilityInput): string[] {
+  const values = Array.isArray(input) ? input : (input ?? '').split(',')
+  return [...new Set(values.map((value) => value.trim()).filter((value) => CAPABILITY_ID_SET.has(value)))]
+}
+
 /** 从任意文本抽取能力:中文 alias 子串匹配;拉丁 alias 词边界匹配(防 word→keywords 误伤) */
 export function extractCapabilities(text: string): Set<string> {
   const t = text.toLowerCase()

@@ -10,7 +10,12 @@ import { DeepAtlasConfig } from '../config.js'
 
 import { scannerFor } from './scan.js'
 import { looseObjectOutput, renderJson } from './common.js'
-import { extractCapabilities } from '../core/capabilities.js'
+import {
+  CAPABILITY_PARAMETER_SCHEMA,
+  CapabilityInput,
+  extractCapabilities,
+  normalizeCapabilityIds,
+} from '../core/capabilities.js'
 import { retrieve } from '../core/retrieval.js'
 
 export type DumpRunner = () => Promise<string>
@@ -37,14 +42,10 @@ export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
       '能力缺口顾问:给定用户任务,若当前 Harness 已有相关插件则保持安静(silent),仅当发现未安装的强匹配插件时给出 1-3 条建议(含质量分与安装预览)。P4.1。',
     parameters: {
       task: { type: 'string' as const, required: true, description: '用户当前任务描述原文' },
-      capabilities: {
-        type: 'string' as const,
-        description:
-          '规范能力 ID(逗号分隔,模型理解任务后传入;口语化任务强烈建议携带,与 deepatlas_find 同一清单):messaging-wechat,messaging-im,deep-reading,long-term-memory,knowledge-base,browser-automation,token-monitor,context-compression,ui-theme,desktop-gui,tui-terminal,sidebar-workbench,git-integration,task-board,database,spreadsheet-doc,image-vision,ocr,screenshot,ssh-remote,mobile-remote,automation-schedule,backup,workflow-orchestration,coding-tools,prompt-enhance',
-      },
+      capabilities: CAPABILITY_PARAMETER_SCHEMA,
     },
     output: { schema: looseObjectOutput, render: renderJson },
-    async execute(args: { task: string; capabilities?: string }, dumpFn: DumpRunner = makeDumpRunner(config.installProfile)) {
+    async execute(args: { task: string; capabilities?: CapabilityInput }, dumpFn: DumpRunner = makeDumpRunner(config.installProfile)) {
       const scanner = scannerFor(config)
       const index = await scanner.loadIndex()
       if (!index) return { silent: true, reason: '索引不存在' }
@@ -53,7 +54,7 @@ export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
       // v3-A 混合归一:静态抽取 ∪ 模型传入 caps(与 find 同通道)
       const taskCaps = new Set<string>([
         ...extractCapabilities(args.task),
-        ...(args.capabilities ?? '').split(',').map((x) => x.trim()).filter(Boolean),
+        ...normalizeCapabilityIds(args.capabilities),
       ])
       if (taskCaps.size === 0) {
         return { silent: true, reason: '任务未识别出能力需求,不打扰' }

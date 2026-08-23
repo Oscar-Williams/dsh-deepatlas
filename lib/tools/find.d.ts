@@ -6,6 +6,7 @@ import { Context } from '@deepseek-ai/cordis';
 import { DeepAtlasConfig } from '../config.js';
 import { Recommendation } from '../types.js';
 import { renderJson } from './common.js';
+import { CapabilityInput } from '../core/capabilities.js';
 export declare function buildFindTool(_ctx: Context, config: DeepAtlasConfig): {
     name: string;
     description: string;
@@ -20,7 +21,11 @@ export declare function buildFindTool(_ctx: Context, config: DeepAtlasConfig): {
             description: string;
         };
         capabilities: {
-            type: "string";
+            type: "array";
+            items: {
+                type: "string";
+                enum: string[];
+            };
             description: string;
         };
     };
@@ -35,7 +40,7 @@ export declare function buildFindTool(_ctx: Context, config: DeepAtlasConfig): {
     execute(args: {
         need: string;
         limit?: number;
-        capabilities?: string;
+        capabilities?: CapabilityInput;
     }): Promise<{
         ok: boolean;
         message: string;

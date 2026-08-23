@@ -8,6 +8,7 @@
 import { Context } from '@deepseek-ai/cordis';
 import { DeepAtlasConfig } from '../config.js';
 import { renderJson } from './common.js';
+import { CapabilityInput } from '../core/capabilities.js';
 export type DumpRunner = () => Promise<string>;
 /** 宿主已装清单读取器(闭包绑定 profile,v0.1.1 修复硬编码 web 的不一致) */
 export declare function makeDumpRunner(profile: string): DumpRunner;
@@ -21,7 +22,11 @@ export declare function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig):
             description: string;
         };
         capabilities: {
-            type: "string";
+            type: "array";
+            items: {
+                type: "string";
+                enum: string[];
+            };
             description: string;
         };
     };
@@ -35,7 +40,7 @@ export declare function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig):
     };
     execute(args: {
         task: string;
-        capabilities?: string;
+        capabilities?: CapabilityInput;
     }, dumpFn?: DumpRunner): Promise<{
         silent: boolean;
         reason: string;
