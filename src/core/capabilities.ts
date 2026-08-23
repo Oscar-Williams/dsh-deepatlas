@@ -60,3 +60,32 @@ export function extractCapabilities(text: string): Set<string> {
   }
   return out
 }
+
+
+export interface CapEvidence { source: string; text: string }
+export interface PluginCapRecord { id: string; confidence: number; ev: CapEvidence[] }
+
+/** v3-B 证据化抽取:按字段记录命中别名;confidence 1 证据 0.6 / 2+ 证据 0.9(确定性) */
+export function extractCapabilityRecords(parts: { source: string; text: string }[]): PluginCapRecord[] {
+  const byId = new Map<string, CapEvidence[]>()
+  for (const cap of CAPABILITIES) {
+    for (const part of parts) {
+      const t = part.text.toLowerCase()
+      const hit = cap.aliases.find((alias) => {
+        const a = alias.toLowerCase()
+        if (/[a-z0-9]/.test(a) && !/\p{Script=Han}/u.test(a)) {
+          try {
+            return new RegExp(`(^|[^a-z0-9])${a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z0-9]|$)`, 'u').test(t)
+          } catch { return t.includes(a) }
+        }
+        return t.includes(a)
+      })
+      if (hit) {
+        const list = byId.get(cap.id) ?? []
+        list.push({ source: part.source, text: hit })
+        byId.set(cap.id, list)
+      }
+    }
+  }
+  return [...byId.entries()].map(([id, ev]) => ({ id, ev, confidence: ev.length >= 2 ? 0.9 : 0.6 }))
+}

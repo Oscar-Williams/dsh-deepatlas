@@ -10,3 +10,17 @@ export interface CapabilityDef {
 export declare const CAPABILITIES: CapabilityDef[];
 /** 从任意文本抽取能力:中文 alias 子串匹配;拉丁 alias 词边界匹配(防 word→keywords 误伤) */
 export declare function extractCapabilities(text: string): Set<string>;
+export interface CapEvidence {
+    source: string;
+    text: string;
+}
+export interface PluginCapRecord {
+    id: string;
+    confidence: number;
+    ev: CapEvidence[];
+}
+/** v3-B 证据化抽取:按字段记录命中别名;confidence 1 证据 0.6 / 2+ 证据 0.9(确定性) */
+export declare function extractCapabilityRecords(parts: {
+    source: string;
+    text: string;
+}[]): PluginCapRecord[];

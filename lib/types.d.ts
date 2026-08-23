@@ -22,6 +22,15 @@ export interface PluginMeta {
     kind?: 'plugin' | 'framework' | 'collection' | 'application' | 'documentation' | 'unknown';
     /** 展示名(保留原始大小写;内部 join 一律用全小写 id,⑦.0-c) */
     displayName?: string;
+    /** 能力证据记录(v3-B,扫描期固化;查询期不再从文本猜) */
+    capsEv?: {
+        id: string;
+        confidence: number;
+        ev: {
+            source: string;
+            text: string;
+        }[];
+    }[];
     /** 类型判定证据:heuristic=名称/描述关键词;contents=仓库文件清单精判 */
     typeSource?: 'heuristic' | 'contents';
     /** GitHub star 数 */

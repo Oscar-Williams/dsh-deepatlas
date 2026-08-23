@@ -16,11 +16,16 @@ export function buildFindTool(_ctx: Context, config: DeepAtlasConfig) {
     description:
       '按自然语言任务需求在本地索引中检索插件,返回候选列表(含质量分、匹配提示、安装命令预览)。若索引缺失或过期会提示先扫描。语义相关性由模型基于返回的候选元数据判断。',
     parameters: {
-      need: { type: 'string' as const, required: true, description: '任务需求,如"接入微信并监控 token 花费"' },
+      need: { type: 'string' as const, required: true, description: '任务需求原文' },
       limit: { type: 'number' as const, description: '返回候选上限,默认 8' },
+      capabilities: {
+        type: 'string' as const,
+        description:
+          '规范能力 ID 列表(逗号分隔,模型理解任务后传入,可显著提升口语化任务的召回):messaging-wechat,messaging-telegram,messaging-im,deep-reading,long-term-memory,knowledge-base,browser-automation,web-search,token-monitor,context-compression,ui-theme,desktop-gui,tui-terminal,sidebar-workbench,git-integration,task-board,database,spreadsheet-doc,image-vision,ocr,screenshot,ssh-remote,mobile-remote,automation-schedule,backup,workflow-orchestration,coding-tools,prompt-enhance',
+      },
     },
     output: { schema: looseObjectOutput, render: renderJson },
-    async execute(args: { need: string; limit?: number }) {
+    async execute(args: { need: string; limit?: number; capabilities?: string }) {
       const scanner = scannerFor(config)
       const status = await scanner.status(config.indexTtlHours)
       if (!status.exists) {
@@ -36,7 +41,11 @@ export function buildFindTool(_ctx: Context, config: DeepAtlasConfig) {
       )
 
       // 检索 v2:capability taxonomy + 多字段加权(与基准共用,单一事实源)
-      const pool = retrieve(args.need, plugins, args.limit ?? 8)
+      const extraCaps = (args.capabilities ?? '')
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean)
+      const pool = retrieve(args.need, plugins, args.limit ?? 8, extraCaps)
       const candidates = pool.map(({ plugin: p, taskScore, capOverlap }) => {
         const [owner, repo] = p.id.split('/')
         const archivedNote = p.archived ? ';⚠️仓库已归档' : ''

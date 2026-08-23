@@ -19,6 +19,10 @@ export declare function buildFindTool(_ctx: Context, config: DeepAtlasConfig): {
             type: "number";
             description: string;
         };
+        capabilities: {
+            type: "string";
+            description: string;
+        };
     };
     output: {
         schema: {
@@ -31,6 +35,7 @@ export declare function buildFindTool(_ctx: Context, config: DeepAtlasConfig): {
     execute(args: {
         need: string;
         limit?: number;
+        capabilities?: string;
     }): Promise<{
         ok: boolean;
         message: string;

@@ -16,5 +16,5 @@ export interface RetrievalCandidate {
 }
 export declare function tokenize(need: string): string[];
 export declare function eligible(p: PluginMeta): boolean;
-/** 多字段检索:返回按 taskScore×10 + quality×2 排序的候选池 */
-export declare function retrieve(task: string, plugins: PluginMeta[], poolSize?: number): RetrievalCandidate[];
+/** 多字段检索:v3 混合归一——静态抽取 ∪ 模型传入的规范能力 ID(v3-A) */
+export declare function retrieve(task: string, plugins: PluginMeta[], poolSize?: number, extraTaskCaps?: string[]): RetrievalCandidate[];

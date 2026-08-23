@@ -1,0 +1,11 @@
+{
+  "at": "2026-08-23T07:19:30.216Z",
+  "metrics": {
+    "mode": "paraphrase",
+    "queries": 120,
+    "top3SA_hybrid": 0.85,
+    "intentStability_hybrid": 0.567,
+    "mustNotAt3": 0,
+    "gate_Generalization": "PASS"
+  }
+}

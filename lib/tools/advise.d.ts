@@ -20,6 +20,10 @@ export declare function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig):
             required: boolean;
             description: string;
         };
+        capabilities: {
+            type: "string";
+            description: string;
+        };
     };
     output: {
         schema: {
@@ -31,6 +35,7 @@ export declare function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig):
     };
     execute(args: {
         task: string;
+        capabilities?: string;
     }, dumpFn?: DumpRunner): Promise<{
         silent: boolean;
         reason: string;

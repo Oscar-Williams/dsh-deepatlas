@@ -14,6 +14,7 @@ import { GitHubTopicSource } from './sources/github-topic.js'
 import { AwesomeListSource, WHITELIST_REPOS } from './sources/awesome-list.js'
 import { enrichTopN } from './sources/enrich.js'
 import { classifyKind } from './kind.js'
+import { extractCapabilityRecords } from './capabilities.js'
 import { IndexStore, SCHEMA_VERSION } from './index-store.js'
 
 /** 按仓库自述关键词的粗粒度类型推断(精判兜底,证据弱于 contents API) */
@@ -151,7 +152,16 @@ export class Scanner {
       }
     }
 
-    const plugins = [...merged.values()].map((meta) => ({ ...meta, quality: rank(meta) }))
+    // v3-B:能力证据固化(name/description/topics 三字段,一次扫描终身使用)
+    const plugins = [...merged.values()].map((meta) => ({
+      ...meta,
+      capsEv: extractCapabilityRecords([
+        { source: 'name', text: meta.displayName ?? meta.name },
+        { source: 'description', text: meta.description },
+        { source: 'topics', text: meta.topics.join(' ') },
+      ]),
+      quality: rank(meta),
+    }))
     plugins.sort((a, b) => (b.quality?.total ?? 0) - (a.quality?.total ?? 0))
 
     const index: AtlasIndex = {
