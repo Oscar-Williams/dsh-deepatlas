@@ -20,3 +20,52 @@ jobs:
       - run: npm run typecheck:tests
       - run: npm test
       - run: npm run build
+
+  # ① 分发完整性:src 与提交的 lib/ 必须一致(lib/ 事故的"永不回归"闸门)
+  # lib/ 是随仓库分发的构建产物(github: 安装无构建步骤),过期即发布级缺陷。
+  distribution-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: lib/ 产物不得与 src/ 漂移
+        run: |
+          if ! git diff --exit-code -- lib/; then
+            echo "::error::Generated distribution files are stale(提交的 lib/ 与 src/ 不一致)。Run npm run build and commit lib/."
+            exit 1
+          fi
+
+  # ② 分发 E2E:测试对象必须是 Git 能交付的内容(git archive),禁止复用工作区产物
+  distribution-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: 安装 dsh 与 pnpm
+        run: npm i -g pnpm @deepseek-ai/dsh --no-fund --no-audit
+      - name: 构造分发物(git archive = 用户 clone 到的全部内容)
+        run: mkdir -p /tmp/dist && git archive HEAD | tar -x -C /tmp/dist
+      - name: 全新 DSH_HOME 安装 DeepAtlas 并验证组合
+        run: |
+          export DSH_HOME=/tmp/dshhome
+          dsh plugin --profile web add /tmp/dist
+          dsh --profile web --dump-config | tee /tmp/dump.yml
+          grep -A2 "== dsh-deepatlas" /tmp/dump.yml
+      - name: 启动冒烟(HTTP 200)
+        run: |
+          export DSH_HOME=/tmp/dshhome
+          (dsh web --port 3082 --no-open > /tmp/boot.log 2>&1 &)
+          for i in $(seq 1 24); do
+            sleep 5
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://127.0.0.1:3082 || true)
+            if [ "$code" = "200" ]; then echo "t=$((i*5))s HTTP 200"; exit 0; fi
+          done
+          echo "::error::boot smoke failed"; cat /tmp/boot.log; exit 1

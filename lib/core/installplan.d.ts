@@ -10,7 +10,7 @@
  * 只有 ACTIVE 才向用户报告"安装成功"。
  */
 import { PluginMeta, AuditReport } from '../types.js';
-export type PlanState = 'RESOLVED' | 'APPROVED' | 'INSTALLED' | 'COMPOSED' | 'BOOT_VERIFIED' | 'ACTIVE';
+export type PlanState = 'RESOLVED' | 'APPROVED' | 'INSTALLED' | 'COMPOSED' | 'BOOT_VERIFIED' | 'ACTIVE' | 'FAILED' | 'ROLLING_BACK' | 'ROLLED_BACK';
 export type PlanBlocked = 'REJECTED_CONSENT' | 'REJECTED_AUDIT' | 'REJECTED_UNPINNED' | 'REJECTED_DUPLICATE' | 'REJECTED_COMPAT';
 export interface InstallPlan {
     target: string;
@@ -47,6 +47,12 @@ export declare function install(plan: InstallPlan, dryRun: boolean, exec?: (cmd:
 export declare function verifyComposed(plan: InstallPlan, dumpConfigOutput: string, pluginName: string): InstallPlan;
 /** COMPOSED → ACTIVE:启动冒烟(本轮占位,P3 后续接 headless) */
 export declare function markActiveIfBooted(plan: InstallPlan, booted: boolean): InstallPlan;
+/** 任意执行中状态 → FAILED(验证失败进入故障分支,等待回滚) */
+export declare function markFailed(plan: InstallPlan, stage: string, reason: string): InstallPlan;
+/** FAILED → ROLLING_BACK → ROLLED_BACK(restore 注入;失败也算 ROLLED_BACK 但 trace 留证) */
+export declare function rollbackToSnapshot(plan: InstallPlan, restore: () => Promise<unknown>): Promise<InstallPlan>;
+/** 用户层最终表述:只有 ACTIVE(成功)与 ROLLED_BACK(失败但已恢复)两种结语 */
+export declare function finalVerdict(plan: InstallPlan): 'ACTIVE' | 'ROLLED_BACK' | 'BLOCKED' | 'IN_PROGRESS';
 /** 是否可向用户宣告"安装成功" */
 export declare function isActive(plan: InstallPlan): boolean;
 /** 兼容元数据查找辅助(从索引条目取名) */

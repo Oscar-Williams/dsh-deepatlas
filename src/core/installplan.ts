@@ -11,7 +11,7 @@
  */
 import { PluginMeta, AuditReport } from '../types.js'
 
-export type PlanState = 'RESOLVED' | 'APPROVED' | 'INSTALLED' | 'COMPOSED' | 'BOOT_VERIFIED' | 'ACTIVE'
+export type PlanState = 'RESOLVED' | 'APPROVED' | 'INSTALLED' | 'COMPOSED' | 'BOOT_VERIFIED' | 'ACTIVE' | 'FAILED' | 'ROLLING_BACK' | 'ROLLED_BACK'
 export type PlanBlocked = 'REJECTED_CONSENT' | 'REJECTED_AUDIT' | 'REJECTED_UNPINNED' | 'REJECTED_DUPLICATE' | 'REJECTED_COMPAT'
 
 export interface InstallPlan {
@@ -100,6 +100,36 @@ export function verifyComposed(plan: InstallPlan, dumpConfigOutput: string, plug
 export function markActiveIfBooted(plan: InstallPlan, booted: boolean): InstallPlan {
   if (plan.state !== 'COMPOSED') return plan
   return booted ? advance(plan, 'ACTIVE') : plan
+}
+
+/** 任意执行中状态 → FAILED(验证失败进入故障分支,等待回滚) */
+export function markFailed(plan: InstallPlan, stage: string, reason: string): InstallPlan {
+  const executing: PlanState[] = ['APPROVED', 'INSTALLED', 'COMPOSED', 'BOOT_VERIFIED']
+  if (!executing.includes(plan.state as PlanState)) return plan
+  return advance(plan, 'FAILED', `${stage} 失败:${reason}`)
+}
+
+/** FAILED → ROLLING_BACK → ROLLED_BACK(restore 注入;失败也算 ROLLED_BACK 但 trace 留证) */
+export async function rollbackToSnapshot(
+  plan: InstallPlan,
+  restore: () => Promise<unknown>,
+): Promise<InstallPlan> {
+  if (plan.state !== 'FAILED') return plan
+  const rolling = advance(plan, 'ROLLING_BACK')
+  try {
+    await restore()
+    return advance(rolling, 'ROLLED_BACK')
+  } catch (err) {
+    return advance(rolling, 'ROLLED_BACK', `回滚动作本身出错:${err instanceof Error ? err.message : String(err)}`)
+  }
+}
+
+/** 用户层最终表述:只有 ACTIVE(成功)与 ROLLED_BACK(失败但已恢复)两种结语 */
+export function finalVerdict(plan: InstallPlan): 'ACTIVE' | 'ROLLED_BACK' | 'BLOCKED' | 'IN_PROGRESS' {
+  if (plan.state === 'ACTIVE') return 'ACTIVE'
+  if (plan.state === 'ROLLED_BACK') return 'ROLLED_BACK'
+  if (typeof plan.state === 'string' && plan.state.startsWith('REJECTED')) return 'BLOCKED'
+  return 'IN_PROGRESS'
 }
 
 /** 是否可向用户宣告"安装成功" */
