@@ -1,5 +1,8 @@
-# 构建产物
-lib/
+# 构建产物:lib/ 必须入库!
+# dsh 的 github: 安装是纯 git clone,无构建步骤;本插件不带 prepare 脚本
+# (免 allowBuilds 摩擦),因此产物随仓库分发(社区通行做法之一)。
+# 发版流程:npm run build → 提交 lib/ → 打 tag。sourcemap 不入库。
+lib/*.map
 dist/
 
 # 依赖
