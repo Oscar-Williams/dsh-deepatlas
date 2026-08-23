@@ -76,7 +76,7 @@ export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
         return { silent: true, reason: `所需能力已具备(${[...taskCaps].join(', ')}),保持安静` }
       }
 
-      const pool = retrieve(args.task, index.plugins, 3)
+      const pool = retrieve(args.task, index.plugins, 3, [...taskCaps])
       const recs = pool.filter(({ capOverlap }) => capOverlap.some((c) => missingCaps.includes(c)))
       if (recs.length === 0) {
         return { silent: true, reason: `缺能力(${missingCaps.join(', ')})但索引中无强匹配插件` }

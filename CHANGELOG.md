@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.2.0-rc(开发中,main)
+
+### Retrieval v3:TaskIntent 混合归一 + 能力证据
+- `deepatlas_find`/`deepatlas_advise` 新增 `capabilities` 参数(28 规范 ID):
+  模型理解口语任务后传入,检索层静态抽取 ∪ 模型归一——模型只理解意图,
+  搜索/审计/排序/安装仍由确定性代码掌控(零外部服务);
+- 能力证据固化入索引(capsEv:字段来源+命中别名+置信度,1767/3016);
+  advise 已装能力改为 ID→索引精确 join(v0.1.1 遗留项闭环);
+- **三 Gate(全部实测)**:RetrievalDev PASS(回归一致);Generalization
+  PASS——Paraphrase Suite 120 查询对照:静态 SA 50.8%→混合 **85.0%**,
+  稳定率 6.7%→**56.7%**,mustNot@3=0;AdvisorSafety **PASS**(静默 5/5,
+  推荐 5/5,零误报)。
+
 ## v0.1.1(2026-08-23)
 
 可靠性补丁(评审第九轮三处 P0,均经源码核实):
