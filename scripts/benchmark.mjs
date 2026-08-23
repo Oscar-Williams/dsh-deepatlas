@@ -16,7 +16,8 @@ const mode = args.includes('--paraphrase') ? 'paraphrase' : args.includes('--adv
 const set = mode
 
 const golden = JSON.parse(readFileSync(path.join(ROOT, `benchmark/${set === 'dev' ? 'golden' : 'holdout'}.json`), 'utf8'))
-const index = JSON.parse(readFileSync(path.join(os.homedir(), '.dsh/deepatlas/index.json'), 'utf8'))
+const dataBase = process.env.DEEPATLAS_HOME ?? process.env.DSH_HOME ?? path.join(os.homedir(), '.dsh')
+const index = JSON.parse(readFileSync(path.join(dataBase, 'deepatlas/index.json'), 'utf8'))
 
 const rows = []
 let top1Hit = 0, top3Hit = 0, top3SA = 0, recall20 = 0, mustNotViolations = 0, nonInstallable3 = 0
@@ -98,7 +99,6 @@ if (mode === 'advisor') {
   // AdvisorSafetyGate mini-bench:注入式 dump,离线可测
   const { buildAdviseTool } = await import('../lib/tools/advise.js')
   const cfg = { dataDir: path.join(os.homedir(), '.dsh/deepatlas'), installProfile: 'web', indexTtlHours: 24, minStars: 0, githubTokenEnv: 'X', dryRun: true }
-  const tool = buildAdviseTool({}, cfg)
   const cases = [
     { id: 'a1', task: '帮我接入微信收消息', dump: '', expect: 'recommend', cap: 'messaging-wechat' },
     { id: 'a2', task: '每次重开会话都要重新交代背景,烦', dump: '', expect: 'recommend', cap: 'long-term-memory' },
@@ -113,7 +113,8 @@ if (mode === 'advisor') {
   ]
   let rec = 0, recTotal = 0, sil = 0, silTotal = 0, wrong = 0
   for (const c of cases) {
-    const r = await tool.execute({ task: c.task, capabilities: c.cap }, async () => c.dump)
+    const tool = buildAdviseTool({}, cfg, async () => c.dump)
+    const r = await tool.execute({ task: c.task, capabilities: [c.cap] })
     const isSilent = r.silent === true
     if (c.expect === 'recommend') { recTotal++; if (!isSilent && Array.isArray(r.recommendations) && r.recommendations.length > 0) rec++; else wrong++ }
     else { silTotal++; if (isSilent) sil++; else wrong++ }

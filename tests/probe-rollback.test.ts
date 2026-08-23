@@ -64,15 +64,18 @@ describe('snapshot/restore(回滚)', () => {
     expect(restored).toContain('package.json')
     expect(await fs.readFile(path.join(dir, 'package.json'), 'utf8')).toBe('{"name":"before"}')
 
-    await discardSnapshot(dir)
-    await expect(fs.access(path.join(dir, '.deepatlas-backup'))).rejects.toThrow()
+    await discardSnapshot(snap)
+    await expect(fs.access(snap.snapshotDir)).rejects.toThrow()
   })
 
-  it('缺失文件不入快照,恢复不报错', async () => {
+  it('快照时缺失、安装时新增的关键文件会在恢复时移除', async () => {
     const dir = path.join(root, 'profile-slim')
     await fs.mkdir(dir, { recursive: true })
     const snap = await snapshotProfile(dir)
     expect(snap.files).toEqual([])
+    await fs.writeFile(path.join(dir, 'pnpm-lock.yaml'), 'lockfileVersion: 9')
     await expect(restoreProfile(snap)).resolves.toEqual({ restored: [] })
+    await expect(fs.access(path.join(dir, 'pnpm-lock.yaml'))).rejects.toThrow()
+    await discardSnapshot(snap)
   })
 })

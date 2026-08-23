@@ -5,7 +5,7 @@
 import { Context } from '@deepseek-ai/cordis';
 import { DeepAtlasConfig } from '../config.js';
 import { Scanner } from '../core/scanner.js';
-import { renderJson } from './common.js';
+import { renderJson, type ToolExecutionContext } from './common.js';
 export declare function scannerFor(config: DeepAtlasConfig): Scanner;
 export declare function buildScanTool(_ctx: Context, config: DeepAtlasConfig): {
     name: string;
@@ -32,20 +32,15 @@ export declare function buildScanTool(_ctx: Context, config: DeepAtlasConfig): {
     execute(args: {
         confirm: boolean;
         incremental?: boolean;
-    }): Promise<{
-        ok: boolean;
-        message: string;
-        pluginCount?: undefined;
-        builtAt?: undefined;
-        location?: undefined;
-        sources?: undefined;
-    } | {
+    }, execution?: ToolExecutionContext): Promise<{
         ok: boolean;
         pluginCount: number;
         builtAt: string;
         location: string;
         sources: import("../types.js").SourceHealth[];
-        message?: undefined;
+    } | {
+        ok: boolean;
+        message: string;
     }>;
 };
 export declare function buildStatusTool(_ctx: Context, config: DeepAtlasConfig): {

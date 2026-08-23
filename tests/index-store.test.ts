@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach, afterEach } from 'vitest'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
-import { IndexStore, SCHEMA_VERSION } from '../src/core/index-store.js'
+import { IndexStore, SCHEMA_VERSION, defaultDataDir } from '../src/core/index-store.js'
 import { AtlasIndex } from '../src/types.js'
 
 let dir: string
@@ -25,6 +25,21 @@ function sampleIndex(builtAt: string): AtlasIndex {
 }
 
 describe('IndexStore', () => {
+
+  it('uses the active DSH_HOME before the user-wide fallback', () => {
+    const previousDeepAtlasHome = process.env.DEEPATLAS_HOME
+    const previousDshHome = process.env.DSH_HOME
+    delete process.env.DEEPATLAS_HOME
+    process.env.DSH_HOME = path.join(os.tmpdir(), 'isolated-dsh-home')
+    try {
+      expect(defaultDataDir()).toBe(path.join(process.env.DSH_HOME, 'deepatlas'))
+    } finally {
+      if (previousDeepAtlasHome === undefined) delete process.env.DEEPATLAS_HOME
+      else process.env.DEEPATLAS_HOME = previousDeepAtlasHome
+      if (previousDshHome === undefined) delete process.env.DSH_HOME
+      else process.env.DSH_HOME = previousDshHome
+    }
+  })
   it('save 后能 load 回来,字段无损', async () => {
     const store = new IndexStore(dir)
     await store.save(sampleIndex('2026-08-22T00:00:00Z'))

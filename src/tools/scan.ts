@@ -6,7 +6,7 @@ import { Context } from '@deepseek-ai/cordis'
 import { DeepAtlasConfig } from '../config.js'
 import { Scanner } from '../core/scanner.js'
 import { IndexStore, defaultDataDir } from '../core/index-store.js'
-import { looseObjectOutput, renderJson } from './common.js'
+import { asLosslessJson, looseObjectOutput, renderJson, type ToolExecutionContext } from './common.js'
 import { resolveGithubToken, authMode } from '../core/github.js'
 
 export function scannerFor(config: DeepAtlasConfig) {
@@ -24,18 +24,18 @@ export function buildScanTool(_ctx: Context, config: DeepAtlasConfig) {
       incremental: { type: 'boolean' as const, description: '增量模式:基于上次索引时间只抓有更新的仓库;无索引时自动全量' },
     },
     output: { schema: looseObjectOutput, render: renderJson },
-    async execute(args: { confirm: boolean; incremental?: boolean }) {
+    async execute(args: { confirm: boolean; incremental?: boolean }, execution?: ToolExecutionContext) {
       if (!args.confirm) return { ok: false, message: '用户未确认,取消扫描' }
       const scanner = scannerFor(config)
       const token = resolveGithubToken(config)
-      const index = await scanner.scan({ token, incremental: args.incremental })
-      return {
+      const index = await scanner.scan({ token, incremental: args.incremental, signal: execution?.signal })
+      return asLosslessJson({
         ok: true,
         pluginCount: index.plugins.length,
         builtAt: index.builtAt,
         location: new IndexStore(defaultDataDir(config.dataDir)).location,
         sources: index.sources,
-      }
+      })
     },
   }
 }
@@ -51,11 +51,11 @@ export function buildStatusTool(_ctx: Context, config: DeepAtlasConfig) {
       const status = await scanner.status(config.indexTtlHours)
       // 认证模式与元数据覆盖率(不回显 Token 本体)
       const enriched = (await scanner.loadIndex())?.plugins.filter((p) => p.metadataFetchedAt).length ?? 0
-      return {
+      return asLosslessJson({
         ...status,
         githubAuth: authMode(resolveGithubToken(config)),
         metadataCoverage: status.exists ? { enriched, total: status.pluginCount } : undefined,
-      }
+      })
     },
   }
 }

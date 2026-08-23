@@ -69,6 +69,15 @@ describe('场景B:BOOT 冒烟失败 → 回滚', () => {
     expect(finalVerdict(plan)).toBe('ROLLED_BACK')
     expect(plan.trace.map((t) => t.to)).toContain('ROLLING_BACK')
   })
+
+  it('回滚动作失败不会伪报 ROLLED_BACK', async () => {
+    let plan = await driveToInstalled('a/rollback-fail')
+    plan = markFailed(plan, 'COMPOSED', '故障注入')
+    plan = await rollbackToSnapshot(plan, async () => { throw new Error('restore denied') })
+    expect(plan.state).toBe('ROLLBACK_FAILED')
+    expect(finalVerdict(plan)).toBe('ROLLBACK_FAILED')
+    expect(plan.trace.at(-1)?.note).toContain('restore denied')
+  })
 })
 
 describe('场景C:幂等——重复安装不破坏系统', () => {

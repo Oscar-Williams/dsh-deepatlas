@@ -65,6 +65,6 @@ describe('AuditCache(内容寻址)', () => {
     expect(k1).not.toBe(cacheKey('a/b', 'sha2'))
     const manual = createHash('sha256').update(`a/b#sha1|audit-vX`).digest('hex').slice(0, 24)
     expect(cacheKey('a/b', 'sha1')).not.toBe(manual)
-    expect(AUDITOR_VERSION).toBe('audit-v1')
+    expect(AUDITOR_VERSION).toBe('audit-v3')
   })
 })

@@ -6,8 +6,7 @@
  */
 import { Context } from '@deepseek-ai/cordis';
 import { DeepAtlasConfig } from '../config.js';
-import { AuditLevel } from '../types.js';
-import { renderJson } from './common.js';
+import { renderJson, type ToolExecutionContext } from './common.js';
 import { InstallPlan } from '../core/installplan.js';
 export declare function buildInstallTool(_ctx: Context, config: DeepAtlasConfig): {
     name: string;
@@ -23,18 +22,9 @@ export declare function buildInstallTool(_ctx: Context, config: DeepAtlasConfig)
             required: boolean;
             description: string;
         };
-        auditLevel: {
-            type: "string";
-            required: boolean;
-            description: string;
-        };
         userConsent: {
             type: "boolean";
             required: boolean;
-            description: string;
-        };
-        enginesNode: {
-            type: "string";
             description: string;
         };
     };
@@ -49,12 +39,13 @@ export declare function buildInstallTool(_ctx: Context, config: DeepAtlasConfig)
     execute(args: {
         target: string;
         commit: string;
-        auditLevel: AuditLevel;
         userConsent: boolean;
-        auditCommit?: string;
-        enginesNode?: string;
-    }): Promise<{
+    }, execution?: ToolExecutionContext): Promise<{
         ok: boolean;
+        dryRun?: boolean;
+        executed?: boolean;
+        composed?: boolean;
+        active?: boolean;
         plan: InstallPlan;
         error?: string;
     }>;

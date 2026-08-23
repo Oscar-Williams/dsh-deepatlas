@@ -21,5 +21,5 @@ export interface EcosystemSource {
     /** 中文说明 */
     readonly label: string;
     /** 抓取并归一化为原始条目;实现内部处理分页与速率限制 */
-    collect(token?: string): AsyncGenerator<RawPluginEntry, void, unknown>;
+    collect(token?: string, signal?: AbortSignal): AsyncGenerator<RawPluginEntry, void, unknown>;
 }

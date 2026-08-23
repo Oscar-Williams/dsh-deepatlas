@@ -9,7 +9,7 @@ import { Context } from '@deepseek-ai/cordis'
 import { DeepAtlasConfig } from '../config.js'
 
 import { scannerFor } from './scan.js'
-import { looseObjectOutput, renderJson } from './common.js'
+import { asLosslessJson, looseObjectOutput, renderJson, type ToolExecutionContext } from './common.js'
 import {
   CAPABILITY_PARAMETER_SCHEMA,
   CapabilityInput,
@@ -17,25 +17,33 @@ import {
   normalizeCapabilityIds,
 } from '../core/capabilities.js'
 import { retrieve } from '../core/retrieval.js'
+import { dshInvocation, isDshProfileName } from '../core/dsh-cli.js'
 
-export type DumpRunner = () => Promise<string>
+export type DumpRunner = (signal?: AbortSignal) => Promise<string>
 
 /** 宿主已装清单读取器(闭包绑定 profile,v0.1.1 修复硬编码 web 的不一致) */
 export function makeDumpRunner(profile: string): DumpRunner {
-  return async () => {
+  return async (signal) => {
+    if (!isDshProfileName(profile)) return ''
     const { execFile } = await import('node:child_process')
     const { promisify } = await import('node:util')
     const exec = promisify(execFile)
     try {
-      const { stdout } = await exec('dsh', ['--profile', profile, '--dump-config'], { timeout: 30_000 })
+      const invocation = dshInvocation(['--profile', profile, '--dump-config'])
+      const { stdout } = await exec(invocation.command, invocation.args, { timeout: 30_000, signal })
       return stdout
-    } catch {
+    } catch (error) {
+      if (signal?.aborted) throw error
       return ''
     }
   }
 }
 
-export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
+export function buildAdviseTool(
+  _ctx: Context,
+  config: DeepAtlasConfig,
+  dumpFn: DumpRunner = makeDumpRunner(config.installProfile),
+) {
   return {
     name: 'deepatlas_advise',
     description:
@@ -45,10 +53,10 @@ export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
       capabilities: CAPABILITY_PARAMETER_SCHEMA,
     },
     output: { schema: looseObjectOutput, render: renderJson },
-    async execute(args: { task: string; capabilities?: CapabilityInput }, dumpFn: DumpRunner = makeDumpRunner(config.installProfile)) {
+    async execute(args: { task: string; capabilities?: CapabilityInput }, execution?: ToolExecutionContext) {
       const scanner = scannerFor(config)
       const index = await scanner.loadIndex()
-      if (!index) return { silent: true, reason: '索引不存在' }
+      if (!index) return asLosslessJson({ silent: true, reason: '索引不存在' })
 
       // P4.1 正式形态:按 capabilities 判缺口(非插件 ID,评审第八轮 §16)
       // v3-A 混合归一:静态抽取 ∪ 模型传入 caps(与 find 同通道)
@@ -57,9 +65,9 @@ export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
         ...normalizeCapabilityIds(args.capabilities),
       ])
       if (taskCaps.size === 0) {
-        return { silent: true, reason: '任务未识别出能力需求,不打扰' }
+        return asLosslessJson({ silent: true, reason: '任务未识别出能力需求,不打扰' })
       }
-      const dumpText = await dumpFn()
+      const dumpText = await dumpFn(execution?.signal)
       // v3-B 精确路径:已装 ID → 索引 capsEv join;未入索引的回退到 ID 文本抽取
       const installedCaps = new Set<string>()
       for (const m of dumpText.matchAll(/name:\s*'?([@\w\/.:-]+)'?/g)) {
@@ -74,15 +82,15 @@ export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
 
       const missingCaps = [...taskCaps].filter((c) => !installedCaps.has(c))
       if (missingCaps.length === 0) {
-        return { silent: true, reason: `所需能力已具备(${[...taskCaps].join(', ')}),保持安静` }
+        return asLosslessJson({ silent: true, reason: `所需能力已具备(${[...taskCaps].join(', ')}),保持安静` })
       }
 
       const pool = retrieve(args.task, index.plugins, 3, [...taskCaps])
       const recs = pool.filter(({ capOverlap }) => capOverlap.some((c) => missingCaps.includes(c)))
       if (recs.length === 0) {
-        return { silent: true, reason: `缺能力(${missingCaps.join(', ')})但索引中无强匹配插件` }
+        return asLosslessJson({ silent: true, reason: `缺能力(${missingCaps.join(', ')})但索引中无强匹配插件` })
       }
-      return {
+      return asLosslessJson({
         silent: false,
         gap: `任务需要 ${missingCaps.join(', ')} 能力,当前宿主未覆盖`,
         recommendations: recs.map(({ plugin: p, taskScore, capOverlap }) => ({
@@ -93,7 +101,7 @@ export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
           reason: `补齐 ${capOverlap.filter((c) => missingCaps.includes(c)).join(', ')};任务匹配 ${taskScore}`,
           installCommandPreview: `dsh plugin --profile ${config.installProfile} add github:${p.id}#<commit>`,
         })),
-      }
+      })
     },
   }
 }

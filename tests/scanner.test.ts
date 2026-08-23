@@ -96,6 +96,44 @@ describe('Scanner 全量扫描', () => {
     expect(index.sources.find((s) => s.sourceId === 'bad')?.ok).toBe(false)
     expect(index.sources.find((s) => s.sourceId === 'bad')?.error).toContain('rate limited')
   })
+
+  it('数据源中途失败时丢弃该源已产生的部分条目', async () => {
+    const partial: EcosystemSource = {
+      id: 'github-topic',
+      label: 'partial',
+      async *collect() {
+        yield entry({ id: 'a/partial' })
+        throw new Error('incomplete_results')
+      },
+    }
+    const scanner = new Scanner(store, [
+      partial,
+      fakeSource('awesome-list', [entry({ id: 'a/complete' })]),
+    ])
+    const index = await scanner.scan({ enrichTopN: 0 })
+    expect(index.plugins.map((plugin) => plugin.id)).toEqual(['a/complete'])
+    expect(index.sources[0]).toMatchObject({ ok: false, itemCount: 1 })
+  })
+
+  it('主发现源失败时保守合并旧索引,不被较小降级源覆盖', async () => {
+    const oldPlugin = entry({ id: 'a/old', name: 'dsh-old' }) as PluginMeta
+    await store.save(oldIndexWith([oldPlugin]))
+    const scanner = new Scanner(store, [
+      fakeSource('github-topic', [], new Error('rate limited')),
+      fakeSource('awesome-list', [entry({ id: 'a/new', name: 'dsh-new' })]),
+    ])
+    const index = await scanner.scan({ enrichTopN: 0 })
+    expect(index.plugins.map((plugin) => plugin.id).sort()).toEqual(['a/new', 'a/old'])
+    expect(index.sources.find((source) => source.sourceId === 'github-topic')?.ok).toBe(false)
+  })
+
+  it('收到取消信号时不落盘', async () => {
+    const controller = new AbortController()
+    controller.abort(new DOMException('cancelled', 'AbortError'))
+    const scanner = new Scanner(store, [fakeSource('github-topic', [entry({ id: 'a/x' })])])
+    await expect(scanner.scan({ enrichTopN: 0, signal: controller.signal })).rejects.toThrow()
+    expect(await store.load()).toBeNull()
+  })
 })
 
 describe('Scanner 增量扫描', () => {

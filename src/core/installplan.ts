@@ -2,16 +2,16 @@
  * InstallPlan 状态机(P3,采纳外部评审 #2889 教训)
  *
  * RESOLVED(目标与 commit 已确定,兼容性已核)
- *   → APPROVED(审计非红 + 用户显式同意)
+ *   → APPROVED(审计非红 + 用户显式同意)→ PLANNED(dry-run 仅生成命令)
  *   → INSTALLED(dsh plugin add 执行成功)
  *   → COMPOSED(dump-config 组合树含目标行,防 duplicate loader entry)
- *   → BOOT_VERIFIED(宿主启动冒烟通过)——本轮留接口,headless 冒烟 P3 后续
+ *   → BOOT_VERIFIED(宿主重启冒烟通过,由外部分发 E2E 推进)
  *   → ACTIVE
  * 只有 ACTIVE 才向用户报告"安装成功"。
  */
 import { PluginMeta, AuditReport } from '../types.js'
 
-export type PlanState = 'RESOLVED' | 'APPROVED' | 'INSTALLED' | 'COMPOSED' | 'BOOT_VERIFIED' | 'ACTIVE' | 'FAILED' | 'ROLLING_BACK' | 'ROLLED_BACK'
+export type PlanState = 'RESOLVED' | 'APPROVED' | 'PLANNED' | 'INSTALLED' | 'COMPOSED' | 'BOOT_VERIFIED' | 'ACTIVE' | 'FAILED' | 'ROLLING_BACK' | 'ROLLED_BACK' | 'ROLLBACK_FAILED'
 export type PlanBlocked = 'REJECTED_CONSENT' | 'REJECTED_AUDIT' | 'REJECTED_UNPINNED' | 'REJECTED_DUPLICATE' | 'REJECTED_COMPAT'
 
 export interface InstallPlan {
@@ -42,23 +42,25 @@ function advance(plan: InstallPlan, to: PlanState | PlanBlocked, note?: string):
 
 export interface PlanGateInput {
   userConsent: boolean
-  audit: Pick<AuditReport, 'level'>
+  audit: Pick<AuditReport, 'level'> | null
   compatibilityOk: boolean
 }
 
 /** RESOLVED → APPROVED:三重闸门 + 兼容性(P2 新增硬闸) */
 export function approve(plan: InstallPlan, input: PlanGateInput): InstallPlan {
-  if (!input.compatibilityOk) return advance(plan, 'REJECTED_COMPAT', '运行时不兼容(Node 引擎等硬性冲突)')
   if (!input.userConsent) return advance(plan, 'REJECTED_CONSENT', '未获得用户显式同意')
+  if (!input.audit) return advance(plan, 'REJECTED_AUDIT', '未找到与目标 commit 匹配的审计记录')
   if (input.audit.level === 'red') return advance(plan, 'REJECTED_AUDIT', '审计红色风险')
   if (!plan.commit) return advance(plan, 'REJECTED_UNPINNED', '未锁定 commit')
+  if (!input.compatibilityOk) return advance(plan, 'REJECTED_COMPAT', '运行时不兼容(Node 引擎等硬性冲突)')
   return advance(plan, 'APPROVED')
 }
 
 /** 行匹配:name: 行内任意位置含插件名(兼容 @scope/name 形态) */
 function rowMatches(dumpConfigOutput: string, pluginName: string): boolean {
   const esc = pluginName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  return new RegExp(`name:[^\\n]*${esc}`).test(dumpConfigOutput)
+  const exactName = new RegExp(`^\\s*name:\\s*['\"]?${esc}['\"]?\\s*(?:#.*)?$`)
+  return dumpConfigOutput.split(/\r?\n/).some((line) => exactName.test(line))
 }
 
 /** 装前查重(#2889):dump-config 输出已含目标插件行则拒绝 */
@@ -83,9 +85,9 @@ export async function install(
   const [owner, repo] = plan.target.split('/')
   const cmd = `dsh plugin --profile ${plan.profile} add github:${owner}/${repo}${plan.commit ? '#' + plan.commit : ''}`
   const withCmd = { ...plan, installCommand: cmd }
-  if (dryRun || !exec) return advance({ ...withCmd, state: 'APPROVED' }, 'INSTALLED', '[dry-run] 仅生成命令,未执行')
+  if (dryRun || !exec) return advance({ ...withCmd, state: 'APPROVED' }, 'PLANNED', '[dry-run] 仅生成命令,未执行')
   const r = await exec(cmd)
-  if (r.code !== 0) return advance(withCmd, 'INSTALLED', `安装命令退出码 ${r.code}:${r.output.slice(0, 200)}`)
+  if (r.code !== 0) return markFailed(withCmd, 'INSTALL', `安装命令退出码 ${r.code}:${r.output.slice(0, 200)}`)
   return advance(withCmd, 'INSTALLED')
 }
 
@@ -96,7 +98,7 @@ export function verifyComposed(plan: InstallPlan, dumpConfigOutput: string, plug
   return advance(plan, 'COMPOSED')
 }
 
-/** COMPOSED → ACTIVE:启动冒烟(本轮占位,P3 后续接 headless) */
+/** COMPOSED → ACTIVE:宿主重启后的外部冒烟确认 */
 export function markActiveIfBooted(plan: InstallPlan, booted: boolean): InstallPlan {
   if (plan.state !== 'COMPOSED') return plan
   return booted ? advance(plan, 'ACTIVE') : plan
@@ -109,7 +111,7 @@ export function markFailed(plan: InstallPlan, stage: string, reason: string): In
   return advance(plan, 'FAILED', `${stage} 失败:${reason}`)
 }
 
-/** FAILED → ROLLING_BACK → ROLLED_BACK(restore 注入;失败也算 ROLLED_BACK 但 trace 留证) */
+/** FAILED → ROLLING_BACK → ROLLED_BACK；恢复动作失败必须显式暴露。 */
 export async function rollbackToSnapshot(
   plan: InstallPlan,
   restore: () => Promise<unknown>,
@@ -120,14 +122,15 @@ export async function rollbackToSnapshot(
     await restore()
     return advance(rolling, 'ROLLED_BACK')
   } catch (err) {
-    return advance(rolling, 'ROLLED_BACK', `回滚动作本身出错:${err instanceof Error ? err.message : String(err)}`)
+    return advance(rolling, 'ROLLBACK_FAILED', `回滚动作本身出错:${err instanceof Error ? err.message : String(err)}`)
   }
 }
 
 /** 用户层最终表述:只有 ACTIVE(成功)与 ROLLED_BACK(失败但已恢复)两种结语 */
-export function finalVerdict(plan: InstallPlan): 'ACTIVE' | 'ROLLED_BACK' | 'BLOCKED' | 'IN_PROGRESS' {
+export function finalVerdict(plan: InstallPlan): 'ACTIVE' | 'ROLLED_BACK' | 'ROLLBACK_FAILED' | 'BLOCKED' | 'IN_PROGRESS' {
   if (plan.state === 'ACTIVE') return 'ACTIVE'
   if (plan.state === 'ROLLED_BACK') return 'ROLLED_BACK'
+  if (plan.state === 'ROLLBACK_FAILED') return 'ROLLBACK_FAILED'
   if (typeof plan.state === 'string' && plan.state.startsWith('REJECTED')) return 'BLOCKED'
   return 'IN_PROGRESS'
 }

@@ -94,6 +94,10 @@ export interface SourceHealth {
     fetchedAt: string;
     /** 本次抓取模式:全量或增量(基于上次 builtAt) */
     mode?: 'full' | 'incremental';
+    /** 数据源报告的总量(若可得) */
+    reportedTotal?: number;
+    /** 上游 API 只允许读取结果子集时为 true */
+    truncated?: boolean;
     error?: string;
 }
 /** 审计风险等级 */

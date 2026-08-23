@@ -2,12 +2,12 @@
  * DeepAtlas 插件配置(schemastery 定义)
  *
  * 遵循 DSH 插件规范:命名导出 Config,由 Cordis 注入用户配置。
- * 安全默认值:dryRun=true(骨架阶段不真正执行安装)、安装需显式同意。
+ * 安全默认值:dryRun=true，安装需显式同意。
  */
 import Schema from '@deepseek-ai/schemastery'
 
 export interface DeepAtlasConfig {
-  /** 索引与日志存放目录,默认 ~/.dsh/deepatlas */
+  /** 索引与日志目录；默认位于当前 DSH_HOME/deepatlas */
   dataDir: string
   /** 安装时使用的 dsh profile 名 */
   installProfile: string
@@ -17,12 +17,12 @@ export interface DeepAtlasConfig {
   minStars: number
   /** GitHub Token 环境变量名(提高 API 限额,可选) */
   githubTokenEnv: string
-  /** 骨架阶段默认 dry-run,不真正调用 dsh 安装 */
+  /** 默认 dry-run,不调用 dsh 安装 */
   dryRun: boolean
 }
 
 export const Config = Schema.object({
-  dataDir: Schema.string().default('').description('索引与日志目录,留空则使用 ~/.dsh/deepatlas'),
+  dataDir: Schema.string().default('').description('索引与日志目录,留空则使用当前 DSH_HOME/deepatlas'),
   installProfile: Schema.string().default('web').description('安装时使用的 dsh profile 名'),
   indexTtlHours: Schema.number().default(24).description('索引过期时长(小时)'),
   minStars: Schema.number().default(0).description('进入推荐的最低 star 数'),

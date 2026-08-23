@@ -7,13 +7,15 @@
 import { EcosystemSource, RawPluginEntry } from './types.js';
 /** 生态公认的白名单仓库(命中即 whitelisted=true) */
 export declare const WHITELIST_REPOS: string[];
-/** 骨架阶段收录的清单源,P1 扩展为可配置 */
+/** 当前纳入扫描与健康检查的社区清单源。 */
 export declare const AWESOME_LISTS: {
     sourceId: string;
-    url: string;
+    repo: string;
+    ref: string;
+    path: string;
 }[];
 export declare class AwesomeListSource implements EcosystemSource {
     readonly id = "awesome-list";
     readonly label = "awesome \u6E05\u5355(\u767D\u540D\u5355/\u76EE\u5F55)";
-    collect(): AsyncGenerator<RawPluginEntry, void, unknown>;
+    collect(token?: string, signal?: AbortSignal): AsyncGenerator<RawPluginEntry, void, unknown>;
 }

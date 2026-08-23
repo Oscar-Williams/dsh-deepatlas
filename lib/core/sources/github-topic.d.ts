@@ -1,28 +1,32 @@
 /**
- * 数据源:GitHub topic `dsh-plugin`(生态事实上的发现入口)
+ * GitHub topic `dsh-plugin` discovery source.
  *
- * P1 能力:
- * - 全量分页:遍历 search API 所有页(约 7800+ 仓库),页空或达 total 即止;
- * - 增量模式:仅抓 pushed:>since 之后有更新的仓库;
- * - 速率限制:403/429 读取 Retry-After 指数退避,有限重试后抛错由上层降级;
- * - 进度回调:onProgress({ page, fetched, total }) 供 CLI 实时输出。
+ * GitHub Search exposes at most 1,000 results per query. Complete collection
+ * recursively partitions the repository creation/push time range until every
+ * query fits below that ceiling, then paginates every partition.
  */
 import { EcosystemSource, RawPluginEntry } from './types.js';
 export interface TopicProgress {
     page: number;
     fetched: number;
     total: number;
+    partition?: string;
 }
 export interface TopicCollectOptions {
     token?: string;
-    /** 增量:仅抓该时间(ISO 8601)之后有推送的仓库 */
+    /** Incremental mode: repositories pushed after this ISO 8601 timestamp. */
     since?: string;
     onProgress?: (p: TopicProgress) => void;
+    signal?: AbortSignal;
+    /** Test seam; production uses the current time. */
+    now?: Date;
 }
 export declare class GitHubTopicSource implements EcosystemSource {
     private readonly options;
     readonly id = "github-topic";
     readonly label = "GitHub topic: dsh-plugin";
+    reportedTotal: number;
+    truncated: boolean;
     constructor(options?: TopicCollectOptions);
-    collect(): AsyncGenerator<RawPluginEntry, void, unknown>;
+    collect(_token?: string, outerSignal?: AbortSignal): AsyncGenerator<RawPluginEntry, void, unknown>;
 }
