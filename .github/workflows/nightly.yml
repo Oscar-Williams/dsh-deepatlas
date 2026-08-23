@@ -1,7 +1,7 @@
 name: nightly
 # 每日(北京时间 03:00)或手动触发:真实 github:#SHA 分发 E2E(双平台)
 # 这是最高保真的分发验证——与用户安装路径 100% 同构(评审第六/九轮)。
-on:
+"on":
   schedule:
     - cron: '0 19 * * *'
   workflow_dispatch:
