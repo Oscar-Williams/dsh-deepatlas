@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.1(2026-08-23)
+
+可靠性补丁(评审第九轮三处 P0,均经源码核实):
+
+- **engines.node 修正**:`>=18` → `^22.19.0 || >=24.0.0`(发布元数据与
+  兼容契约/docs/compatibility.md 对齐;Node 18/20 用户此前不会被拦住);
+- **advise 修复 profile 硬编码**:dump-config 读取器改为闭包绑定
+  `config.installProfile`,消除"检测 web / 安装 headless"的不一致;
+- **已装能力推断保守化**:移除对 dump 全文跑 alias 的兜底(配置文本
+  含某词 ≠ 具备该能力);精确路径(Installed IDs →
+  PluginRecord.capabilities)排入 Retrieval v3-B;
+- README 双语润色:开头去口号腔,安装步骤对齐真实流程(pinned tag)。
+
 ## v0.1.0(2026-08-23)
 
 首个公开预览版。工程链路全绿,推荐质量如实标注。

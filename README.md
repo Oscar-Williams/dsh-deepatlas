@@ -5,9 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Status: Skeleton](https://img.shields.io/badge/status-skeleton%20(P0)-orange)](./docs/architecture.md)
 
-> 从"人找插件"到"插件找人":扫描 DSH 插件生态 → 按当前任务推荐 → 装前安全审计 → 用户授权后安装。
->
-> Task-aware plugin navigator for DeepSeek Harness — scan the `dsh-plugin` ecosystem, recommend plugins for the task at hand, audit before install, and install only with explicit user consent.
+DSH 的插件生态几天就翻一倍,靠刷帖和挨个试错跟不上。DeepAtlas 替你盯:维护一份 3000+ 插件的本地索引,你说要做什么,它按能力挑出合适的几个,装之前先做安全检查,你点头之后才动手——锁定版本安装,出问题可回滚。
 
 ## 命名体系
 
@@ -33,12 +31,17 @@ DeepAtlas 把"人肉逛 topic + 看帖子推荐 + 手动装"变成一条闭环:*
 
 ## 安装
 
+前提:已能运行 DSH(`npx @deepseek-ai/dsh web` 可用)。
+
 ```bash
-# 推荐:锁定 commit 安装(占位,首发后替换为真实 commit)
-dsh plugin --profile <你的profile> add github:<owner>/dsh-deepatlas#<commit>
+dsh plugin --profile <你的profile> add github:Oscar-Williams/dsh-deepatlas#v0.1.1
 ```
 
-装完**重启 dsh web 并刷新页面**方可生效。
+装完**重启 dsh web**(刷新页面),六个 `deepatlas_*` 工具就位。
+
+首次使用:对 Agent 说"扫描一下插件索引"(首次约一两分钟;设置
+`GITHUB_TOKEN` 环境变量可提高配额)。之后直接提需求即可,比如
+"我想接入微信收消息"或"帮我监控 token 花费"。
 
 开发模式(源码直挂,不装包):把根目录 `cordis.patch.yml` 中的 insert 行
 复制进目标 profile 的 `cordis.patch.yml`,将 `name` 改为指向本仓库源码入口

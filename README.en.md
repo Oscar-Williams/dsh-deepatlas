@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![DSH](https://img.shields.io/badge/topic-dsh%20%7C%20deepseek-blue)](../../graphs)
 
-> From "humans search for plugins" to "plugins find you": scan the `dsh-plugin` ecosystem → recommend by task → audit before install → install only with explicit consent.
+The DSH plugin ecosystem doubles every few days — keeping up by hand doesn't scale. DeepAtlas watches it for you: a local index of 3000+ plugins, capability-based matching against your task, a safety check before anything installs, and commit-pinned transactional installs with rollback.
 
 DeepAtlas is a task-aware plugin navigator for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (DSH). It maintains a local index of the ecosystem (3000+ plugins with live GitHub metadata), understands what capability your task needs, recommends the right plugin, audits it for risk signals, and installs it transactionally — commit-pinned, with rollback.
 
@@ -20,7 +20,7 @@ DeepAtlas is a task-aware plugin navigator for [DeepSeek Harness](https://github
 ## Install
 
 ```bash
-dsh plugin --profile <profile> add github:Oscar-Williams/dsh-deepatlas#v0.1.0
+dsh plugin --profile <profile> add github:Oscar-Williams/dsh-deepatlas#v0.1.1
 ```
 
 Restart `dsh web` afterwards. Six tools are registered: `deepatlas_scan / status / find / audit / install / advise`.

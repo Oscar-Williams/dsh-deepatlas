@@ -9,7 +9,8 @@ import { Context } from '@deepseek-ai/cordis';
 import { DeepAtlasConfig } from '../config.js';
 import { renderJson } from './common.js';
 export type DumpRunner = () => Promise<string>;
-export declare const defaultDumpRunner: DumpRunner;
+/** 宿主已装清单读取器(闭包绑定 profile,v0.1.1 修复硬编码 web 的不一致) */
+export declare function makeDumpRunner(profile: string): DumpRunner;
 export declare function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig): {
     name: string;
     description: string;

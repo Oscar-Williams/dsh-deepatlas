@@ -15,15 +15,18 @@ import { retrieve } from '../core/retrieval.js'
 
 export type DumpRunner = () => Promise<string>
 
-export const defaultDumpRunner: DumpRunner = async () => {
-  const { execFile } = await import('node:child_process')
-  const { promisify } = await import('node:util')
-  const exec = promisify(execFile)
-  try {
-    const { stdout } = await exec('dsh', ['--profile', 'web', '--dump-config'], { timeout: 30_000 })
-    return stdout
-  } catch {
-    return ''
+/** 宿主已装清单读取器(闭包绑定 profile,v0.1.1 修复硬编码 web 的不一致) */
+export function makeDumpRunner(profile: string): DumpRunner {
+  return async () => {
+    const { execFile } = await import('node:child_process')
+    const { promisify } = await import('node:util')
+    const exec = promisify(execFile)
+    try {
+      const { stdout } = await exec('dsh', ['--profile', profile, '--dump-config'], { timeout: 30_000 })
+      return stdout
+    } catch {
+      return ''
+    }
   }
 }
 
@@ -36,7 +39,7 @@ export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
       task: { type: 'string' as const, required: true, description: '用户当前任务描述,如"帮我控制 Home Assistant"' },
     },
     output: { schema: looseObjectOutput, render: renderJson },
-    async execute(args: { task: string }, dumpFn: DumpRunner = defaultDumpRunner) {
+    async execute(args: { task: string }, dumpFn: DumpRunner = makeDumpRunner(config.installProfile)) {
       const scanner = scannerFor(config)
       const index = await scanner.loadIndex()
       if (!index) return { silent: true, reason: '索引不存在' }
@@ -52,8 +55,8 @@ export function buildAdviseTool(_ctx: Context, config: DeepAtlasConfig) {
       for (const m of dumpText.matchAll(/name:\s*'?([@\w\/.:-]+)'?/g)) {
         for (const c of extractCapabilities(m[1])) installedCaps.add(c)
       }
-      // dump 行文本里往往还有描述性词,直接对全文抽一次兜底
-      for (const c of extractCapabilities(dumpText)) installedCaps.add(c)
+      // v0.1.1 保守化:不再对 dump 全文跑 alias(配置文本出现某词≠具备该能力);
+      // 精确路径(Installed IDs → PluginRecord.capabilities)在 Retrieval v3-B 实现。
 
       const missingCaps = [...taskCaps].filter((c) => !installedCaps.has(c))
       if (missingCaps.length === 0) {
