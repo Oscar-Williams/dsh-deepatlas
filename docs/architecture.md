@@ -123,8 +123,8 @@ Web profile 运行中的插件无法在同一端口内重启宿主，因此工�
 
 - **v0.2.3 / Evidence v2**：来源可追踪、置信度可校准、字段冲突可解释；publisher artifact 固定 commit，并完成迁移、覆盖率与精度 Gate。
 - **v0.2.4 / Capability Diagnosis + HostIntentGate**：测量真实 DSH 意图链路，区分已有能力、配置问题、兼容问题与新增能力缺口；在稳定生命周期接口上加入受控任务觉察。
-- **v0.2.5 / Capability Change Transaction**：以完整纵向事务统一 GitHub、SkillHub、npm 和本地候选，交付 before/after fingerprint、结构预检、shadow boot、resolved graph/runtime delta、目标探针、策略判定、恢复对象和内容寻址 receipt。
-- **v0.2.6 / Transaction Hardening**：扩展来源适配、故障注入与 receipt replay，并通过 feature detection 复用 DSH safe-boot、recoverable bundle、doctor 和 capability declaration。
+- **v0.2.5 / Capability Change Transaction**：以完整纵向事务统一 GitHub、SkillHub、npm 和本地候选，交付 before/after fingerprint、Resolved Environment Preflight、模块解析探针、完整 loader boot、dependency/runtime delta、Capability Reality、目标探针、策略判定、恢复对象和内容寻址 receipt。
+- **v0.2.6 / Transaction Hardening**：强化依赖漂移、外部 capability evidence、来源适配、故障注入与 receipt replay，并通过 feature detection 复用 DSH safe-boot、recoverable bundle、doctor 和 capability declaration。
 - **v0.2.7 及后续 v0.2.x / Active Assurance**：任务阶段感知、安装后验收、漂移与因果追踪，逐步扩展团队策略、可移植证明和 Verified Installability 生态协议。
 
-详细事务结构见 [Capability Change Transaction 设计](./capability-change-transaction.md)，发布 Gate 与协同规则见 [v0.2.x 路线图](./v0.2.x-roadmap.md)。
+详细事务结构见 [Capability Change Transaction 设计](./capability-change-transaction.md)，环境事实层见 [Resolved Environment Preflight 工程规格](./resolved-environment-preflight.md)，发布 Gate 与协同规则见 [v0.2.x 路线图](./v0.2.x-roadmap.md)。
