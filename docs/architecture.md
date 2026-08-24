@@ -1,6 +1,6 @@
 # DeepAtlas 架构
 
-DeepAtlas 以 DSH bundle 形式挂载六个工具，将能力诊断、生态发现、证据采集、审计和安装拆成相互约束的确定性模块。宿主模型负责理解自然语言，所有改变 profile 的动作由工具层闸门控制。长期架构以本地 Capability Assurance 为中心，逐步覆盖变更前验证、变更后验收与漂移追踪。
+DeepAtlas 以 DSH bundle 形式挂载六个工具，将能力诊断、生态发现、证据采集、审计和安装拆成相互约束的确定性模块。宿主模型负责理解自然语言，所有改变 profile 的动作由工具层闸门控制。长期架构以本地 Capability Assurance 为中心，通过 Capability Change Transaction 串联变更前 fingerprint、隔离验证、运行时差异、目标验收、授权、现场应用和恢复证据。
 
 ## 交互触发与运行边界
 
@@ -123,8 +123,8 @@ Web profile 运行中的插件无法在同一端口内重启宿主，因此工�
 
 - **v0.2.3 / Evidence v2**：来源可追踪、置信度可校准、字段冲突可解释；publisher artifact 固定 commit，并完成迁移、覆盖率与精度 Gate。
 - **v0.2.4 / Capability Diagnosis + HostIntentGate**：测量真实 DSH 意图链路，区分已有能力、配置问题、兼容问题与新增能力缺口；在稳定生命周期接口上加入受控任务觉察。
-- **v0.2.5 / Capability Change Gate**：让 GitHub、SkillHub、npm 和本地包共用变更证据、策略、授权与验证接口。
-- **v0.2.6–v0.2.8 / Preflight、Shadow Runtime、Integrity Capsule**：从静态组合推进到隔离启动验证，再把完整验证事实封装为内容寻址胶囊。
-- **v0.2.9 及后续 v0.2.x / Active Assurance**：任务阶段感知、安装后验收、漂移与因果追踪，并随 DSH 发布持续维护兼容 canary、迁移与安全响应。
+- **v0.2.5 / Capability Change Transaction**：以完整纵向事务统一 GitHub、SkillHub、npm 和本地候选，交付 before/after fingerprint、结构预检、shadow boot、resolved graph/runtime delta、目标探针、策略判定、恢复对象和内容寻址 receipt。
+- **v0.2.6 / Transaction Hardening**：扩展来源适配、故障注入与 receipt replay，并通过 feature detection 复用 DSH safe-boot、recoverable bundle、doctor 和 capability declaration。
+- **v0.2.7 及后续 v0.2.x / Active Assurance**：任务阶段感知、安装后验收、漂移与因果追踪，逐步扩展团队策略、可移植证明和 Verified Installability 生态协议。
 
-详细发布 Gate 与协同规则见 [v0.2.x 路线图](./v0.2.x-roadmap.md)。
+详细事务结构见 [Capability Change Transaction 设计](./capability-change-transaction.md)，发布 Gate 与协同规则见 [v0.2.x 路线图](./v0.2.x-roadmap.md)。

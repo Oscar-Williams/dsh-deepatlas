@@ -26,7 +26,7 @@ Natural-language tool selection is performed by the active DSH model and can var
 
 ## Highlights
 
-- **Complete ecosystem discovery** combines the GitHub `dsh-plugin` topic with community lists. Time-range partitioning works around GitHub Search's 1,000-result limit.
+- **Evidence-backed ecosystem discovery** combines the GitHub `dsh-plugin` topic with community lists, then uses structural eligibility, publisher artifacts pinned to one commit, and coverage state to distinguish installable candidates from discovery leads.
 - **Task capability retrieval** combines 28 bilingual capability classes, field-level evidence, and quality signals for natural-language tasks and canonical capability input.
 - **Reviewable capability evidence** uses GitHub Search and community lists for discovery, then reads candidate manifests, READMEs, and declared entries at one full commit while recording repository paths, content hashes, and coverage status.
 - **Quiet capability advisor** returns a silent result after invocation when the selected profile already covers the task, and 1–3 suggestions for clear capability gaps.
@@ -238,11 +238,11 @@ The v0.2.2 stable baseline is **22 test files and 108 tests**; the current v0.2.
 - **v0.2.2**: pinned HTTPS installation, release integrity, complete partitioned discovery, DSH rc.2 lossless JSON, audit authorization hardening, Windows CLI handling, and install recovery.
 - **v0.2.3 (including rc.x)**: complete Evidence v2 provenance, conflict resolution, migration, coverage reporting, and regression gates.
 - **v0.2.4 (including rc.x)**: deliver Capability Diagnosis, HostIntentGate, real DSH session replay, and controlled task awareness.
-- **v0.2.5 (including rc.x)**: introduce one CapabilityChange Gate for GitHub, SkillHub, npm, and local candidates.
-- **v0.2.6–v0.2.8**: deliver structural preflight, an isolated Shadow Runtime, and content-addressed verification capsules.
-- **v0.2.9 and later v0.2.x releases**: extend active assurance, post-install validation, drift, and causal tracing while maintaining DSH canaries, migrations, security response, and tooling.
+- **v0.2.5 (across multiple rc.x builds)**: deliver a complete Capability Change Transaction spanning a goal contract, exact candidate, before/after fingerprints, structural preflight, isolated boot, resolved-graph/runtime deltas, goal acceptance, policy verdict, rollback artifact, and content-addressed receipt.
+- **v0.2.6**: harden source adapters, failure injection, and receipt replay while reusing available DSH safe-boot, doctor, and capability-declaration interfaces.
+- **v0.2.7 and later v0.2.x releases**: extend active assurance, post-install validation, drift and causal tracing, team policy, portable proof, and Verified Installability metrics.
 
-See the [v0.2.x roadmap](./docs/v0.2.x-roadmap.md) for milestones, acceptance criteria, and the DSH coordination policy.
+See the [v0.2.x roadmap](./docs/v0.2.x-roadmap.md) for milestones, acceptance criteria, and the DSH coordination policy, and the [Capability Change Transaction design](./docs/capability-change-transaction.md) for the transaction model.
 
 ## Naming
 

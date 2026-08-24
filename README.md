@@ -26,7 +26,7 @@ DeepAtlas 通过六个工具参与当前 DSH 会话。你描述找插件、比�
 
 ## 亮点
 
-- **完整生态发现**：聚合 GitHub `dsh-plugin` topic 与多个社区清单；GitHub Search 结果按时间分片，越过单次查询 1,000 条上限。
+- **证据化生态发现**：聚合 GitHub `dsh-plugin` topic 与多个社区清单，再通过结构资格、固定 commit 的发布者 artifact 和覆盖状态区分可安装候选与发现线索。
 - **任务能力检索**：28 类中英 capability、多字段证据与质量信号共同生成候选，适合自然语言任务和标准 capability 输入。
 - **可复核的能力证据**：GitHub Search 与社区清单用于生态发现；候选的 manifest、README 和声明入口在同一完整 commit 下读取，并记录仓库路径、内容哈希和覆盖状态。
 - **安静的能力顾问**：工具被调用后，当前 profile 已具备相关能力时返回静默结论，发现明确缺口时给出 1–3 个建议。
@@ -236,11 +236,11 @@ v0.2.2 稳定版基线为 **22 个测试文件、108 项测试**；当前 v0.2.3
 - **v0.2.2**：HTTPS 锁定版本安装、发布完整性、完整生态分片扫描、DSH rc.2 lossless JSON、审计授权收口、Windows CLI 与安装恢复链路。
 - **v0.2.3（含 rc.x）**：完成 Evidence v2 的 provenance、冲突解析、迁移、覆盖率报告与回归 Gate。
 - **v0.2.4（含 rc.x）**：完成 Capability Diagnosis、HostIntentGate、真实 DSH 会话重放和受控任务觉察。
-- **v0.2.5（含 rc.x）**：以统一 CapabilityChange Gate 接入 GitHub、SkillHub、npm 与本地候选。
-- **v0.2.6–v0.2.8**：依次交付结构预检、隔离 Shadow Runtime 和内容寻址验证胶囊。
-- **v0.2.9 及后续 v0.2.x**：扩展主动保障、安装后验收、漂移与因果追踪，并持续维护 DSH canary、迁移、安全响应和工具链。
+- **v0.2.5（含多个 rc.x）**：交付完整 Capability Change Transaction，串联目标契约、精确候选、before/after fingerprint、结构预检、隔离启动、resolved graph/runtime delta、目标验收、策略结论、恢复对象和内容寻址 receipt。
+- **v0.2.6**：强化多来源适配、故障注入与 receipt replay，并复用 DSH 可用的 safe-boot、doctor 和 capability declaration 接口。
+- **v0.2.7 及后续 v0.2.x**：扩展主动保障、安装后验收、漂移与因果追踪、团队策略、可移植证明和 Verified Installability 指标。
 
-完整里程碑、验收条件与 DSH 协同策略见 [v0.2.x 路线图](./docs/v0.2.x-roadmap.md)。
+完整里程碑、验收条件与 DSH 协同策略见 [v0.2.x 路线图](./docs/v0.2.x-roadmap.md)，事务模型见 [Capability Change Transaction 设计](./docs/capability-change-transaction.md)。
 
 ## 项目名称
 
