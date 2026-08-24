@@ -103,6 +103,22 @@ describe('Evidence v2', () => {
     expect(report[metric]).toBe(1)
   })
 
+  it('千级动态源允许 0.1% 内的扫描期总量漂移', () => {
+    const observations = [{ values: { name: 'browser-helper', description: '', topics: [], provides: [] }, provenance: provenance() }]
+    const index: AtlasIndex = {
+      schemaVersion: 2,
+      evidenceMeta: { taxonomyVersion: 'capability-taxonomy-v1', extractorVersion: 'capability-evidence-v2.0.0', ruleVersion: 'capability-claims-v2.0.0', state: 'complete' },
+      builtAt: '2026-01-01T00:00:00Z',
+      sources: [{ sourceId: 'github-topic', ok: true, itemCount: 9_999, reportedTotal: 10_000, fetchedAt: '2026-01-01T00:00:00Z' }],
+      plugins: [{
+        ...plugin(), observations, evidence: evidenceFromObservations(observations, 'complete'),
+        publisherCoverage: { status: 'complete', commit: 'a'.repeat(40), requiredRoles: ['manifest'], fetchedRoles: ['manifest'], errors: [], observedAt: '2026-01-01T00:00:00Z' },
+      }],
+    }
+    expect(buildEvidenceReport(index).incompleteSources).toBe(0)
+    expect(buildEvidenceReport(index).releaseGate).toBe('PASS')
+  })
+
   it('原生 v2 空 claims 不回退到插件文本猜测', () => {
     const candidate = {
       ...plugin(),

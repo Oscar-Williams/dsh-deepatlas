@@ -141,7 +141,13 @@ export function buildEvidenceReport(index: AtlasIndex): EvidenceReport {
   const invalid = [...invalidCapabilityIds].sort()
   const failedSources = index.sources.filter((source) => !source.ok).length
   const truncatedSources = index.sources.filter((source) => source.truncated === true).length
-  const incompleteSources = index.sources.filter((source) => source.reportedTotal !== undefined && source.itemCount < source.reportedTotal).length
+  const incompleteSources = index.sources.filter((source) => {
+    if (source.reportedTotal === undefined || source.itemCount >= source.reportedTotal) return false
+    // GitHub Search 的 total_count 会随扫描期间的 topic 增删变化。千级以上动态源
+    // 允许 0.1%（至少 5 条）的自然漂移；小源保持精确一致。
+    const tolerance = source.reportedTotal >= 1_000 ? Math.max(5, Math.ceil(source.reportedTotal * 0.001)) : 0
+    return source.reportedTotal - source.itemCount > tolerance
+  }).length
   const metaValid = index.evidenceMeta?.taxonomyVersion === TAXONOMY_VERSION
     && index.evidenceMeta.extractorVersion === EVIDENCE_EXTRACTOR_VERSION
     && index.evidenceMeta.ruleVersion === EVIDENCE_RULE_VERSION
