@@ -4,10 +4,14 @@
 
 ### Evidence v2 与产品说明
 
-- 建立 provenance-backed capability evidence 基础结构，纳入事实 atom、claim、中央解析器、旧索引迁移与结构 Gate；完整 Evidence v2 继续由 v0.2.3 的 RC 序列验收。
+- 建立 provenance-backed capability evidence：事实 atom、派生 claim、冲突与 supersede 校验、v1 确定性迁移、公开 v2 JSON Schema，以及结构/发布双 Gate。
+- GitHub Search 降为平台发现证据；高质量候选在同一完整 commit 下读取 publisher manifest、README 与声明入口，记录路径、内容哈希和独立 coverage 状态。
+- 装前审计与索引共享固定 commit 的 artifact 读取、入口解析、路径约束、大小与二进制边界；发布 Gate 拒绝来源失败、截断、缺失 publisher 固定证据和 stale claims。
+- 新增冻结 Evidence gold：accepted precision、recall 与 must-not 假接受进入无网络 CI Gate。
+- WSL2 Ubuntu 26.04 同轮全量扫描生成 12,076 条原生 v2 索引与 20,194 个 atoms；结构/发布 Gate 均通过，脱敏凭据记录索引哈希、来源健康度和 publisher coverage。
 - 中英文 README 明确会话驱动的工具选择、经确认的生态扫描、基于本地索引的日常检索，以及审计与安装的独立授权步骤。
 - 产品路线统一为持续的 v0.2.x 发布序列；v0.2.3、v0.2.4、v0.2.5 为近期里程碑，后续按实际范围延续 v0.2.6 及更高版本。
-- 当前开发回归基线为 23 个测试文件、112 项测试；v0.2.2 稳定版继续保持 22 个测试文件、108 项测试。
+- 当前开发回归基线为 26 个测试文件、131 项测试；v0.2.2 稳定版继续保持 22 个测试文件、108 项测试。
 
 ## v0.2.2（2026-08-23）
 

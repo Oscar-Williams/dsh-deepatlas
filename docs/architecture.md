@@ -1,10 +1,10 @@
 # DeepAtlas 架构
 
-DeepAtlas 以 DSH bundle 形式挂载六个工具，将生态发现、检索、审计和安装拆成相互约束的确定性模块。宿主模型负责理解自然语言，所有改变 profile 的动作仍由工具层闸门控制。
+DeepAtlas 以 DSH bundle 形式挂载六个工具，将能力诊断、生态发现、证据采集、审计和安装拆成相互约束的确定性模块。宿主模型负责理解自然语言，所有改变 profile 的动作由工具层闸门控制。长期架构以本地 Capability Assurance 为中心，逐步覆盖变更前验证、变更后验收与漂移追踪。
 
 ## 交互触发与运行边界
 
-插件挂载时只向 DSH 注册六个工具。每个 DSH 步骤会将当前可见工具的名称、说明和参数 schema 提供给宿主模型；模型生成相应 tool call 后，DeepAtlas 才进入具体工具的 `execute()`。因此，v0.2.2 的任务感知发生在当前会话中，调用表现由模型、提示词和可见工具集合共同决定。
+插件挂载时向 DSH 注册六个工具。每个 DSH 步骤会将当前可见工具的名称、说明和参数 schema 提供给宿主模型；模型生成相应 tool call 后，DeepAtlas 进入具体工具的 `execute()`。当前 v0.2.x 的任务理解发生在会话内，调用表现由模型、提示词和可见工具集合共同决定。
 
 | 能力 | 触发条件 | 运行边界 |
 |---|---|---|
@@ -26,10 +26,13 @@ src/
 ├── types.ts                 索引、风险、推荐与数据源类型
 ├── core/
 │   ├── scanner.ts           数据源编排、合并、富化、能力证据与落盘
+│   ├── github-artifacts.ts  固定 commit 的仓库 artifact 读取与哈希
+│   ├── publisher-evidence.ts 发布者 manifest、README 与入口覆盖
+│   ├── evidence-report.ts   结构、来源完整性与发布 Gate
 │   ├── sources/
 │   │   ├── github-topic.ts  时间分片 GitHub Search、分页、限流与取消
 │   │   ├── awesome-list.ts  社区清单发现
-│   │   └── enrich.ts        仓库内容与类型富化
+│   │   └── enrich.ts        旧类型富化兼容模块（由固定提交证据链取代）
 │   ├── capabilities.ts      28 类 capability 与字段级证据
 │   ├── retrieval.ts         多字段候选检索
 │   ├── ranker.ts            质量与任务匹配评分
@@ -53,14 +56,14 @@ src/
 
 完整扫描以 `topic:dsh-plugin` 为主发现入口。GitHub Search 每个查询最多开放 1,000 条结果，因此数据源从 GitHub 仓库时代起点到当前时间递归切分稳定的 `created` 区间，直到每个分片都可完整分页。增量扫描沿用该创建时间分片，并附加 `pushed:>上次构建时间` 过滤条件。
 
-扫描器按规范仓库 ID 去重，将 awesome 清单作为补充来源，再对高质量候选读取仓库内容完成类型富化。索引写入前生成 capability evidence 和质量分。每个来源记录抓取模式、条目数、上游报告总数、截断状态和错误信息。
+扫描器按规范仓库 ID 去重，将 awesome 清单作为补充来源。GitHub Search 记录归类为平台发现证据，社区清单归类为社区证据；高质量候选会先解析完整 commit，再在同一 SHA 下读取 manifest、README 和声明入口。每个 artifact 记录仓库路径与 SHA-256，publisher coverage 独立报告 complete、partial、failed 与 not-applicable。索引写入前生成 capability evidence 和质量分，每个来源同时记录抓取模式、条目数、上游报告总数、截断状态和错误信息。
 
 数据完整性规则：
 
 - `AbortSignal` 贯穿工具、扫描器、fetch、退避与富化流程。
 - 主发现源异常时，完整扫描在旧索引上保守合并社区来源。
 - 临时文件带 PID 与 UUID，完成写入后原子替换正式索引。
-- schema 版本变化会触发重建，避免新代码读取旧结构。
+- v1 索引可确定性迁移为 `legacy-partial` 供检索回退；稳定发布 Gate 要求原生 v2 索引、完整数据源和固定提交的 publisher cohort。
 
 ## 任务理解与检索
 
@@ -116,11 +119,12 @@ COMPOSED ── 外部启动验证 ──→ BOOT_VERIFIED ──→ ACTIVE
 
 Web profile 运行中的插件无法在同一端口内重启宿主，因此工具内完成到 `COMPOSED`。用户重启对应 profile 后，外部分发 E2E 负责验证启动与工具注册。公开版本的 CI 同时覆盖 Windows、Node 22/24、tarball 安装、GitHub commit 安装和启动冒烟。
 
-## v0.2.x 演进阶段
+## Capability Assurance 演进阶段
 
-- **v0.2.3 / Evidence v2**：将 capability 证据扩展为来源可追踪、置信度可校准、字段冲突可解释的索引结构，并完成迁移、覆盖率报告和回归 Gate。
-- **v0.2.4 / HostIntentGate**：冻结自然语言改写集，通过真实 DSH 会话捕获模型选择、capability 参数和最终候选，输出逐意图准确率、稳定率、混淆矩阵、覆盖率与误报。
-- **v0.2.5 / DSH 协同能力**：自动执行依赖解析、配置组合、六工具 smoke、Windows/Linux 安装、取消、审计缓存与回滚验证，并扩展组合推荐和增量生态维护。
-- **v0.2.6 及后续 v0.2.x**：随 DSH RC 和稳定接口持续扩展兼容矩阵、数据迁移、安全响应、审计信号与工程工具链。每个里程碑可使用多个 `rc.x` 完成分段验收。
+- **v0.2.3 / Evidence v2**：来源可追踪、置信度可校准、字段冲突可解释；publisher artifact 固定 commit，并完成迁移、覆盖率与精度 Gate。
+- **v0.2.4 / Capability Diagnosis + HostIntentGate**：测量真实 DSH 意图链路，区分已有能力、配置问题、兼容问题与新增能力缺口；在稳定生命周期接口上加入受控任务觉察。
+- **v0.2.5 / Capability Change Gate**：让 GitHub、SkillHub、npm 和本地包共用变更证据、策略、授权与验证接口。
+- **v0.2.6–v0.2.8 / Preflight、Shadow Runtime、Integrity Capsule**：从静态组合推进到隔离启动验证，再把完整验证事实封装为内容寻址胶囊。
+- **v0.2.9 及后续 v0.2.x / Active Assurance**：任务阶段感知、安装后验收、漂移与因果追踪，并随 DSH 发布持续维护兼容 canary、迁移与安全响应。
 
 详细发布 Gate 与协同规则见 [v0.2.x 路线图](./v0.2.x-roadmap.md)。

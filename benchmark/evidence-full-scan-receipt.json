@@ -1,0 +1,50 @@
+{
+  "receiptVersion": 1,
+  "implementationCommit": "27402c3919cff259578e21313cd0cf77a88dbfe1",
+  "builtAt": "2026-08-24T12:45:57.046Z",
+  "environment": {
+    "os": "Ubuntu 26.04 on WSL2",
+    "node": "22.23.2",
+    "npm": "10.9.8",
+    "environmentPath": "/home/Oscar/miniconda3/envs/dsh-deepatlas",
+    "githubAuth": "authenticated"
+  },
+  "index": {
+    "schemaVersion": 2,
+    "sha256": "3fefdb858737bb0b07bc1c4641b83b73c483ecc622553e169ba6af5c26d2db54",
+    "bytes": 92875602,
+    "plugins": 12076,
+    "eligiblePlugins": 11819
+  },
+  "sources": [
+    { "sourceId": "github-topic", "mode": "full", "ok": true, "itemCount": 11250, "reportedTotal": 11251, "truncated": false },
+    { "sourceId": "awesome-list", "mode": "full", "ok": true, "itemCount": 5537 }
+  ],
+  "evidence": {
+    "state": "complete",
+    "pluginsWithEvidence": 12076,
+    "atoms": 20194,
+    "acceptedClaims": 53,
+    "provisionalClaims": 8848,
+    "publisherCompletePlugins": 14,
+    "legacyPlugins": 0,
+    "malformedRecords": 0,
+    "unresolvedReferences": 0,
+    "invalidPublisherAtoms": 0,
+    "acceptedClaimsWithoutPinnedPublisher": 0,
+    "failedSources": 0,
+    "truncatedSources": 0,
+    "incompleteSources": 0,
+    "structuralGate": "PASS",
+    "releaseGate": "PASS"
+  },
+  "gold": {
+    "version": "evidence-gold-v1",
+    "cases": 12,
+    "acceptedPrecision": 1,
+    "acceptedRecall": 1,
+    "mustNotFalseAccepts": 0,
+    "gate": "PASS"
+  },
+  "privacy": "The receipt contains aggregate metrics and the index digest. Repository records and credentials are not included."
+}

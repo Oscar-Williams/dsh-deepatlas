@@ -5,7 +5,7 @@
 [![Status](https://img.shields.io/badge/status-public%20preview-blueviolet)](./CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-DeepAtlas 是 DeepSeek Harness（DSH）的任务感知插件导航。它按需建立万级生态索引：你在会话中提出插件发现需求，DSH 宿主模型可调用 DeepAtlas 给出能力匹配的候选、质量依据和重叠提示；选定插件后，DeepAtlas 继续完成 commit 级审计、兼容性检查和受控安装。
+DeepAtlas 为 DeepSeek Harness（DSH）提供本地能力保障与按需插件导航。它先建立本地生态索引；当你提出找插件、比较候选或检查能力缺口时，DSH 宿主模型可调用 DeepAtlas 给出能力匹配的候选、来源证据和重叠提示。选定插件后，DeepAtlas 继续完成固定 commit 的风险审计、兼容性检查和受控安装。
 
 第三方插件会与 DSH 共享进程权限。DeepAtlas 提供可复核的风险信号和安装轨迹，最终选择始终由用户确认。
 
@@ -13,7 +13,7 @@ DeepAtlas 是 DeepSeek Harness（DSH）的任务感知插件导航。它按需�
 
 ## DeepAtlas 如何参与任务
 
-DeepAtlas 通过六个工具参与当前 DSH 会话。你描述找插件、比较候选或检查能力缺口等需求后，宿主模型会依据可见工具说明选择 `deepatlas_find` 或 `deepatlas_advise`；在请求中写明“用 DeepAtlas 查找插件”可以获得更确定的触发效果。
+DeepAtlas 通过六个工具参与当前 DSH 会话。你描述找插件、比较候选或检查能力缺口等需求后，宿主模型会依据可见工具说明选择 `deepatlas_find` 或 `deepatlas_advise`；在请求中写明“用 DeepAtlas 查找插件”可以获得更确定的触发效果。当前版本采用会话内按需调用；持续任务觉察与受控主动建议列入 v0.2.4。
 
 | 阶段 | 触发方式 | 执行行为 |
 |---|---|---|
@@ -28,6 +28,7 @@ DeepAtlas 通过六个工具参与当前 DSH 会话。你描述找插件、比�
 
 - **完整生态发现**：聚合 GitHub `dsh-plugin` topic 与多个社区清单；GitHub Search 结果按时间分片，越过单次查询 1,000 条上限。
 - **任务能力检索**：28 类中英 capability、多字段证据与质量信号共同生成候选，适合自然语言任务和标准 capability 输入。
+- **可复核的能力证据**：GitHub Search 与社区清单用于生态发现；候选的 manifest、README 和声明入口在同一完整 commit 下读取，并记录仓库路径、内容哈希和覆盖状态。
 - **安静的能力顾问**：工具被调用后，当前 profile 已具备相关能力时返回静默结论，发现明确缺口时给出 1–3 个建议。
 - **装前风险审计**：检查生命周期脚本、依赖形态、native 依赖、manifest 声明入口与 bundle patch 的源码风险模式，以及 Node 兼容性；结果绑定完整 commit SHA。
 - **受控安装与恢复**：安装授权只读取同一仓库、同一 commit 的本地审计缓存；执行前创建 profile 快照，异常时进入回滚流程。
@@ -83,9 +84,9 @@ dsh web
 
 > 调用 `deepatlas_status` 查看索引状态；若索引尚未建立，请执行一次完整扫描。
 
-首次完整扫描会自动完成 GitHub 时间分片、社区清单合并、仓库去重和本地落盘。2026-08-23 的专用 WSL 环境实测读取 10,914 条 GitHub topic 结果与 5,175 条社区清单记录，去重后生成 11,700 条索引。
+用户确认并启动完整扫描后，DeepAtlas 将依次完成 GitHub 时间分片、社区清单合并、仓库去重、候选证据采集和本地落盘。2026-08-23 的专用 WSL 环境实测读取 10,914 条 GitHub topic 结果与 5,175 条社区清单记录，去重后生成 11,700 条索引。
 
-匿名模式耗时 15 分 46 秒，主要时间用于等待 GitHub Search API 配额。配置 GitHub Token 并保持网络连接稳定后，Search 配额由每分钟 10 次提升到 30 次，完整扫描通常在数分钟内完成。扫描是当前 DSH 进程中的长时工具调用；期间请保持进程和网络连接，完成时会返回条目数、来源健康度和索引位置。
+该次匿名扫描耗时 15 分 46 秒，主要时间用于等待 GitHub Search API 配额。配置 GitHub Token 后，Search 请求额度由每分钟 10 次提高到 30 次；网络稳定时通常可在数分钟内完成。实际耗时会随 GitHub 配额、网络状态和生态规模变化。扫描运行于当前 DSH 进程，期间需保持进程与网络连接；完成时会返回条目数、来源健康度和索引位置。
 
 保持扫描顺畅：
 
@@ -186,8 +187,10 @@ DeepAtlas 将以下条件固化在工具层：
 | Independent holdout-15 | Top3-SA 26.7% | 纯静态检索对口语任务的基线 |
 | NormalizedIntentRetrieval（120 改写） | 静态 50.8% → 标准 capability 85.0% | capability 通道的检索收益 |
 | AdvisorSafety fixture | 推荐 5/5；静默 5/5；误报 0 | 安静顾问的确定性回归 |
+| EvidenceGold v1 | accepted precision 100%；recall 100%；must-not 假接受 0 | publisher provenance、边界词与冲突回归 |
+| EvidenceFullScan（2026-08-24） | 12,076 插件；20,194 atoms；release Gate PASS | 两源同轮全量扫描与固定 publisher cohort；[脱敏凭据](./benchmark/evidence-full-scan-receipt.json) |
 
-HostIntentGate 将独立度量“自然语言 → DSH 宿主模型 → capability 数组”的真实链路；Evidence v2 将进一步校准能力证据来源、置信度和覆盖率。当前 85.0% 结果验证的是规范 capability 已进入参数后的检索收益。两项工作采用冻结数据、可重放记录和独立 Gate，分阶段进入 v0.2.x 发布线。
+HostIntentGate 将独立度量“自然语言 → DSH 宿主模型 → capability 数组”的真实链路。当前 85.0% 结果验证规范 capability 已进入参数后的检索收益；EvidenceGold 则校准能力证据来源、accepted claim 与误接受边界。两类评测采用冻结数据、可重放记录和独立 Gate。
 
 ## 兼容性与当前范围
 
@@ -214,7 +217,7 @@ dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deep
 dsh plugin --profile web remove dsh-deepatlas
 ```
 
-本地索引与审计记录保存在 `dataDir`；卸载插件不会自动清理这些本地数据。
+本地索引与审计记录保存在 `dataDir`；卸载插件后，这些数据会保留，便于再次安装时复用。
 
 ## 开发与验证
 
@@ -226,15 +229,16 @@ npm run typecheck:tests
 npm run build
 ```
 
-v0.2.2 稳定版基线为 **22 个测试文件、108 项测试**；当前 v0.2.3 开发分支为 **23 个测试文件、112 项测试**。CI 覆盖 Node 22/24、Windows、分发完整性、tarball 安装与启动验证，以及按 commit 安装的 nightly E2E。`lib/` 属于 GitHub 安装载荷，源码变更必须同步构建产物。
+v0.2.2 稳定版基线为 **22 个测试文件、108 项测试**；当前 v0.2.3 开发分支为 **26 个测试文件、131 项测试**。CI 覆盖 Node 22/24、Windows、Evidence 发布与精度 Gate、分发完整性、tarball 安装与启动验证，以及按 commit 安装的 nightly E2E。`lib/` 属于 GitHub 安装载荷，源码变更必须同步构建产物。
 
 ## 路线图
 
 - **v0.2.2**：HTTPS 锁定版本安装、发布完整性、完整生态分片扫描、DSH rc.2 lossless JSON、审计授权收口、Windows CLI 与安装恢复链路。
 - **v0.2.3（含 rc.x）**：完成 Evidence v2 的 provenance、冲突解析、迁移、覆盖率报告与回归 Gate。
-- **v0.2.4（含 rc.x）**：完成 HostIntentGate、真实 DSH 会话重放、误报监测与可解释性报告。
-- **v0.2.5（含 rc.x）**：扩展 DSH RC canary、组合推荐、审计规则与增量生态维护。
-- **后续 v0.2.x**：按 DSH 发布节奏继续使用 v0.2.6、v0.2.7 及更高的 v0.2.x 版本，持续维护兼容矩阵、数据迁移、安全响应和工具链。版本号由通过的发布 Gate 与实际范围决定。
+- **v0.2.4（含 rc.x）**：完成 Capability Diagnosis、HostIntentGate、真实 DSH 会话重放和受控任务觉察。
+- **v0.2.5（含 rc.x）**：以统一 CapabilityChange Gate 接入 GitHub、SkillHub、npm 与本地候选。
+- **v0.2.6–v0.2.8**：依次交付结构预检、隔离 Shadow Runtime 和内容寻址验证胶囊。
+- **v0.2.9 及后续 v0.2.x**：扩展主动保障、安装后验收、漂移与因果追踪，并持续维护 DSH canary、迁移、安全响应和工具链。
 
 完整里程碑、验收条件与 DSH 协同策略见 [v0.2.x 路线图](./docs/v0.2.x-roadmap.md)。
 
@@ -245,7 +249,7 @@ v0.2.2 稳定版基线为 **22 个测试文件、108 项测试**；当前 v0.2.3
 | 产品 | DeepAtlas |
 | 完整名称 | DeepAtlas for DeepSeek Harness |
 | GitHub 仓库 / DSH 包 | `dsh-deepatlas` |
-| 中文说明 | DSH 插件导航 |
+| 中文说明 | DSH 本地能力保障与插件导航 |
 
 ## 致谢
 

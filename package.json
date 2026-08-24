@@ -1,7 +1,7 @@
 {
   "name": "dsh-deepatlas",
   "version": "0.2.2",
-  "description": "DeepAtlas (DSH plugin navigator) builds an ecosystem index on request, recommends plugins for the current task, audits risk signals, and installs only with explicit consent. DSH 插件导航：按需建立索引、按任务推荐、审计风险信号、授权安装。",
+  "description": "DeepAtlas provides local capability assurance for DSH: on-demand discovery, provenance-backed recommendations, pinned risk review, and controlled installation. DSH 本地能力保障：按需发现、证据推荐、固定版本审计与受控安装。",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -25,6 +25,8 @@
     "deepseek",
     "deepseek-harness",
     "dsh-plugin",
+    "capability-assurance",
+    "plugin-preflight",
     "plugin-discovery",
     "plugin-navigation"
   ],
