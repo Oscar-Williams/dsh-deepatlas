@@ -48,6 +48,22 @@ describe('Evidence v2', () => {
     expect(evidence.capabilities.find((claim) => claim.id === 'browser-automation')).toMatchObject({ decision: 'rejected', confidence: 0.4 })
   })
 
+  it('平台描述与社区清单只能形成 provisional，不能替代固定发布者证据', () => {
+    const observations = [
+      {
+        values: { name: 'search-tool', description: 'Web search', topics: [], provides: [] },
+        provenance: { ...provenance('platform'), sourceKind: 'github-search' as const, ref: { kind: 'snapshot' as const, value: '2026-01-01' }, path: undefined, contentSha256: undefined },
+      },
+      {
+        values: { name: 'search-tool', description: 'Web search', topics: [], provides: [] },
+        provenance: { ...provenance('community'), sourceKind: 'awesome-list' as const, ref: { kind: 'branch' as const, value: 'main' }, path: 'README.md', contentSha256: undefined },
+      },
+    ]
+    expect(evidenceFromObservations(observations).capabilities.find((claim) => claim.id === 'web-search')).toMatchObject({
+      decision: 'provisional', confidence: 0.6,
+    })
+  })
+
   it('legacy 观察值上限 0.35，结构仍可通过 Gate', () => {
     const observations = [{
       values: { name: 'search-tool', description: 'web search', topics: [], provides: [] },

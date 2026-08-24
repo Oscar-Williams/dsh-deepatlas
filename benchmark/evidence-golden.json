@@ -17,7 +17,7 @@
       "id": "publisher-contradiction",
       "parts": [
         { "source": "manifest-capability", "text": "browser-automation", "capabilityId": "browser-automation" },
-        { "source": "manifest-capability", "text": "browser-automation", "capabilityId": "browser-automation", "polarity": "contradicts", "authority": "community" }
+        { "source": "manifest-capability", "text": "browser-automation", "capabilityId": "browser-automation", "polarity": "contradicts" }
       ],
       "accepted": [],
       "mustNot": ["browser-automation"]
