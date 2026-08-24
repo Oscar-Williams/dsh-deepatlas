@@ -5,17 +5,30 @@
 [![Status](https://img.shields.io/badge/status-public%20preview-blueviolet)](./CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-DeepAtlas 是 DeepSeek Harness（DSH）的任务感知插件导航。它在本地维护一份 3,000+ 条目的生态索引：你描述当前任务，DeepAtlas 给出能力匹配的候选、质量依据和重叠提示；选定插件后，它继续完成 commit 级审计、兼容性检查和受控安装。
+DeepAtlas 是 DeepSeek Harness（DSH）的任务感知插件导航。它按需建立万级生态索引：你在会话中提出插件发现需求，DSH 宿主模型可调用 DeepAtlas 给出能力匹配的候选、质量依据和重叠提示；选定插件后，DeepAtlas 继续完成 commit 级审计、兼容性检查和受控安装。
 
 第三方插件会与 DSH 共享进程权限。DeepAtlas 提供可复核的风险信号和安装轨迹，最终选择始终由用户确认。
 
 [English](./README.en.md) · [架构](./docs/architecture.md) · [安全模型](./docs/security.md) · [兼容契约](./docs/compatibility.md) · [更新记录](./CHANGELOG.md)
 
+## DeepAtlas 如何参与任务
+
+DeepAtlas 通过六个工具参与当前 DSH 会话。你描述找插件、比较候选或检查能力缺口等需求后，宿主模型会依据可见工具说明选择 `deepatlas_find` 或 `deepatlas_advise`；在请求中写明“用 DeepAtlas 查找插件”可以获得更确定的触发效果。
+
+| 阶段 | 触发方式 | 执行行为 |
+|---|---|---|
+| 生态扫描 | 用户确认调用 `deepatlas_scan` | 在当前 DSH 进程中访问 GitHub topic 和社区清单，建立或刷新本地索引 |
+| 任务检索 | 用户提出插件发现需求，宿主模型选择 DeepAtlas 工具 | 解析本次任务与规范 capability，检索已有本地索引 |
+| 能力顾问 | 宿主模型调用 `deepatlas_advise` | 对照当前 profile；能力已覆盖时返回静默结论，有明确缺口时给出建议 |
+| 审计与安装 | 用户选择仓库和完整 commit，并分别确认 | 执行静态审计、兼容检查、快照、锁定安装与恢复流程 |
+
+自然语言工具选择由当前 DSH 模型完成，表现会随模型、提示词和可见工具集合变化。首次索引和后续刷新由确认后的扫描工具完成；日常检索直接读取本地索引。
+
 ## 亮点
 
 - **完整生态发现**：聚合 GitHub `dsh-plugin` topic 与多个社区清单；GitHub Search 结果按时间分片，越过单次查询 1,000 条上限。
 - **任务能力检索**：28 类中英 capability、多字段证据与质量信号共同生成候选，适合自然语言任务和标准 capability 输入。
-- **安静的能力顾问**：当前 profile 已具备相关能力时保持安静，发现明确缺口时给出 1–3 个建议。
+- **安静的能力顾问**：工具被调用后，当前 profile 已具备相关能力时返回静默结论，发现明确缺口时给出 1–3 个建议。
 - **装前风险审计**：检查生命周期脚本、依赖形态、native 依赖、manifest 声明入口与 bundle patch 的源码风险模式，以及 Node 兼容性；结果绑定完整 commit SHA。
 - **受控安装与恢复**：安装授权只读取同一仓库、同一 commit 的本地审计缓存；执行前创建 profile 快照，异常时进入回滚流程。
 - **本地优先**：索引、审计缓存与安装记录留在 DSH home 或用户指定目录，GitHub Token 仅用于提高 API 限额。
@@ -72,7 +85,7 @@ dsh web
 
 首次完整扫描会自动完成 GitHub 时间分片、社区清单合并、仓库去重和本地落盘。2026-08-23 的专用 WSL 环境实测读取 10,914 条 GitHub topic 结果与 5,175 条社区清单记录，去重后生成 11,700 条索引。
 
-匿名模式耗时 15 分 46 秒，主要时间用于等待 GitHub Search API 配额。配置 GitHub Token 并保持网络连接稳定后，Search 配额由每分钟 10 次提升到 30 次，完整扫描通常在数分钟内完成。启动后保持 DSH 进程运行，完成时会返回条目数、来源健康度和索引位置。
+匿名模式耗时 15 分 46 秒，主要时间用于等待 GitHub Search API 配额。配置 GitHub Token 并保持网络连接稳定后，Search 配额由每分钟 10 次提升到 30 次，完整扫描通常在数分钟内完成。扫描是当前 DSH 进程中的长时工具调用；期间请保持进程和网络连接，完成时会返回条目数、来源健康度和索引位置。
 
 保持扫描顺畅：
 
@@ -115,14 +128,14 @@ GitHub topic / 社区清单
 
 ## 六个工具
 
-| 工具 | 用途 | 主要输出 |
+| 工具 | 触发与用途 | 主要输出 |
 |---|---|---|
-| `deepatlas_scan` | 完整扫描或增量刷新生态索引 | 条目数、数据源健康度、索引位置 |
-| `deepatlas_status` | 查看索引时间、TTL、来源与 Top 10 | 当前状态、认证模式、元数据覆盖率 |
-| `deepatlas_find` | 按任务与 capability 检索候选 | 匹配证据、质量分、重叠提示 |
-| `deepatlas_advise` | 对照已安装插件识别能力缺口 | 静默结论或 1–3 个建议 |
-| `deepatlas_audit` | 审计仓库的完整 40 位 commit SHA | 风险等级、证据、兼容结论、`auditedRef` |
-| `deepatlas_install` | 使用审计缓存生成或执行安装计划 | 状态轨迹、命令、执行/组合/激活状态 |
+| `deepatlas_scan` | 用户确认后完整扫描或增量刷新生态索引 | 条目数、数据源健康度、索引位置 |
+| `deepatlas_status` | 按需查看索引时间、TTL、来源与 Top 10 | 当前状态、认证模式、元数据覆盖率 |
+| `deepatlas_find` | 宿主模型按本次需求调用，按任务与 capability 检索候选 | 匹配证据、质量分、重叠提示 |
+| `deepatlas_advise` | 宿主模型按需调用，对照已安装插件识别能力缺口 | 静默结论或 1–3 个建议 |
+| `deepatlas_audit` | 用户选定仓库与完整 40 位 commit SHA 后审计 | 风险等级、证据、兼容结论、`auditedRef` |
+| `deepatlas_install` | 用户明确授权后使用审计缓存生成或执行安装计划 | 状态轨迹、命令、执行/组合/激活状态 |
 
 推荐使用顺序：`status → scan → find → audit → 明确确认 → install`。
 
@@ -174,7 +187,7 @@ DeepAtlas 将以下条件固化在工具层：
 | NormalizedIntentRetrieval（120 改写） | 静态 50.8% → 标准 capability 85.0% | capability 通道的检索收益 |
 | AdvisorSafety fixture | 推荐 5/5；静默 5/5；误报 0 | 安静顾问的确定性回归 |
 
-HostIntentGate 将独立度量“自然语言 → DSH 宿主模型 → capability 数组”的真实链路；Evidence v2 将进一步校准能力证据来源、置信度和覆盖率。两项工作采用冻结数据、可重放记录和独立 Gate，完成后再进入发布线。
+HostIntentGate 将独立度量“自然语言 → DSH 宿主模型 → capability 数组”的真实链路；Evidence v2 将进一步校准能力证据来源、置信度和覆盖率。当前 85.0% 结果验证的是规范 capability 已进入参数后的检索收益。两项工作采用冻结数据、可重放记录和独立 Gate，分阶段进入 v0.2.x 发布线。
 
 ## 兼容性与当前范围
 
@@ -213,14 +226,17 @@ npm run typecheck:tests
 npm run build
 ```
 
-当前回归基线为 **22 个测试文件、108 项测试**。CI 覆盖 Node 22/24、Windows、分发完整性、tarball 安装与启动验证，以及按 commit 安装的 nightly E2E。`lib/` 属于 GitHub 安装载荷，源码变更必须同步构建产物。
+v0.2.2 稳定版基线为 **22 个测试文件、108 项测试**；当前 v0.2.3 开发分支为 **23 个测试文件、112 项测试**。CI 覆盖 Node 22/24、Windows、分发完整性、tarball 安装与启动验证，以及按 commit 安装的 nightly E2E。`lib/` 属于 GitHub 安装载荷，源码变更必须同步构建产物。
 
 ## 路线图
 
 - **v0.2.2**：HTTPS 锁定版本安装、发布完整性、完整生态分片扫描、DSH rc.2 lossless JSON、审计授权收口、Windows CLI 与安装恢复链路。
-- **v0.3.x**：完整 HostIntentGate、Evidence v2、真实会话误报监测与可解释性报告。
-- **v0.4.x**：DSH RC canary 自动化、审计规则扩展、增量索引维护与长期兼容策略。
-- **1.0 准入**：DSH 稳定 API、可重复的跨版本验证、明确的数据迁移政策与安全响应流程。
+- **v0.2.3（含 rc.x）**：完成 Evidence v2 的 provenance、冲突解析、迁移、覆盖率报告与回归 Gate。
+- **v0.2.4（含 rc.x）**：完成 HostIntentGate、真实 DSH 会话重放、误报监测与可解释性报告。
+- **v0.2.5（含 rc.x）**：扩展 DSH RC canary、组合推荐、审计规则与增量生态维护。
+- **后续 v0.2.x**：按 DSH 发布节奏继续使用 v0.2.6、v0.2.7 及更高的 v0.2.x 版本，持续维护兼容矩阵、数据迁移、安全响应和工具链。版本号由通过的发布 Gate 与实际范围决定。
+
+完整里程碑、验收条件与 DSH 协同策略见 [v0.2.x 路线图](./docs/v0.2.x-roadmap.md)。
 
 ## 项目名称
 
