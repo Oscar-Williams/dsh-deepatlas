@@ -21,6 +21,9 @@ export interface EvidenceReport {
     stateMismatches: number;
     invalidCapabilityIds: string[];
     legacyPlugins: number;
+    failedSources: number;
+    truncatedSources: number;
+    incompleteSources: number;
     sourceKinds: Record<string, number>;
     capabilityCounts: Record<string, number>;
     structuralGate: 'PASS' | 'FAIL';

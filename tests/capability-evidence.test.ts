@@ -64,6 +64,27 @@ describe('Evidence v2', () => {
     expect(report.legacyPlugins).toBe(1)
   })
 
+  it.each([
+    [{ sourceId: 'github-topic', ok: false, itemCount: 0, fetchedAt: '2026-01-01T00:00:00Z', error: 'rate limit' }, 'failedSources'],
+    [{ sourceId: 'github-topic', ok: true, itemCount: 1, fetchedAt: '2026-01-01T00:00:00Z', truncated: true }, 'truncatedSources'],
+    [{ sourceId: 'github-topic', ok: true, itemCount: 1, reportedTotal: 2, fetchedAt: '2026-01-01T00:00:00Z' }, 'incompleteSources'],
+  ] as const)('数据源不完整时结构 Gate 可通过，发布 Gate 失败：%s', (source, metric) => {
+    const observations = [{
+      values: { name: 'browser-helper', description: '', topics: [], provides: [] },
+      provenance: provenance(),
+    }]
+    const index: AtlasIndex = {
+      schemaVersion: 2,
+      evidenceMeta: { taxonomyVersion: 'capability-taxonomy-v1', extractorVersion: 'capability-evidence-v2.0.0', ruleVersion: 'capability-claims-v2.0.0', state: 'complete' },
+      builtAt: '2026-01-01T00:00:00Z', sources: [source],
+      plugins: [{ ...plugin(), observations, evidence: evidenceFromObservations(observations, 'complete') }],
+    }
+    const report = buildEvidenceReport(index)
+    expect(report.structuralGate).toBe('PASS')
+    expect(report.releaseGate).toBe('FAIL')
+    expect(report[metric]).toBe(1)
+  })
+
   it('原生 v2 空 claims 不回退到插件文本猜测', () => {
     const candidate = {
       ...plugin(),

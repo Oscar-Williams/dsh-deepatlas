@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "builtAt": "2026-08-20T00:00:00.000Z",
+  "sources": [
+    { "sourceId": "github-topic", "ok": true, "itemCount": 1, "fetchedAt": "2026-08-20T00:00:00.000Z" }
+  ],
+  "plugins": [
+    {
+      "id": "example/search-tool",
+      "name": "search-tool",
+      "displayName": "SearchTool",
+      "repoUrl": "https://github.com/example/search-tool",
+      "description": "Web search helper",
+      "type": "cordis",
+      "stars": 7,
+      "lastPushedAt": "2026-08-19T00:00:00.000Z",
+      "license": "MIT",
+      "topics": ["web-search"],
+      "whitelisted": false,
+      "provides": ["web-search"],
+      "capsEv": [{ "id": "web-search", "confidence": 0.9, "ev": [{ "source": "topics", "text": "web-search" }] }],
+      "source": "github-topic",
+      "fetchedAt": "2026-08-20T00:00:00.000Z"
+    }
+  ]
+}

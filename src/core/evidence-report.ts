@@ -26,6 +26,9 @@ export interface EvidenceReport {
   stateMismatches: number
   invalidCapabilityIds: string[]
   legacyPlugins: number
+  failedSources: number
+  truncatedSources: number
+  incompleteSources: number
   sourceKinds: Record<string, number>
   capabilityCounts: Record<string, number>
   structuralGate: 'PASS' | 'FAIL'
@@ -117,6 +120,9 @@ export function buildEvidenceReport(index: AtlasIndex): EvidenceReport {
     if (canonicalClaims(evidence.capabilities) !== canonicalClaims(computeCapabilityClaims(evidence.atoms, evidence.state))) staleClaims++
   }
   const invalid = [...invalidCapabilityIds].sort()
+  const failedSources = index.sources.filter((source) => !source.ok).length
+  const truncatedSources = index.sources.filter((source) => source.truncated === true).length
+  const incompleteSources = index.sources.filter((source) => source.reportedTotal !== undefined && source.itemCount < source.reportedTotal).length
   const metaValid = index.evidenceMeta?.taxonomyVersion === TAXONOMY_VERSION
     && index.evidenceMeta.extractorVersion === EVIDENCE_EXTRACTOR_VERSION
     && index.evidenceMeta.ruleVersion === EVIDENCE_RULE_VERSION
@@ -127,7 +133,9 @@ export function buildEvidenceReport(index: AtlasIndex): EvidenceReport {
   const structuralPass = index.schemaVersion === SCHEMA_VERSION && metaValid && malformedRecords === 0
     && unresolvedReferences === 0 && unresolvedSupersedes === 0 && invalidSupersedes === 0 && supersedeCycles === 0 && duplicateEvidenceIds === 0
     && staleClaims === 0 && stateMismatches === 0 && invalid.length === 0
-  const releasePass = structuralPass && index.plugins.length > 0 && pluginsWithEvidence === index.plugins.length
+  const releasePass = structuralPass && index.plugins.length > 0 && index.sources.length > 0
+    && failedSources === 0 && truncatedSources === 0 && incompleteSources === 0
+    && pluginsWithEvidence === index.plugins.length
     && completePlugins === index.plugins.length && legacyPlugins === 0 && index.evidenceMeta?.state === 'complete'
   return {
     schemaVersion: index.schemaVersion,
@@ -136,7 +144,7 @@ export function buildEvidenceReport(index: AtlasIndex): EvidenceReport {
     eligiblePlugins: index.plugins.filter(eligible).length,
     pluginsWithEvidence, completePlugins, atoms, acceptedClaims, provisionalClaims, conflictedClaims, rejectedClaims,
     malformedRecords, unresolvedReferences, duplicateEvidenceIds, unresolvedSupersedes, invalidSupersedes, supersedeCycles, staleClaims, stateMismatches, invalidCapabilityIds: invalid,
-    legacyPlugins, sourceKinds, capabilityCounts,
+    legacyPlugins, failedSources, truncatedSources, incompleteSources, sourceKinds, capabilityCounts,
     structuralGate: structuralPass ? 'PASS' : 'FAIL',
     releaseGate: releasePass ? 'PASS' : 'FAIL',
     gate: structuralPass ? 'PASS' : 'FAIL',
