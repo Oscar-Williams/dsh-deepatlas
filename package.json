@@ -1,7 +1,7 @@
 {
   "name": "dsh-deepatlas",
   "version": "0.2.2",
-  "description": "DeepAtlas(dsh-插件导航)— task-aware plugin navigator for DeepSeek Harness: scans the dsh-plugin ecosystem, recommends plugins for the current task, audits for safety, and installs only with explicit user consent. 任务感知的 DSH 插件导航:扫描生态、按任务推荐、安全审计、授权安装。",
+  "description": "DeepAtlas provides local capability assurance for DSH: on-demand discovery, provenance-backed recommendations, pinned risk review, and controlled installation. DSH 本地能力保障：按需发现、证据推荐、固定版本审计与受控安装。",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -25,6 +25,8 @@
     "deepseek",
     "deepseek-harness",
     "dsh-plugin",
+    "capability-assurance",
+    "plugin-preflight",
     "plugin-discovery",
     "plugin-navigation"
   ],
@@ -39,7 +41,10 @@
     "typecheck:tests": "tsc -p tsconfig.test.json",
     "test": "vitest run",
     "scan": "node ./lib/cli.js scan",
-    "status": "node ./lib/cli.js status"
+    "status": "node ./lib/cli.js status",
+    "benchmark:evidence": "npm run build && node ./scripts/evidence-gate.mjs --mode release",
+    "benchmark:evidence:fixture": "npm run build && node ./scripts/evidence-gate.mjs --mode release --data-dir ./tests/fixtures/evidence-v2 --no-write",
+    "benchmark:evidence:gold": "npm run build && node ./scripts/evidence-gold.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": ">=4.0.1 <5.0.0",
@@ -52,6 +57,8 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "typescript": "^5.6.0",
     "vitest": "^2.1.0"
   },

@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased（v0.2.3-rc.x）
+
+### Evidence v2 与产品说明
+
+- 建立 provenance-backed capability evidence：事实 atom、派生 claim、冲突与 supersede 校验、v1 确定性迁移、公开 v2 JSON Schema，以及结构/发布双 Gate。
+- GitHub Search 降为平台发现证据；高质量候选在同一完整 commit 下读取 publisher manifest、README 与声明入口，记录路径、内容哈希和独立 coverage 状态。
+- 装前审计与索引共享固定 commit 的 artifact 读取、入口解析、路径约束、大小与二进制边界；发布 Gate 拒绝来源失败、截断、缺失 publisher 固定证据和 stale claims。
+- 新增冻结 Evidence gold：accepted precision、recall 与 must-not 假接受进入无网络 CI Gate。
+- WSL2 Ubuntu 26.04 同轮全量扫描生成原生 v2 索引；结构/发布 Gate 均通过，脱敏凭据记录索引哈希、来源健康度、聚合规模和 publisher coverage。
+- 中英文 README 明确会话驱动的工具选择、经确认的生态扫描、基于本地索引的日常检索，以及审计与安装的独立授权步骤。
+- 产品路线统一为持续的 v0.2.x 发布序列；v0.2.3、v0.2.4、v0.2.5 为近期里程碑，后续按实际范围延续 v0.2.6 及更高版本。
+- 根据 DSH recoverable startup、隔离升级实践与动态组装器的生态进展，v0.2.5 收束为完整 Capability Change Transaction；目录规模转为覆盖背景，后续质量指标聚焦可安装性、运行时差异、目标验收与恢复重放。
+- 中英文 README 将用户目标、调用边界和受控变更前置，扫描规模集中到带日期的评测凭据；Resolved Environment Preflight 规格补充真实依赖解析、模块探针、完整 loader boot、注册冒烟、依赖漂移与 capability reality 验收矩阵。
+- 当前开发回归基线为 26 个测试文件、131 项测试；v0.2.2 稳定版继续保持 22 个测试文件、108 项测试。
+
 ## v0.2.2（2026-08-23）
 
 ### 安装体验
@@ -22,9 +37,9 @@
 
 ### 生态扫描
 
-- 新增官方 awesome 清单入口；GitHub topic 发现按创建/推送时间递归分片，完整跨越 Search API 的单查询 1,000 条上限。
+- 新增官方 awesome 清单入口；GitHub topic 发现按创建/推送时间递归分片，在 Search API 的查询窗口内完成全量分页。
 - 数据源健康记录增加 `reportedTotal` 与 `truncated`；完整扫描的主发现源失败时，在旧索引上保守合并降级数据。
-- 增量扫描按稳定的 `created` 时间分片并附加 `pushed` 刷新条件，进度输出报告已读取条目与分片页数。
+- 增量扫描复用可完整分页的 `created` 时间区间并附加 `pushed` 刷新条件，进度输出报告已读取候选数与查询区间数。
 
 ### 审计与安装
 

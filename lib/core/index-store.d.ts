@@ -1,5 +1,5 @@
 import { AtlasIndex } from '../types.js';
-export declare const SCHEMA_VERSION = 1;
+export declare const SCHEMA_VERSION = 2;
 export declare function defaultDataDir(explicit?: string): string;
 export declare class IndexStore {
     private readonly filePath;

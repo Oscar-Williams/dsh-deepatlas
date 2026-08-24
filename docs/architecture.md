@@ -1,6 +1,20 @@
 # DeepAtlas 架构
 
-DeepAtlas 以 DSH bundle 形式挂载六个工具，将生态发现、检索、审计和安装拆成相互约束的确定性模块。宿主模型负责理解自然语言，所有改变 profile 的动作仍由工具层闸门控制。
+DeepAtlas 以 DSH bundle 形式挂载六个工具，将能力诊断、生态发现、证据采集、审计和安装拆成相互约束的确定性模块。宿主模型负责理解自然语言，所有改变 profile 的动作由工具层闸门控制。长期架构以本地 Capability Assurance 为中心，通过 Capability Change Transaction 串联变更前 fingerprint、隔离验证、运行时差异、目标验收、授权、现场应用和恢复证据。
+
+## 交互触发与运行边界
+
+插件挂载时向 DSH 注册六个工具。每个 DSH 步骤会将当前可见工具的名称、说明和参数 schema 提供给宿主模型；模型生成相应 tool call 后，DeepAtlas 进入具体工具的 `execute()`。当前 v0.2.x 的任务理解发生在会话内，调用表现由模型、提示词和可见工具集合共同决定。
+
+| 能力 | 触发条件 | 运行边界 |
+|---|---|---|
+| 扫描 | `deepatlas_scan` 收到 `confirm=true` | 在当前 DSH 进程中执行长时网络调用，完成后返回来源状态并原子更新索引 |
+| 检索 | 宿主模型调用 `deepatlas_find` | 读取既有本地索引；索引缺失或过期时返回扫描提示 |
+| 顾问 | 宿主模型调用 `deepatlas_advise` | 对照当前 profile；`silent` 表示本次调用后的静默结论 |
+| 审计 | 用户给出目标仓库和 commit | 在锁定 commit 上采集静态风险与兼容证据 |
+| 安装 | 匹配审计缓存且用户明确授权 | 经过快照、安装、组合验证和恢复状态机 |
+
+HostIntentGate 将测量普通自然语言请求促使宿主模型选择 DeepAtlas、生成规范 capability 并完成检索的端到端表现。该 Gate 与检索器的确定性回归分别报告，便于定位任务理解和候选检索两层问题。
 
 ## 模块图
 
@@ -12,10 +26,13 @@ src/
 ├── types.ts                 索引、风险、推荐与数据源类型
 ├── core/
 │   ├── scanner.ts           数据源编排、合并、富化、能力证据与落盘
+│   ├── github-artifacts.ts  固定 commit 的仓库 artifact 读取与哈希
+│   ├── publisher-evidence.ts 发布者 manifest、README 与入口覆盖
+│   ├── evidence-report.ts   结构、来源完整性与发布 Gate
 │   ├── sources/
-│   │   ├── github-topic.ts  时间分片 GitHub Search、分页、限流与取消
+│   │   ├── github-topic.ts  GitHub Search 分区分页、限流与取消
 │   │   ├── awesome-list.ts  社区清单发现
-│   │   └── enrich.ts        仓库内容与类型富化
+│   │   └── enrich.ts        旧类型富化兼容模块（由固定提交证据链取代）
 │   ├── capabilities.ts      28 类 capability 与字段级证据
 │   ├── retrieval.ts         多字段候选检索
 │   ├── ranker.ts            质量与任务匹配评分
@@ -37,16 +54,16 @@ src/
 
 ## 生态索引
 
-完整扫描以 `topic:dsh-plugin` 为主发现入口。GitHub Search 每个查询最多开放 1,000 条结果，因此数据源从 GitHub 仓库时代起点到当前时间递归切分稳定的 `created` 区间，直到每个分片都可完整分页。增量扫描沿用该创建时间分片，并附加 `pushed:>上次构建时间` 过滤条件。
+完整扫描以 `topic:dsh-plugin` 为主发现入口。扫描器将查询范围划分为可完整分页的稳定时间区间，避免单次结果窗口造成遗漏。增量扫描复用这些区间，并附加 `pushed:>上次构建时间` 过滤条件。
 
-扫描器按规范仓库 ID 去重，将 awesome 清单作为补充来源，再对高质量候选读取仓库内容完成类型富化。索引写入前生成 capability evidence 和质量分。每个来源记录抓取模式、条目数、上游报告总数、截断状态和错误信息。
+扫描器按规范仓库 ID 去重，将 awesome 清单作为补充来源。GitHub Search 记录归类为平台发现证据，社区清单归类为社区证据；高质量候选会先解析完整 commit，再在同一 SHA 下读取 manifest、README 和声明入口。每个 artifact 记录仓库路径与 SHA-256，publisher coverage 独立报告 complete、partial、failed 与 not-applicable。索引写入前生成 capability evidence 和质量分，每个来源同时记录抓取模式、条目数、上游报告总数、截断状态和错误信息。
 
 数据完整性规则：
 
 - `AbortSignal` 贯穿工具、扫描器、fetch、退避与富化流程。
 - 主发现源异常时，完整扫描在旧索引上保守合并社区来源。
 - 临时文件带 PID 与 UUID，完成写入后原子替换正式索引。
-- schema 版本变化会触发重建，避免新代码读取旧结构。
+- v1 索引可确定性迁移为 `legacy-partial` 供检索回退；稳定发布 Gate 要求原生 v2 索引、完整数据源和固定提交的 publisher cohort。
 
 ## 任务理解与检索
 
@@ -102,8 +119,12 @@ COMPOSED ── 外部启动验证 ──→ BOOT_VERIFIED ──→ ACTIVE
 
 Web profile 运行中的插件无法在同一端口内重启宿主，因此工具内完成到 `COMPOSED`。用户重启对应 profile 后，外部分发 E2E 负责验证启动与工具注册。公开版本的 CI 同时覆盖 Windows、Node 22/24、tarball 安装、GitHub commit 安装和启动冒烟。
 
-## 下一阶段
+## Capability Assurance 演进阶段
 
-- **HostIntentGate**：冻结自然语言改写集，通过真实 DSH 会话捕获模型提交的 capability 参数，输出逐意图准确率、稳定率、混淆矩阵、覆盖率与误报。
-- **Evidence v2**：将 capability 证据扩展为来源可追踪、置信度可校准、字段冲突可解释的索引结构，并提供迁移与回归 Gate。
-- **DSH canary**：每个新 RC 自动执行依赖解析、配置组合、六工具 smoke、Windows/Linux 安装与回滚验证。
+- **v0.2.3 / Evidence v2**：来源可追踪、置信度可校准、字段冲突可解释；publisher artifact 固定 commit，并完成迁移、覆盖率与精度 Gate。
+- **v0.2.4 / Capability Diagnosis + HostIntentGate**：测量真实 DSH 意图链路，区分已有能力、配置问题、兼容问题与新增能力缺口；在稳定生命周期接口上加入受控任务觉察。
+- **v0.2.5 / Capability Change Transaction**：以完整纵向事务统一 GitHub、SkillHub、npm 和本地候选，交付 before/after fingerprint、Resolved Environment Preflight、模块解析探针、完整 loader boot、dependency/runtime delta、Capability Reality、目标探针、策略判定、恢复对象和内容寻址 receipt。
+- **v0.2.6 / Transaction Hardening**：强化依赖漂移、外部 capability evidence、来源适配、故障注入与 receipt replay，并通过 feature detection 复用 DSH safe-boot、recoverable bundle、doctor 和 capability declaration。
+- **v0.2.7 及后续 v0.2.x / Active Assurance**：任务阶段感知、安装后验收、漂移与因果追踪，逐步扩展团队策略、可移植证明和 Verified Installability 生态协议。
+
+详细事务结构见 [Capability Change Transaction 设计](./capability-change-transaction.md)，环境事实层见 [Resolved Environment Preflight 工程规格](./resolved-environment-preflight.md)，发布 Gate 与协同规则见 [v0.2.x 路线图](./v0.2.x-roadmap.md)。

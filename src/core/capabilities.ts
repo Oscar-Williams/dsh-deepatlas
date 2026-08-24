@@ -8,6 +8,20 @@ export interface CapabilityDef {
   aliases: string[]
 }
 
+import { createHash } from 'node:crypto'
+import type {
+  CapabilityClaim,
+  EvidenceAtom,
+  EvidenceProvenance,
+  PluginEvidence,
+  PluginMeta,
+  PluginObservation,
+} from '../types.js'
+
+export const TAXONOMY_VERSION = 'capability-taxonomy-v1'
+export const EVIDENCE_EXTRACTOR_VERSION = 'capability-evidence-v2.0.0'
+export const EVIDENCE_RULE_VERSION = 'capability-claims-v2.0.0'
+
 export const CAPABILITIES: CapabilityDef[] = [
   { id: 'messaging-wechat', aliases: ['wechat', 'weixin', '微信', '企业微信', 'wecom'] },
   { id: 'messaging-telegram', aliases: ['telegram', 'tg', '电报'] },
@@ -84,30 +98,203 @@ export function extractCapabilities(text: string): Set<string> {
 }
 
 
-export interface CapEvidence { source: string; text: string }
-export interface PluginCapRecord { id: string; confidence: number; ev: CapEvidence[] }
+export interface CapabilityTextPart {
+  source: 'name' | 'description' | 'topics' | 'provides' | 'manifest-capability' | 'package-keyword' | 'readme' | 'legacy'
+  text: string
+  provenance?: EvidenceProvenance
+  /** 结构化来源可直接声明规范 capability，跳过别名猜测。 */
+  capabilityId?: string
+  polarity?: EvidenceAtom['polarity']
+  supersedesEvidenceIds?: string[]
+}
 
-/** v3-B 证据化抽取:按字段记录命中别名;confidence 1 证据 0.6 / 2+ 证据 0.9(确定性) */
-export function extractCapabilityRecords(parts: { source: string; text: string }[]): PluginCapRecord[] {
-  const byId = new Map<string, CapEvidence[]>()
-  for (const cap of CAPABILITIES) {
-    for (const part of parts) {
-      const t = part.text.toLowerCase()
-      const hit = cap.aliases.find((alias) => {
-        const a = alias.toLowerCase()
-        if (/[a-z0-9]/.test(a) && !/\p{Script=Han}/u.test(a)) {
-          try {
-            return new RegExp(`(^|[^a-z0-9])${a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z0-9]|$)`, 'u').test(t)
-          } catch { return t.includes(a) }
-        }
-        return t.includes(a)
-      })
-      if (hit) {
-        const list = byId.get(cap.id) ?? []
-        list.push({ source: part.source, text: hit })
-        byId.set(cap.id, list)
-      }
+function aliasPattern(alias: string): RegExp {
+  const escaped = alias.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return /[a-z0-9]/.test(alias) && !/\p{Script=Han}/u.test(alias)
+    ? new RegExp(`(^|[^a-z0-9])(${escaped})([^a-z0-9]|$)`, 'giu')
+    : new RegExp(`(${escaped})`, 'giu')
+}
+
+function defaultProvenance(source: CapabilityTextPart['source']): EvidenceProvenance {
+  return {
+    sourceId: 'direct-extraction',
+    sourceKind: source === 'legacy' ? 'legacy-index' : 'manifest',
+    authority: source === 'legacy' ? 'legacy' : 'publisher',
+    repository: 'unknown',
+    observedAt: '1970-01-01T00:00:00.000Z',
+    originGroup: source === 'legacy' ? 'legacy:unknown' : 'publisher:unknown',
+  }
+}
+
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, child]) => child !== undefined)
+      .sort(([a], [b]) => a.localeCompare(b))
+    return `{${entries.map(([key, child]) => `${JSON.stringify(key)}:${canonicalJson(child)}`).join(',')}}`
+  }
+  return JSON.stringify(value)
+}
+
+function stableHash(value: unknown): string {
+  return createHash('sha256').update(canonicalJson(value)).digest('hex')
+}
+
+function signalKind(part: CapabilityTextPart): EvidenceAtom['signal']['kind'] {
+  if (part.source === 'manifest-capability') return 'manifest-declaration'
+  if (part.source === 'topics' || part.source === 'provides' || part.source === 'package-keyword') return 'exact-topic'
+  if (part.source === 'legacy') return 'legacy'
+  return part.provenance?.authority === 'community' ? 'curation' : 'publisher-text'
+}
+
+function atomFor(capabilityId: string, part: CapabilityTextPart, alias?: string): EvidenceAtom | null {
+  const match = alias ? aliasPattern(alias).exec(part.text.toLowerCase()) : null
+  if (alias && !match) return null
+  const hit = match ? (match[2] ?? match[1] ?? alias!) : capabilityId
+  const hitAt = match ? match.index + match[0].indexOf(hit) : 0
+  const start = Math.max(0, hitAt - 24)
+  const end = Math.min(part.text.length, hitAt + hit.length + 24)
+  const excerpt = part.text.slice(start, end).replace(/\s+/g, ' ').trim()
+  const baseProvenance = part.provenance ?? defaultProvenance(part.source)
+  const provenance = { ...baseProvenance, jsonPointer: baseProvenance.jsonPointer ?? `/${part.source}` }
+  const signal = { kind: signalKind(part), matchedAlias: alias, rawValue: part.text, excerpt }
+  const contentSha256 = provenance.contentSha256 ?? stableHash(part.text)
+  const identityProvenance = {
+    sourceId: provenance.sourceId,
+    sourceKind: provenance.sourceKind,
+    authority: provenance.authority,
+    repository: provenance.repository,
+    ref: provenance.ref,
+    path: provenance.path,
+    jsonPointer: provenance.jsonPointer,
+    query: provenance.query,
+    upstreamUpdatedAt: provenance.upstreamUpdatedAt,
+    contentSha256,
+    originGroup: provenance.originGroup,
+  }
+  const supersedesEvidenceIds = [...new Set(part.supersedesEvidenceIds ?? [])].sort()
+  const polarity = part.polarity ?? 'supports'
+  const identity = { capabilityId, polarity, signal, provenance: identityProvenance, supersedesEvidenceIds, extractor: EVIDENCE_EXTRACTOR_VERSION }
+  return {
+    evidenceId: stableHash(identity),
+    subject: `capability:${capabilityId}`,
+    polarity,
+    signal,
+    provenance: { ...provenance, contentSha256 },
+    ...(supersedesEvidenceIds.length ? { supersedesEvidenceIds } : {}),
+    extractor: { id: 'deepatlas-capability-extractor', version: EVIDENCE_EXTRACTOR_VERSION, taxonomyVersion: TAXONOMY_VERSION },
+  }
+}
+
+/**
+ * Evidence v2：事实 atom 与派生 claim 分离。同一 authority 内只采用最强信号，
+ * 只有独立 authority 的佐证才增加最多 0.10，避免同一发布者堆叠关键词抬分。
+ */
+export function extractCapabilityEvidence(parts: CapabilityTextPart[], state: PluginEvidence['state'] = 'complete'): PluginEvidence {
+  const atoms: EvidenceAtom[] = []
+  for (const part of parts) {
+    if (part.capabilityId) {
+      if (!CAPABILITY_ID_SET.has(part.capabilityId)) continue
+      const hit = atomFor(part.capabilityId, part)
+      if (hit) atoms.push(hit)
+      continue
+    }
+    for (const cap of CAPABILITIES) {
+      const hit = cap.aliases.map((alias) => atomFor(cap.id, part, alias)).find(Boolean)
+      if (hit) atoms.push(hit)
     }
   }
-  return [...byId.entries()].map(([id, ev]) => ({ id, ev, confidence: ev.length >= 2 ? 0.9 : 0.6 }))
+  const uniqueAtoms = [...new Map(
+    atoms
+      .sort((a, b) => canonicalJson(a).localeCompare(canonicalJson(b)))
+      .map((atom) => [atom.evidenceId, atom]),
+  ).values()]
+    .sort((a, b) => a.evidenceId.localeCompare(b.evidenceId))
+  return { schemaVersion: 2, state, atoms: uniqueAtoms, capabilities: computeCapabilityClaims(uniqueAtoms, state) }
+}
+
+function atomWeight(atom: EvidenceAtom, state: PluginEvidence['state']): number {
+  if (state === 'legacy-partial' || atom.signal.kind === 'legacy') return 0.35
+  if (atom.signal.kind === 'manifest-declaration') return atom.provenance.authority === 'publisher' ? 0.95 : 0.4
+  if (atom.signal.kind === 'implementation') return atom.provenance.authority === 'publisher' ? 0.9 : 0.4
+  if (atom.signal.kind === 'exact-topic') {
+    if (atom.provenance.authority === 'platform') return 0.55
+    if (atom.provenance.authority === 'community') return 0.4
+    return 0.8
+  }
+  if (atom.signal.kind === 'publisher-text') {
+    if (atom.provenance.authority === 'platform') return atom.provenance.jsonPointer === '/name' ? 0.35 : 0.55
+    if (atom.provenance.authority === 'community') return 0.4
+    return atom.signal.matchedAlias && atom.provenance.jsonPointer === '/name' ? 0.4 : 0.7
+  }
+  if (atom.signal.kind === 'curation') return 0.4
+  return 0.35
+}
+
+export function computeCapabilityClaims(atoms: EvidenceAtom[], state: PluginEvidence['state']): CapabilityClaim[] {
+  const superseded = new Set(atoms.flatMap((atom) => atom.supersedesEvidenceIds ?? []))
+  const activeAtoms = atoms.filter((atom) => !superseded.has(atom.evidenceId))
+  const grouped = new Map<string, EvidenceAtom[]>()
+  for (const atom of activeAtoms) {
+    if (!atom.subject.startsWith('capability:')) continue
+    const id = atom.subject.slice('capability:'.length)
+    const list = grouped.get(id) ?? []
+    list.push(atom)
+    grouped.set(id, list)
+  }
+  return [...grouped.entries()].map(([id, evidence]) => {
+    const support = evidence.filter((atom) => atom.polarity === 'supports')
+    const contradiction = evidence.filter((atom) => atom.polarity === 'contradicts')
+    const strongestByAuthority = new Map<string, number>()
+    for (const atom of support) {
+      const weight = atomWeight(atom, state)
+      strongestByAuthority.set(atom.provenance.authority, Math.max(strongestByAuthority.get(atom.provenance.authority) ?? 0, weight))
+    }
+    const sorted = [...strongestByAuthority.values()].sort((a, b) => b - a)
+    const strongest = sorted[0] ?? 0
+    const score = Number(Math.min(0.98, strongest + Math.min(0.1, Math.max(0, sorted.length - 1) * 0.05)).toFixed(3))
+    const strongestContradiction = Math.max(0, ...contradiction.map((atom) => atomWeight(atom, state)))
+    const decision: CapabilityClaim['decision'] = support.length && contradiction.length && strongestContradiction >= strongest
+      ? 'conflicted'
+      : score >= 0.75 ? 'accepted' : score >= 0.5 ? 'provisional' : 'rejected'
+    return {
+      id,
+      decision,
+      confidence: score,
+      supportEvidenceIds: support.map((atom) => atom.evidenceId).sort(),
+      contradictionEvidenceIds: contradiction.map((atom) => atom.evidenceId).sort(),
+      computedBy: { ruleVersion: EVIDENCE_RULE_VERSION, taxonomyVersion: TAXONOMY_VERSION, extractorVersion: EVIDENCE_EXTRACTOR_VERSION },
+    }
+  }).sort((a, b) => a.id.localeCompare(b.id))
+}
+
+export function evidenceFromObservations(observations: PluginObservation[], state: PluginEvidence['state'] = 'complete'): PluginEvidence {
+  const parts: CapabilityTextPart[] = []
+  for (const observation of observations) {
+    const p = observation.provenance
+    parts.push(
+      { source: 'name', text: observation.values.name, provenance: { ...p, jsonPointer: '/name' } },
+      { source: 'description', text: observation.values.description, provenance: { ...p, jsonPointer: '/description' } },
+      { source: 'topics', text: observation.values.topics.join(' '), provenance: { ...p, jsonPointer: '/topics' } },
+      { source: 'provides', text: observation.values.provides.join(' '), provenance: { ...p, jsonPointer: '/provides' } },
+    )
+  }
+  return extractCapabilityEvidence(parts, state)
+}
+
+/** 业务层统一解析；v2 空 claims 保持为空，不回退文本猜测。 */
+export function resolveCapabilityClaims(plugin: PluginMeta): CapabilityClaim[] {
+  if (plugin.evidence?.schemaVersion === 2) return plugin.evidence.capabilities
+  const legacyParts: CapabilityTextPart[] = [
+    { source: 'legacy', text: plugin.name },
+    { source: 'legacy', text: plugin.description },
+    { source: 'legacy', text: plugin.topics.join(' ') },
+  ]
+  return extractCapabilityEvidence(legacyParts, 'legacy-partial').capabilities
+}
+
+/** 兼容旧测试/调用点；返回完整 Evidence v2 的 capability claims。 */
+export function extractCapabilityRecords(parts: CapabilityTextPart[]): CapabilityClaim[] {
+  return extractCapabilityEvidence(parts).capabilities
 }

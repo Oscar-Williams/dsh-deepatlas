@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, afterEach } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import os from 'node:os'
@@ -16,6 +16,7 @@ beforeEach(async () => {
 })
 
 afterEach(async () => {
+  vi.unstubAllGlobals()
   await fs.rm(dir, { recursive: true, force: true })
 })
 
@@ -133,6 +134,29 @@ describe('Scanner 全量扫描', () => {
     const scanner = new Scanner(store, [fakeSource('github-topic', [entry({ id: 'a/x' })])])
     await expect(scanner.scan({ enrichTopN: 0, signal: controller.signal })).rejects.toThrow()
     expect(await store.load()).toBeNull()
+  })
+
+  it('头部候选的 publisher 观察值由同一固定 commit 进入索引', async () => {
+    const sha = 'e'.repeat(40)
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      if (url.includes('/commits/HEAD')) return { ok: true, status: 200, json: async () => ({ sha }) }
+      if (url.includes('/contents?ref=')) return {
+        ok: true, status: 200, json: async () => [
+          { name: 'package.json', path: 'package.json', type: 'file' },
+          { name: 'README.md', path: 'README.md', type: 'file' },
+        ],
+      }
+      const text = url.includes('package.json')
+        ? JSON.stringify({ name: 'dsh-browser', description: 'Browser automation', keywords: ['browser'], main: 'index.js', dsh: {} })
+        : url.includes('README.md') ? '# Browser automation' : 'export const apply = () => {}'
+      return { ok: true, status: 200, text: async () => text }
+    }))
+    const scanner = new Scanner(store, [fakeSource('github-topic', [entry({ id: 'owner/repo', name: 'dsh-browser' })])])
+    const index = await scanner.scan({ enrichTopN: 1 })
+    const plugin = index.plugins[0]
+    expect(plugin.publisherCoverage).toMatchObject({ status: 'complete', commit: sha })
+    expect(plugin.observations?.filter((item) => item.provenance.authority === 'publisher')).toHaveLength(2)
+    expect(plugin.evidence?.capabilities.find((claim) => claim.id === 'browser-automation')?.decision).toBe('accepted')
   })
 })
 

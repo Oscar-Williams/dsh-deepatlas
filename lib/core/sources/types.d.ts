@@ -14,6 +14,8 @@ export interface RawPluginEntry {
     license: string;
     topics: string[];
     provides?: string[];
+    /** 字段观察值的可审计来源；自定义源可省略，由 Scanner 生成保守 fallback。 */
+    provenance?: import('../../types.js').EvidenceProvenance;
 }
 export interface EcosystemSource {
     /** 数据源标识,如 "github-topic" */

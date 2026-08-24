@@ -15,6 +15,7 @@ import {
   CapabilityInput,
   extractCapabilities,
   normalizeCapabilityIds,
+  resolveCapabilityClaims,
 } from '../core/capabilities.js'
 import { retrieve } from '../core/retrieval.js'
 import { dshInvocation, isDshProfileName } from '../core/dsh-cli.js'
@@ -74,7 +75,9 @@ export function buildAdviseTool(
         const rec = index.plugins.find(
           (p) => p.id === m[1].toLowerCase() || (p.displayName ?? p.name).toLowerCase() === m[1].toLowerCase(),
         )
-        if (rec?.capsEv?.length) rec.capsEv.forEach((c) => installedCaps.add(c.id))
+        if (rec) resolveCapabilityClaims(rec)
+          .filter((claim) => claim.decision === 'accepted')
+          .forEach((claim) => installedCaps.add(claim.id))
         else for (const c of extractCapabilities(m[1])) installedCaps.add(c)
       }
       // v0.1.1 保守化:不再对 dump 全文跑 alias(配置文本出现某词≠具备该能力);

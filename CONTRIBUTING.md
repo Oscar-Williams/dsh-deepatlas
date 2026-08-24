@@ -41,7 +41,7 @@ git diff --check
 git status --short
 ```
 
-源码改动涉及构建输出时，将对应 `src/` 与 `lib/` 文件放入同一提交。提交完成后再次运行 `npm run build && git diff --exit-code -- lib/`，可确认仓库中的分发产物已经同步。当前回归基线为 22 个测试文件、108 项测试。CI 进一步覆盖 Node 22/24、Windows、分发完整性、全新 DSH_HOME 安装和 Web HTTP 200 启动验证。
+源码改动涉及构建输出时，将对应 `src/` 与 `lib/` 文件放入同一提交。提交完成后再次运行 `npm run build && git diff --exit-code -- lib/`，可确认仓库中的分发产物已经同步。v0.2.2 稳定版基线为 22 个测试文件、108 项测试；当前 v0.2.3 开发分支为 23 个测试文件、112 项测试。CI 进一步覆盖 Node 22/24、Windows、分发完整性、全新 DSH_HOME 安装和 Web HTTP 200 启动验证。
 
 ## Pull Request
 

@@ -4,6 +4,7 @@ import path from 'node:path'
 import os from 'node:os'
 import { IndexStore, SCHEMA_VERSION, defaultDataDir } from '../src/core/index-store.js'
 import { AtlasIndex } from '../src/types.js'
+import { buildEvidenceReport } from '../src/core/evidence-report.js'
 
 let dir: string
 
@@ -59,6 +60,23 @@ describe('IndexStore', () => {
     const store = new IndexStore(dir)
     await fs.writeFile(path.join(dir, 'index.json'), JSON.stringify({ ...sampleIndex('x'), schemaVersion: 999 }), 'utf8')
     expect(await store.load()).toBeNull()
+  })
+
+  it('冻结 v1 索引确定性迁移为 legacy-partial，且不会伪装成可发布索引', async () => {
+    const fixture = await fs.readFile(new URL('./fixtures/index-v1.json', import.meta.url), 'utf8')
+    await fs.writeFile(path.join(dir, 'index.json'), fixture, 'utf8')
+    const store = new IndexStore(dir)
+    const first = await store.load()
+    const second = await store.load()
+    expect(first).toEqual(second)
+    expect(first).toMatchObject({
+      schemaVersion: 2,
+      evidenceMeta: { state: 'legacy-partial', migratedFrom: 1 },
+    })
+    expect(first?.plugins[0]).toMatchObject({ displayName: 'SearchTool', capsEv: undefined, evidence: { state: 'legacy-partial' } })
+    expect(buildEvidenceReport(first!).structuralGate).toBe('PASS')
+    expect(buildEvidenceReport(first!).releaseGate).toBe('FAIL')
+    expect(JSON.parse(await fs.readFile(path.join(dir, 'index.json'), 'utf8')).schemaVersion).toBe(1)
   })
 
   it('TTL 过期判断正确', async () => {

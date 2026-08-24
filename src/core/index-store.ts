@@ -7,8 +7,37 @@ import path from 'node:path'
 import os from 'node:os'
 import { randomUUID } from 'node:crypto'
 import { AtlasIndex } from '../types.js'
+import { EVIDENCE_EXTRACTOR_VERSION, EVIDENCE_RULE_VERSION, TAXONOMY_VERSION, evidenceFromObservations } from './capabilities.js'
 
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2
+
+function migrateIndex(parsed: AtlasIndex): AtlasIndex | null {
+  if (parsed.schemaVersion === SCHEMA_VERSION) return parsed
+  if (parsed.schemaVersion !== 1 || !Array.isArray(parsed.plugins)) return null
+  return {
+    ...parsed,
+    schemaVersion: SCHEMA_VERSION,
+    evidenceMeta: {
+      taxonomyVersion: TAXONOMY_VERSION,
+      extractorVersion: EVIDENCE_EXTRACTOR_VERSION,
+      ruleVersion: EVIDENCE_RULE_VERSION,
+      state: 'legacy-partial',
+      migratedFrom: 1,
+    },
+    plugins: parsed.plugins.map((plugin) => {
+      const provenance = {
+        sourceId: plugin.source || 'v1-index', sourceKind: 'legacy-index' as const, authority: 'legacy' as const,
+        repository: plugin.id, observedAt: plugin.fetchedAt || parsed.builtAt,
+        originGroup: `legacy:${plugin.id}`,
+      }
+      const observations = [{
+        values: { name: plugin.displayName ?? plugin.name, description: plugin.description, topics: plugin.topics, provides: plugin.provides },
+        provenance,
+      }]
+      return { ...plugin, capsEv: undefined, observations, evidence: evidenceFromObservations(observations, 'legacy-partial') }
+    }),
+  }
+}
 
 export function defaultDataDir(explicit?: string): string {
   if (explicit && explicit.trim()) return explicit
@@ -31,8 +60,7 @@ export class IndexStore {
     try {
       const raw = await fs.readFile(this.filePath, 'utf8')
       const parsed = JSON.parse(raw) as AtlasIndex
-      if (parsed.schemaVersion !== SCHEMA_VERSION) return null // 版本不符视为需重建
-      return parsed
+      return migrateIndex(parsed)
     } catch {
       return null
     }
