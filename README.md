@@ -17,7 +17,7 @@ DeepAtlas 通过六个工具参与当前 DSH 会话。你提出找插件、比�
 
 | 阶段 | 触发方式 | 执行行为 |
 |---|---|---|
-| 生态扫描 | 用户确认调用 `deepatlas_scan` | 在当前 DSH 进程中访问 GitHub topic 和社区清单，建立或刷新本地索引 |
+| 生态扫描 | 用户确认调用 `deepatlas_scan` | 在当前 DSH 进程中读取 GitHub 与社区来源，建立或刷新本地索引 |
 | 任务检索 | 用户提出插件发现需求，宿主模型选择 DeepAtlas 工具 | 解析本次任务与规范 capability，检索已有本地索引 |
 | 能力顾问 | 宿主模型调用 `deepatlas_advise` | 对照当前 profile；能力已覆盖时返回静默结论，有明确缺口时给出建议 |
 | 审计与安装 | 用户选择仓库和完整 commit，并分别确认 | 执行静态审计、兼容检查、快照、锁定安装与恢复流程 |
@@ -31,7 +31,7 @@ DeepAtlas 通过六个工具参与当前 DSH 会话。你提出找插件、比�
 - **可复核的能力证据**：GitHub Search 与社区清单用于生态发现；候选的 manifest、README 和声明入口在同一完整 commit 下读取，并记录仓库路径、内容哈希和覆盖状态。
 - **装前风险审计**：检查生命周期脚本、依赖形态、native 依赖、manifest 声明入口与 bundle patch 的源码风险模式，以及 Node 兼容性；结果绑定完整 commit SHA。
 - **受控安装与恢复**：安装授权只读取同一仓库、同一 commit 的本地审计缓存；执行前创建 profile 快照，异常时进入回滚流程。
-- **证据化生态发现**：聚合 GitHub `dsh-plugin` topic 与多个社区清单，再通过结构资格、固定 commit 的发布者 artifact 和覆盖状态区分可安装候选与发现线索。
+- **证据化生态发现**：从 GitHub 与社区清单收集候选，再核对插件结构和固定 commit 下的发布文件，区分可安装候选与待核验线索。
 - **本地优先**：索引、审计缓存与安装记录留在 DSH home 或用户指定目录，GitHub Token 仅用于提高 API 限额。
 
 ## 快速开始
@@ -84,7 +84,7 @@ dsh web
 
 > 调用 `deepatlas_status` 查看索引状态；若索引尚未建立，请执行一次完整扫描。
 
-本地索引是 DeepAtlas 用于检索的插件候选目录。用户确认并启动完整扫描后，DeepAtlas 将依次完成 GitHub 时间分片、社区清单合并、仓库去重、候选证据采集和本地落盘。扫描完成时会返回条目数、来源健康度和索引位置；带日期的维护者全量验证结果集中列在[评测状态](#评测状态)，避免把持续变化的生态规模当作安装承诺。
+本地索引是 DeepAtlas 用于检索的插件候选目录。用户确认并启动完整扫描后，DeepAtlas 会读取 GitHub 与社区来源、合并重复仓库、采集候选证据并写入本地。扫描完成时会返回候选数量、来源健康度和索引位置；维护者验证结果集中列在[评测状态](#评测状态)。
 
 网络稳定且已配置 GitHub Token 时，完整扫描通常可在数分钟内完成。2026-08-23 的匿名验证耗时 15 分 46 秒，主要时间用于等待 GitHub Search API 配额。实际耗时会随配额、网络状态和生态规模变化。扫描运行于当前 DSH 进程，期间需保持进程与网络连接。
 
@@ -105,7 +105,7 @@ dsh web
 ## 工作流程
 
 ```text
-GitHub topic / 社区清单
+GitHub / 社区来源
           │
           ▼
     本地生态索引 ───────→ deepatlas_status
@@ -188,9 +188,9 @@ DeepAtlas 将以下条件固化在工具层：
 | NormalizedIntentRetrieval（120 改写） | 静态 50.8% → 标准 capability 85.0% | capability 通道的检索收益 |
 | AdvisorSafety fixture | 推荐 5/5；静默 5/5；误报 0 | 安静顾问的确定性回归 |
 | EvidenceGold v1 | accepted precision 100%；recall 100%；must-not 假接受 0 | publisher provenance、边界词与冲突回归 |
-| EvidenceFullScan（2026-08-24） | 12,076 插件；20,194 atoms；release Gate PASS | 两源同轮全量扫描与固定 publisher cohort；[脱敏凭据](./benchmark/evidence-full-scan-receipt.json) |
+| EvidenceFullScan（2026-08-24） | schema v2；structural/release Gate PASS | 两源同轮全量扫描与固定 publisher cohort；[脱敏凭据](./benchmark/evidence-full-scan-receipt.json) |
 
-HostIntentGate 将独立度量“自然语言 → DSH 宿主模型 → capability 数组”的真实链路。当前 85.0% 结果验证规范 capability 已进入参数后的检索收益；EvidenceGold 则校准能力证据来源、accepted claim 与误接受边界。两类评测采用冻结数据、可重放记录和独立 Gate。
+HostIntentGate 将独立度量“自然语言 → DSH 宿主模型 → capability 数组”的真实链路。当前 85.0% 结果验证规范 capability 已进入参数后的检索收益；EvidenceGold 则校准能力证据来源、accepted claim 与误接受边界。两类评测采用冻结数据、可重放记录和独立 Gate。表中规模类结果属于带日期的发布快照，生态现状以用户本机最新扫描为准。
 
 ## 兼容性与当前范围
 

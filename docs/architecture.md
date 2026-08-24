@@ -30,7 +30,7 @@ src/
 │   ├── publisher-evidence.ts 发布者 manifest、README 与入口覆盖
 │   ├── evidence-report.ts   结构、来源完整性与发布 Gate
 │   ├── sources/
-│   │   ├── github-topic.ts  时间分片 GitHub Search、分页、限流与取消
+│   │   ├── github-topic.ts  GitHub Search 分区分页、限流与取消
 │   │   ├── awesome-list.ts  社区清单发现
 │   │   └── enrich.ts        旧类型富化兼容模块（由固定提交证据链取代）
 │   ├── capabilities.ts      28 类 capability 与字段级证据
@@ -54,7 +54,7 @@ src/
 
 ## 生态索引
 
-完整扫描以 `topic:dsh-plugin` 为主发现入口。GitHub Search 每个查询最多开放 1,000 条结果，因此数据源从 GitHub 仓库时代起点到当前时间递归切分稳定的 `created` 区间，直到每个分片都可完整分页。增量扫描沿用该创建时间分片，并附加 `pushed:>上次构建时间` 过滤条件。
+完整扫描以 `topic:dsh-plugin` 为主发现入口。扫描器将查询范围划分为可完整分页的稳定时间区间，避免单次结果窗口造成遗漏。增量扫描复用这些区间，并附加 `pushed:>上次构建时间` 过滤条件。
 
 扫描器按规范仓库 ID 去重，将 awesome 清单作为补充来源。GitHub Search 记录归类为平台发现证据，社区清单归类为社区证据；高质量候选会先解析完整 commit，再在同一 SHA 下读取 manifest、README 和声明入口。每个 artifact 记录仓库路径与 SHA-256，publisher coverage 独立报告 complete、partial、failed 与 not-applicable。索引写入前生成 capability evidence 和质量分，每个来源同时记录抓取模式、条目数、上游报告总数、截断状态和错误信息。
 

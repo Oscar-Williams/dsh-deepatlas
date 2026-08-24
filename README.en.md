@@ -17,7 +17,7 @@ DeepAtlas exposes six tools to the active DSH conversation. After you ask to fin
 
 | Stage | Trigger | Runtime behavior |
 |---|---|---|
-| Ecosystem scan | The user confirms `deepatlas_scan` | The active DSH process reads GitHub topics and community lists, then builds or refreshes the local index |
+| Ecosystem scan | The user confirms `deepatlas_scan` | The active DSH process reads GitHub and community sources, then builds or refreshes the local index |
 | Task retrieval | The user raises a plugin-discovery need and the host model selects a DeepAtlas tool | DeepAtlas interprets this request and canonical capabilities, then searches the existing local index |
 | Capability advice | The host model calls `deepatlas_advise` | The tool compares the active profile, returning a silent result when coverage is sufficient and suggestions for a clear gap |
 | Audit and install | The user selects a repository and full commit, then confirms each stage | DeepAtlas performs static audit, compatibility checks, snapshotting, pinned installation, and recovery |
@@ -31,7 +31,7 @@ Natural-language tool selection is performed by the active DSH model and can var
 - **Reviewable capability evidence** uses GitHub Search and community lists for discovery, then reads candidate manifests, READMEs, and declared entries at one full commit while recording repository paths, content hashes, and coverage status.
 - **Pre-install risk audit** checks lifecycle scripts, dependency shapes, native dependencies, source patterns in the manifest-declared entry and bundle patch, and Node compatibility at a full commit SHA.
 - **Controlled installation and recovery** authorizes from the matching local audit record, snapshots the profile before execution, and enters rollback when verification fails.
-- **Evidence-backed ecosystem discovery** combines the GitHub `dsh-plugin` topic with community lists, then uses structural eligibility, publisher artifacts pinned to one commit, and coverage state to distinguish installable candidates from discovery leads.
+- **Evidence-backed ecosystem discovery** collects candidates from GitHub and community lists, then checks plugin structure and publisher files at one pinned commit to distinguish installable candidates from leads that need review.
 - **Local-first state** keeps indexes, audit cache, and install records in the DSH home or a user-selected directory. A GitHub token is used only to raise API limits.
 
 ## Quick start
@@ -84,7 +84,7 @@ Send this request inside DSH:
 
 > Call `deepatlas_status`. If no index exists yet, run one complete scan.
 
-The local index is the plugin candidate catalog used by DeepAtlas retrieval. After you confirm and start a complete scan, DeepAtlas partitions GitHub queries, merges community lists, deduplicates repositories, collects candidate evidence, and writes that catalog locally. The result includes the item count, source health, and index location. Dated maintainer-scale results live in [Evaluation status](#evaluation-status), keeping a changing ecosystem size separate from the installation promise.
+The local index is the plugin candidate catalog used by DeepAtlas retrieval. After you confirm and start a complete scan, DeepAtlas reads GitHub and community sources, merges duplicate repositories, collects candidate evidence, and writes that catalog locally. The result includes the candidate count, source health, and index location. Maintainer verification results live in [Evaluation status](#evaluation-status).
 
 With a stable network and a GitHub token, a complete scan typically finishes within several minutes. The anonymous validation run on 2026-08-23 took 15 minutes 46 seconds, mostly while waiting for GitHub Search quota. Actual duration varies with quota, network conditions, and ecosystem size. The scan runs in the active DSH process, so keep the process and network available until it completes.
 
@@ -105,7 +105,7 @@ Example requests:
 ## How it works
 
 ```text
-GitHub topic / community lists
+GitHub / community sources
               │
               ▼
         local ecosystem index ───────→ deepatlas_status
@@ -190,9 +190,9 @@ Green and yellow results summarize signals observed by the current rules. Reposi
 | NormalizedIntentRetrieval (120 paraphrases) | 50.8% static → 85.0% with canonical capabilities | Retrieval gain from the capability channel |
 | AdvisorSafety fixture | recommend 5/5; silence 5/5; false positives 0 | Deterministic quiet-advisor regression |
 | EvidenceGold v1 | accepted precision 100%; recall 100%; must-not false accepts 0 | Publisher provenance, word boundaries, and conflict regression |
-| EvidenceFullScan (2026-08-24) | 12,076 plugins; 20,194 atoms; release Gate PASS | Same-run full scan of both sources and a pinned publisher cohort; [sanitized receipt](./benchmark/evidence-full-scan-receipt.json) |
+| EvidenceFullScan (2026-08-24) | schema v2; structural/release Gate PASS | Same-run full scan of both sources and a pinned publisher cohort; [sanitized receipt](./benchmark/evidence-full-scan-receipt.json) |
 
-HostIntentGate will independently measure the live path from natural language through the DSH host model to a capability array. The current 85.0% result measures retrieval after canonical capabilities have entered the tool parameters; EvidenceGold calibrates provenance, accepted claims, and false-accept boundaries. Both evaluations use frozen datasets, replayable records, and independent gates.
+HostIntentGate will independently measure the live path from natural language through the DSH host model to a capability array. The current 85.0% result measures retrieval after canonical capabilities have entered the tool parameters; EvidenceGold calibrates provenance, accepted claims, and false-accept boundaries. Both evaluations use frozen datasets, replayable records, and independent gates. Scale figures are dated release snapshots; the user's latest local scan represents the current ecosystem view.
 
 ## Compatibility and current scope
 
