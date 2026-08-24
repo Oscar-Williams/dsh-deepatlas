@@ -13,8 +13,7 @@ import { AuditCache } from '../core/audit-cache.js'
 import { defaultDataDir } from '../core/index-store.js'
 import { isFullCommitSha, isGithubRepoSlug } from '../core/git-ref.js'
 import { resolveGithubToken } from '../core/github.js'
-
-const API = 'https://api.github.com'
+import { declaredSourceFiles, fetchArtifactAtCommit, resolveCommit } from '../core/github-artifacts.js'
 
 async function fetchRepositoryFile(
   target: string,
@@ -23,21 +22,9 @@ async function fetchRepositoryFile(
   token: string | undefined,
   signal?: AbortSignal,
 ): Promise<{ text: string | null; error?: string }> {
-  const encodedPath = file.split('/').map(encodeURIComponent).join('/')
-  const url = `${API}/repos/${target}/contents/${encodedPath}?ref=${encodeURIComponent(commit ?? 'HEAD')}`
-  const headers: Record<string, string> = {
-    Accept: 'application/vnd.github.raw+json',
-    'X-GitHub-Api-Version': '2022-11-28',
-  }
-  if (token) headers.Authorization = `Bearer ${token}`
-  try {
-    const res = await fetch(url, { headers, signal })
-    if (!res.ok) return { text: null, error: `${file} 获取失败:GitHub API ${res.status}` }
-    return { text: await res.text() }
-  } catch (error) {
-    if (signal?.aborted) throw error
-    return { text: null, error: `${file} 获取失败:${error instanceof Error ? error.message : String(error)}` }
-  }
+  if (!commit) return { text: null, error: `${file} 获取失败:未固定 commit` }
+  const fetched = await fetchArtifactAtCommit(target, file, commit, token, signal)
+  return { text: fetched.artifact?.text ?? null, error: fetched.error }
 }
 
 async function fetchManifest(
@@ -53,37 +40,6 @@ async function fetchManifest(
   } catch (error) {
     return { manifest: null, error: `package.json 解析失败:${error instanceof Error ? error.message : String(error)}` }
   }
-}
-
-function exportEntry(exportsValue: unknown): string | undefined {
-  if (typeof exportsValue === 'string') return exportsValue
-  if (!exportsValue || typeof exportsValue !== 'object') return undefined
-  const root = (exportsValue as Record<string, unknown>)['.'] ?? exportsValue
-  if (typeof root === 'string') return root
-  if (!root || typeof root !== 'object') return undefined
-  const conditions = root as Record<string, unknown>
-  return [conditions.import, conditions.default, conditions.require].find((value): value is string => typeof value === 'string')
-}
-
-function declaredSourceFiles(manifest: Record<string, unknown>): { files: string[]; error?: string } {
-  const files: string[] = []
-  const entry = typeof manifest.main === 'string' ? manifest.main : exportEntry(manifest.exports)
-  files.push(entry ?? 'index.js')
-
-  const dsh = manifest.dsh
-  const bundle = dsh && typeof dsh === 'object' ? (dsh as Record<string, unknown>).bundle : undefined
-  if (bundle && typeof bundle === 'object') {
-    const patch = (bundle as Record<string, unknown>).patch
-    if (typeof patch !== 'string' || patch.trim() === '') {
-      return { files, error: 'dsh.bundle.patch 缺失或不是字符串' }
-    }
-    files.push(patch)
-  }
-
-  const normalized = [...new Set(files.map((file) => file.replace(/^\.\//, '')))]
-  const unsafe = normalized.find((file) => file.startsWith('/') || file.split('/').includes('..'))
-  if (unsafe) return { files: normalized, error: `manifest 声明了非法仓库内路径:${unsafe}` }
-  return { files: normalized }
 }
 
 export function buildAuditTool(_ctx: Context, config: DeepAtlasConfig) {
@@ -121,7 +77,16 @@ export function buildAuditTool(_ctx: Context, config: DeepAtlasConfig) {
       }
 
       const token = resolveGithubToken(config)
-      const fetched = await fetchManifest(target, args.commit, token, execution?.signal)
+      let contentCommit: string
+      try {
+        contentCommit = args.commit ?? await resolveCommit(target, 'HEAD', token, execution?.signal)
+      } catch (error) {
+        return asLosslessJson({
+          ok: false, level: 'red', auditedRef: args.commit ?? 'HEAD',
+          action: `审计失败并拒绝进入安装:${error instanceof Error ? error.message : String(error)}`,
+        })
+      }
+      const fetched = await fetchManifest(target, contentCommit, token, execution?.signal)
       if (!fetched.manifest) {
         return asLosslessJson({
           ok: false,
@@ -145,7 +110,7 @@ export function buildAuditTool(_ctx: Context, config: DeepAtlasConfig) {
         })
       }
       for (const f of declared.files) {
-        const result = await fetchRepositoryFile(target, f, args.commit, token, execution?.signal)
+        const result = await fetchRepositoryFile(target, f, contentCommit, token, execution?.signal)
         if (result.text === null) {
           return asLosslessJson({
             ok: false,
