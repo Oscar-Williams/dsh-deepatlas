@@ -48,6 +48,14 @@
           }
         }
       ],
+      "publisherCoverage": {
+        "status": "complete",
+        "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "requiredRoles": ["manifest"],
+        "fetchedRoles": ["manifest"],
+        "errors": [],
+        "observedAt": "2026-08-24T00:00:00.000Z"
+      },
       "evidence": {
         "schemaVersion": 2,
         "state": "complete",

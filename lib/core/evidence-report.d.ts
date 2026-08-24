@@ -24,6 +24,9 @@ export interface EvidenceReport {
     failedSources: number;
     truncatedSources: number;
     incompleteSources: number;
+    publisherCompletePlugins: number;
+    invalidPublisherAtoms: number;
+    acceptedClaimsWithoutPinnedPublisher: number;
     sourceKinds: Record<string, number>;
     capabilityCounts: Record<string, number>;
     structuralGate: 'PASS' | 'FAIL';

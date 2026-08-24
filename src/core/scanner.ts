@@ -12,7 +12,7 @@ import { rank } from './ranker.js'
 import { EcosystemSource, RawPluginEntry } from './sources/types.js'
 import { GitHubTopicSource } from './sources/github-topic.js'
 import { AwesomeListSource, WHITELIST_REPOS } from './sources/awesome-list.js'
-import { enrichTopN } from './sources/enrich.js'
+import { hydratePublisherEvidence } from './publisher-evidence.js'
 import { classifyKind } from './kind.js'
 import { EVIDENCE_EXTRACTOR_VERSION, EVIDENCE_RULE_VERSION, TAXONOMY_VERSION, evidenceFromObservations } from './capabilities.js'
 import { IndexStore, SCHEMA_VERSION } from './index-store.js'
@@ -65,7 +65,7 @@ export interface ScanOptions {
   token?: string
   /** 增量模式:基于上次索引 builtAt 合并;无旧索引时自动退化为全量 */
   incremental?: boolean
-  /** 类型精判的仓库数上限(按 star 排序取头部),0 = 跳过精判 */
+  /** 固定 commit 的发布者证据抓取上限(按 star 排序取头部),0 = 跳过 */
   enrichTopN?: number
   /** 仅供测试注入:替换默认数据源 */
   sources?: EcosystemSource[]
@@ -181,25 +181,32 @@ export class Scanner {
       }
     }
 
-    // 类型精判:对 star 头部仓库读文件清单(网络操作,失败静默保留启发式)
+    // 发布者证据:一次解析 commit 后，在同一 SHA 下读取 manifest/README/入口。
+    // 仅富化候选头部；生态发现与 publisher coverage 分开报告。
     const enrichN = options.enrichTopN ?? (incremental ? 0 : 30)
     if (enrichN > 0) {
       const targets = [...merged.values()]
         .sort((a, b) => b.stars - a.stars)
         .slice(0, enrichN)
         .map((m) => m.id)
-      options.onProgress?.({ sourceId: 'enrich', message: `类型精判 ${targets.length} 个仓库…` })
-      const enriched = await enrichTopN(targets, options.token, (done) => {
-        if (done % 10 === 0) options.onProgress?.({ sourceId: 'enrich', message: `类型精判 ${done}/${targets.length}` })
-      }, options.signal)
-      for (const [id, r] of enriched) {
+      options.onProgress?.({ sourceId: 'publisher-evidence', message: `固定提交证据采集 ${targets.length} 个仓库…` })
+      for (let index = 0; index < targets.length; index++) {
+        options.signal?.throwIfAborted()
+        const id = targets[index]
+        const result = await hydratePublisherEvidence(id, { token: options.token, signal: options.signal })
         const meta = merged.get(id)
         if (!meta) continue
+        const observations = [...(meta.observations ?? []), ...result.observations]
         merged.set(id, {
           ...meta,
-          type: r.type === 'unknown' ? meta.type : r.type,
-          typeSource: r.type === 'unknown' ? 'heuristic' : 'contents',
+          type: result.type === 'unknown' ? meta.type : result.type,
+          typeSource: result.type === 'unknown' ? meta.typeSource : 'contents',
+          observations: [...new Map(observations.map((item) => [JSON.stringify([item.provenance.originGroup, item.provenance.ref, item.provenance.path, item.values]), item])).values()],
+          publisherCoverage: result.coverage,
         })
+        if ((index + 1) % 10 === 0 || index + 1 === targets.length) {
+          options.onProgress?.({ sourceId: 'publisher-evidence', message: `固定提交证据采集 ${index + 1}/${targets.length}` })
+        }
       }
     }
 

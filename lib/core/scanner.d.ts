@@ -18,7 +18,7 @@ export interface ScanOptions {
     token?: string;
     /** 增量模式:基于上次索引 builtAt 合并;无旧索引时自动退化为全量 */
     incremental?: boolean;
-    /** 类型精判的仓库数上限(按 star 排序取头部),0 = 跳过精判 */
+    /** 固定 commit 的发布者证据抓取上限(按 star 排序取头部),0 = 跳过 */
     enrichTopN?: number;
     /** 仅供测试注入:替换默认数据源 */
     sources?: EcosystemSource[];

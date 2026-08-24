@@ -22,6 +22,8 @@ function provenance(
     authority,
     repository: 'owner/dsh-browser',
     ref: { kind: 'commit' as const, value: 'a'.repeat(40) },
+    path: 'package.json',
+    contentSha256: 'b'.repeat(64),
     observedAt,
     originGroup: `${authority}:owner/dsh-browser`,
   }

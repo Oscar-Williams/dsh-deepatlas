@@ -29,6 +29,9 @@ export interface EvidenceReport {
   failedSources: number
   truncatedSources: number
   incompleteSources: number
+  publisherCompletePlugins: number
+  invalidPublisherAtoms: number
+  acceptedClaimsWithoutPinnedPublisher: number
   sourceKinds: Record<string, number>
   capabilityCounts: Record<string, number>
   structuralGate: 'PASS' | 'FAIL'
@@ -83,9 +86,11 @@ export function buildEvidenceReport(index: AtlasIndex): EvidenceReport {
   let malformedRecords = 0, unresolvedReferences = 0, duplicateEvidenceIds = 0, unresolvedSupersedes = 0
   let invalidSupersedes = 0, supersedeCycles = 0
   let legacyPlugins = 0, pluginsWithEvidence = 0, completePlugins = 0, staleClaims = 0, stateMismatches = 0
+  let publisherCompletePlugins = 0, invalidPublisherAtoms = 0, acceptedClaimsWithoutPinnedPublisher = 0
 
   for (const plugin of index.plugins) {
     const evidence = plugin.evidence
+    if (plugin.publisherCoverage?.status === 'complete') publisherCompletePlugins++
     if (!evidence) { malformedRecords++; continue }
     pluginsWithEvidence++
     if (evidence.state === 'legacy-partial') legacyPlugins++
@@ -94,6 +99,11 @@ export function buildEvidenceReport(index: AtlasIndex): EvidenceReport {
     for (const atom of evidence.atoms) {
       atoms++
       if (!validAtom(atom)) malformedRecords++
+      if (atom.provenance.authority === 'publisher') {
+        const pinned = atom.provenance.ref?.kind === 'commit' && /^[0-9a-f]{40}$/i.test(atom.provenance.ref.value)
+          && Boolean(atom.provenance.path) && /^[0-9a-f]{64}$/i.test(atom.provenance.contentSha256 ?? '')
+        if (!pinned) invalidPublisherAtoms++
+      }
       if (ids.has(atom.evidenceId)) duplicateEvidenceIds++
       ids.add(atom.evidenceId)
       sourceKinds[atom.provenance.sourceKind] = (sourceKinds[atom.provenance.sourceKind] ?? 0) + 1
@@ -116,6 +126,15 @@ export function buildEvidenceReport(index: AtlasIndex): EvidenceReport {
       else if (claim.decision === 'conflicted') conflictedClaims++
       else rejectedClaims++
       for (const id of [...claim.supportEvidenceIds, ...claim.contradictionEvidenceIds]) if (!ids.has(id)) unresolvedReferences++
+      if (claim.decision === 'accepted') {
+        const hasPinnedPublisher = claim.supportEvidenceIds.some((id) => {
+          const atom = atomsById.get(id)
+          return atom?.provenance.authority === 'publisher' && atom.provenance.ref?.kind === 'commit'
+            && /^[0-9a-f]{40}$/i.test(atom.provenance.ref.value) && Boolean(atom.provenance.path)
+            && /^[0-9a-f]{64}$/i.test(atom.provenance.contentSha256 ?? '')
+        })
+        if (!hasPinnedPublisher) acceptedClaimsWithoutPinnedPublisher++
+      }
     }
     if (canonicalClaims(evidence.capabilities) !== canonicalClaims(computeCapabilityClaims(evidence.atoms, evidence.state))) staleClaims++
   }
@@ -132,9 +151,10 @@ export function buildEvidenceReport(index: AtlasIndex): EvidenceReport {
   }
   const structuralPass = index.schemaVersion === SCHEMA_VERSION && metaValid && malformedRecords === 0
     && unresolvedReferences === 0 && unresolvedSupersedes === 0 && invalidSupersedes === 0 && supersedeCycles === 0 && duplicateEvidenceIds === 0
-    && staleClaims === 0 && stateMismatches === 0 && invalid.length === 0
+    && staleClaims === 0 && stateMismatches === 0 && invalidPublisherAtoms === 0
+    && acceptedClaimsWithoutPinnedPublisher === 0 && invalid.length === 0
   const releasePass = structuralPass && index.plugins.length > 0 && index.sources.length > 0
-    && failedSources === 0 && truncatedSources === 0 && incompleteSources === 0
+    && failedSources === 0 && truncatedSources === 0 && incompleteSources === 0 && publisherCompletePlugins > 0
     && pluginsWithEvidence === index.plugins.length
     && completePlugins === index.plugins.length && legacyPlugins === 0 && index.evidenceMeta?.state === 'complete'
   return {
@@ -144,7 +164,8 @@ export function buildEvidenceReport(index: AtlasIndex): EvidenceReport {
     eligiblePlugins: index.plugins.filter(eligible).length,
     pluginsWithEvidence, completePlugins, atoms, acceptedClaims, provisionalClaims, conflictedClaims, rejectedClaims,
     malformedRecords, unresolvedReferences, duplicateEvidenceIds, unresolvedSupersedes, invalidSupersedes, supersedeCycles, staleClaims, stateMismatches, invalidCapabilityIds: invalid,
-    legacyPlugins, failedSources, truncatedSources, incompleteSources, sourceKinds, capabilityCounts,
+    legacyPlugins, failedSources, truncatedSources, incompleteSources, publisherCompletePlugins,
+    invalidPublisherAtoms, acceptedClaimsWithoutPinnedPublisher, sourceKinds, capabilityCounts,
     structuralGate: structuralPass ? 'PASS' : 'FAIL',
     releaseGate: releasePass ? 'PASS' : 'FAIL',
     gate: structuralPass ? 'PASS' : 'FAIL',

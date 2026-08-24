@@ -218,7 +218,11 @@ function atomWeight(atom: EvidenceAtom, state: PluginEvidence['state']): number 
   if (state === 'legacy-partial' || atom.signal.kind === 'legacy') return 0.35
   if (atom.signal.kind === 'manifest-declaration') return 0.95
   if (atom.signal.kind === 'implementation') return 0.9
-  if (atom.signal.kind === 'exact-topic') return 0.8
+  if (atom.signal.kind === 'exact-topic') {
+    if (atom.provenance.authority === 'platform') return 0.55
+    if (atom.provenance.authority === 'community') return 0.4
+    return 0.8
+  }
   if (atom.signal.kind === 'publisher-text') return atom.signal.matchedAlias && atom.provenance.jsonPointer === '/name' ? 0.4 : 0.7
   if (atom.signal.kind === 'curation') return 0.4
   return 0.35

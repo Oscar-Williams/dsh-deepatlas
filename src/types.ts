@@ -62,6 +62,15 @@ export interface PluginEvidence {
   capabilities: CapabilityClaim[]
 }
 
+export interface PublisherCoverage {
+  status: 'not-attempted' | 'complete' | 'partial' | 'failed' | 'not-applicable'
+  commit?: string
+  requiredRoles: string[]
+  fetchedRoles: string[]
+  errors: string[]
+  observedAt: string
+}
+
 /** 仅供 v1 索引读取；所有新写入使用 PluginEvidence。 */
 export interface LegacyCapabilityRecord {
   id: string
@@ -89,6 +98,8 @@ export interface PluginMeta {
   evidence?: PluginEvidence
   /** 源字段观察值在合并时无损保留。 */
   observations?: PluginObservation[]
+  /** 固定提交的发布者 artifact 抓取覆盖；与 Evidence 原生/迁移状态分开。 */
+  publisherCoverage?: PublisherCoverage
   /** @deprecated Evidence v1 兼容输入；v2 扫描不会写入。 */
   capsEv?: LegacyCapabilityRecord[]
   /** 类型判定证据:heuristic=名称/描述关键词;contents=仓库文件清单精判 */

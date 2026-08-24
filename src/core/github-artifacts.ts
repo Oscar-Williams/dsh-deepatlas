@@ -20,6 +20,8 @@ export interface FetchArtifactResult {
 
 export type ArtifactFetch = typeof fetch
 
+export interface RepositoryRootEntry { name: string; path: string; type: 'file' | 'dir' }
+
 const headersFor = (token?: string, raw = false): Record<string, string> => ({
   Accept: raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json',
   'X-GitHub-Api-Version': '2022-11-28',
@@ -81,6 +83,26 @@ export async function fetchArtifactAtCommit(
     if (signal?.aborted) throw error
     return { artifact: null, error: `${normalized} 获取失败:${error instanceof Error ? error.message : String(error)}` }
   }
+}
+
+export async function listRepositoryRootAtCommit(
+  repository: string,
+  commit: string,
+  token?: string,
+  signal?: AbortSignal,
+  fetcher: ArtifactFetch = fetch,
+): Promise<RepositoryRootEntry[]> {
+  if (!isGithubRepoSlug(repository) || !isFullCommitSha(commit)) throw new Error('根目录读取需要合法仓库与完整 commit SHA')
+  const response = await fetcher(`${API}/repos/${repository}/contents?ref=${encodeURIComponent(commit)}`, {
+    headers: headersFor(token), signal,
+  })
+  if (!response.ok) throw new Error(`根目录获取失败:GitHub API ${response.status}`)
+  const body = await response.json() as Array<{ name?: string; path?: string; type?: string }>
+  if (!Array.isArray(body)) throw new Error('根目录获取失败:响应格式错误')
+  return body
+    .filter((entry): entry is { name: string; path: string; type: 'file' | 'dir' } =>
+      typeof entry.name === 'string' && typeof entry.path === 'string' && (entry.type === 'file' || entry.type === 'dir'))
+    .map((entry) => ({ name: entry.name, path: entry.path, type: entry.type }))
 }
 
 function exportEntry(exportsValue: unknown): string | undefined {
