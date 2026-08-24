@@ -5,15 +5,15 @@
 [![Status](https://img.shields.io/badge/status-public%20preview-blueviolet)](./CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-DeepAtlas 为 DeepSeek Harness（DSH）提供本地能力保障与按需插件导航。它先建立本地生态索引；当你提出找插件、比较候选或检查能力缺口时，DSH 宿主模型可调用 DeepAtlas 给出能力匹配的候选、来源证据和重叠提示。选定插件后，DeepAtlas 继续完成固定 commit 的风险审计、兼容性检查和受控安装。
+DeepAtlas 帮助 DeepSeek Harness（DSH）用户判断一次插件能力变更是否值得执行，并为查找、核验和安装过程留下可复核记录。需要跨会话记忆、消息接入、浏览器自动化等能力时，你可以直接描述目标；DSH 宿主模型会按需调用 DeepAtlas，核对当前 profile 的能力覆盖，再给出候选、匹配依据和风险信号。
 
-第三方插件会与 DSH 共享进程权限。DeepAtlas 提供可复核的风险信号和安装轨迹，最终选择始终由用户确认。
+选定候选后，DeepAtlas 会在完整 commit 上执行风险审计与兼容性检查，并在用户明确确认后进入锁定版本安装和恢复流程。当前版本采用会话内按需调用；首次使用插件发现功能前，需要由用户确认一次完整扫描。索引、审计记录和安装状态均保存在本地。
 
 [English](./README.en.md) · [架构](./docs/architecture.md) · [安全模型](./docs/security.md) · [兼容契约](./docs/compatibility.md) · [更新记录](./CHANGELOG.md)
 
 ## DeepAtlas 如何参与任务
 
-DeepAtlas 通过六个工具参与当前 DSH 会话。你描述找插件、比较候选或检查能力缺口等需求后，宿主模型会依据可见工具说明选择 `deepatlas_find` 或 `deepatlas_advise`；在请求中写明“用 DeepAtlas 查找插件”可以获得更确定的触发效果。当前版本采用会话内按需调用；持续任务觉察与受控主动建议列入 v0.2.4。
+DeepAtlas 通过六个工具参与当前 DSH 会话。你提出找插件、比较候选或检查能力缺口等需求后，宿主模型会依据可见工具说明选择 `deepatlas_find` 或 `deepatlas_advise`。在请求中写明“用 DeepAtlas 查找插件”可以获得更稳定的触发效果。持续任务觉察与受控主动建议列入 v0.2.4。
 
 | 阶段 | 触发方式 | 执行行为 |
 |---|---|---|
@@ -26,12 +26,12 @@ DeepAtlas 通过六个工具参与当前 DSH 会话。你描述找插件、比�
 
 ## 亮点
 
-- **证据化生态发现**：聚合 GitHub `dsh-plugin` topic 与多个社区清单，再通过结构资格、固定 commit 的发布者 artifact 和覆盖状态区分可安装候选与发现线索。
-- **任务能力检索**：28 类中英 capability、多字段证据与质量信号共同生成候选，适合自然语言任务和标准 capability 输入。
+- **能力覆盖检查**：对照当前 profile 与任务需求，能力已覆盖时保持安静，发现明确缺口时给出 1–3 个建议。
+- **任务能力检索**：28 类中英 capability、多字段证据与质量信号共同生成候选，并同时呈现匹配依据和能力重叠。
 - **可复核的能力证据**：GitHub Search 与社区清单用于生态发现；候选的 manifest、README 和声明入口在同一完整 commit 下读取，并记录仓库路径、内容哈希和覆盖状态。
-- **安静的能力顾问**：工具被调用后，当前 profile 已具备相关能力时返回静默结论，发现明确缺口时给出 1–3 个建议。
 - **装前风险审计**：检查生命周期脚本、依赖形态、native 依赖、manifest 声明入口与 bundle patch 的源码风险模式，以及 Node 兼容性；结果绑定完整 commit SHA。
 - **受控安装与恢复**：安装授权只读取同一仓库、同一 commit 的本地审计缓存；执行前创建 profile 快照，异常时进入回滚流程。
+- **证据化生态发现**：聚合 GitHub `dsh-plugin` topic 与多个社区清单，再通过结构资格、固定 commit 的发布者 artifact 和覆盖状态区分可安装候选与发现线索。
 - **本地优先**：索引、审计缓存与安装记录留在 DSH home 或用户指定目录，GitHub Token 仅用于提高 API 限额。
 
 ## 快速开始
@@ -84,9 +84,9 @@ dsh web
 
 > 调用 `deepatlas_status` 查看索引状态；若索引尚未建立，请执行一次完整扫描。
 
-用户确认并启动完整扫描后，DeepAtlas 将依次完成 GitHub 时间分片、社区清单合并、仓库去重、候选证据采集和本地落盘。2026-08-23 的专用 WSL 环境实测读取 10,914 条 GitHub topic 结果与 5,175 条社区清单记录，去重后生成 11,700 条索引。
+本地索引是 DeepAtlas 用于检索的插件候选目录。用户确认并启动完整扫描后，DeepAtlas 将依次完成 GitHub 时间分片、社区清单合并、仓库去重、候选证据采集和本地落盘。扫描完成时会返回条目数、来源健康度和索引位置；带日期的维护者全量验证结果集中列在[评测状态](#评测状态)，避免把持续变化的生态规模当作安装承诺。
 
-该次匿名扫描耗时 15 分 46 秒，主要时间用于等待 GitHub Search API 配额。配置 GitHub Token 后，Search 请求额度由每分钟 10 次提高到 30 次；网络稳定时通常可在数分钟内完成。实际耗时会随 GitHub 配额、网络状态和生态规模变化。扫描运行于当前 DSH 进程，期间需保持进程与网络连接；完成时会返回条目数、来源健康度和索引位置。
+网络稳定且已配置 GitHub Token 时，完整扫描通常可在数分钟内完成。2026-08-23 的匿名验证耗时 15 分 46 秒，主要时间用于等待 GitHub Search API 配额。实际耗时会随配额、网络状态和生态规模变化。扫描运行于当前 DSH 进程，期间需保持进程与网络连接。
 
 保持扫描顺畅：
 
@@ -197,7 +197,7 @@ HostIntentGate 将独立度量“自然语言 → DSH 宿主模型 → capabilit
 - DeepAtlas 处于 public preview，DSH 处于 Developer Preview。
 - 当前发布线覆盖 DSH `0.1.1-rc.1` / `0.1.1-rc.2` 与 Node 22.19 / 24。
 - 安装分发使用 GitHub tag 或完整 commit SHA，仓库随包携带已构建 `lib/`。
-- 审计覆盖静态风险信号；运行时隔离、签名校验和恶意行为检测由更上层的安全体系承担。
+- 当前发布的审计覆盖静态风险信号；Resolved Environment、隔离启动和任务验收将由后续 Capability Change Transaction 承接。
 - `dryRun=true` 提供安全默认体验，真实安装由用户按 profile 显式启用。
 
 DSH 每个新 RC 会先进入 compatibility canary：依赖契约、Windows/Linux 分发、配置组合、工具调用与真实启动全部通过后，再更新兼容矩阵。
@@ -236,11 +236,11 @@ v0.2.2 稳定版基线为 **22 个测试文件、108 项测试**；当前 v0.2.3
 - **v0.2.2**：HTTPS 锁定版本安装、发布完整性、完整生态分片扫描、DSH rc.2 lossless JSON、审计授权收口、Windows CLI 与安装恢复链路。
 - **v0.2.3（含 rc.x）**：完成 Evidence v2 的 provenance、冲突解析、迁移、覆盖率报告与回归 Gate。
 - **v0.2.4（含 rc.x）**：完成 Capability Diagnosis、HostIntentGate、真实 DSH 会话重放和受控任务觉察。
-- **v0.2.5（含多个 rc.x）**：交付完整 Capability Change Transaction，串联目标契约、精确候选、before/after fingerprint、结构预检、隔离启动、resolved graph/runtime delta、目标验收、策略结论、恢复对象和内容寻址 receipt。
-- **v0.2.6**：强化多来源适配、故障注入与 receipt replay，并复用 DSH 可用的 safe-boot、doctor 和 capability declaration 接口。
+- **v0.2.5（含多个 rc.x）**：交付完整 Capability Change Transaction，串联目标契约、精确候选、真实依赖解析、模块解析探针、完整 loader 启动、runtime delta、目标验收、策略结论、恢复对象和内容寻址 receipt。
+- **v0.2.6**：强化依赖漂移与 capability reality 检查、多来源适配、故障注入和 receipt replay，并复用 DSH 可用的 safe-boot、doctor 和 capability declaration 接口。
 - **v0.2.7 及后续 v0.2.x**：扩展主动保障、安装后验收、漂移与因果追踪、团队策略、可移植证明和 Verified Installability 指标。
 
-完整里程碑、验收条件与 DSH 协同策略见 [v0.2.x 路线图](./docs/v0.2.x-roadmap.md)，事务模型见 [Capability Change Transaction 设计](./docs/capability-change-transaction.md)。
+完整里程碑、验收条件与 DSH 协同策略见 [v0.2.x 路线图](./docs/v0.2.x-roadmap.md)，事务模型见 [Capability Change Transaction 设计](./docs/capability-change-transaction.md)，环境事实层见 [Resolved Environment Preflight 工程规格](./docs/resolved-environment-preflight.md)。
 
 ## 项目名称
 

@@ -5,15 +5,15 @@
 [![Status](https://img.shields.io/badge/status-public%20preview-blueviolet)](./CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-DeepAtlas provides local capability assurance and on-demand plugin navigation for DeepSeek Harness (DSH). It first builds a local ecosystem index. When you ask to find a plugin, compare candidates, or inspect a capability gap, the DSH host model can call DeepAtlas for capability-matched candidates, source evidence, and overlap notes. Once you choose a plugin, DeepAtlas continues with risk review at a pinned commit, compatibility checks, and a controlled installation flow.
+DeepAtlas helps DeepSeek Harness (DSH) users decide whether a plugin capability change is worth making, with a reviewable record of discovery, verification, and installation. Describe a goal such as cross-session memory, messaging, or browser automation, and the DSH host model can call DeepAtlas on demand to compare the active profile with suitable candidates, match evidence, and risk signals.
 
-Third-party plugins share the DSH process privileges. DeepAtlas provides reviewable risk signals and an installation trace, while every installation remains subject to explicit user approval.
+After you select a candidate, DeepAtlas reviews a full commit, checks compatibility, and enters a pinned installation and recovery flow only after explicit approval. The current release works on demand within the conversation. Plugin discovery requires one user-confirmed complete scan before first use, while indexes, audit records, and installation state remain local.
 
 [中文](./README.md) · [Architecture](./docs/architecture.md) · [Security](./docs/security.md) · [Compatibility](./docs/compatibility.md) · [Changelog](./CHANGELOG.md)
 
 ## How DeepAtlas participates in a task
 
-DeepAtlas exposes six tools to the active DSH conversation. After you ask to find a plugin, compare candidates, or check a capability gap, the host model can select `deepatlas_find` or `deepatlas_advise` from the visible tool schemas. An explicit request such as “use DeepAtlas to find a plugin” provides more predictable invocation. The current release uses on-demand invocation within the conversation; continuous task awareness and controlled proactive suggestions are planned for v0.2.4.
+DeepAtlas exposes six tools to the active DSH conversation. After you ask to find a plugin, compare candidates, or check a capability gap, the host model can select `deepatlas_find` or `deepatlas_advise` from the visible tool schemas. An explicit request such as “use DeepAtlas to find a plugin” provides more predictable invocation. Continuous task awareness and controlled proactive suggestions are planned for v0.2.4.
 
 | Stage | Trigger | Runtime behavior |
 |---|---|---|
@@ -26,12 +26,12 @@ Natural-language tool selection is performed by the active DSH model and can var
 
 ## Highlights
 
-- **Evidence-backed ecosystem discovery** combines the GitHub `dsh-plugin` topic with community lists, then uses structural eligibility, publisher artifacts pinned to one commit, and coverage state to distinguish installable candidates from discovery leads.
-- **Task capability retrieval** combines 28 bilingual capability classes, field-level evidence, and quality signals for natural-language tasks and canonical capability input.
+- **Capability coverage checks** compare the active profile with the task, remain quiet when coverage is sufficient, and return 1–3 suggestions for a clear gap.
+- **Task capability retrieval** combines 28 bilingual capability classes, field-level evidence, and quality signals while presenting match reasons and capability overlap.
 - **Reviewable capability evidence** uses GitHub Search and community lists for discovery, then reads candidate manifests, READMEs, and declared entries at one full commit while recording repository paths, content hashes, and coverage status.
-- **Quiet capability advisor** returns a silent result after invocation when the selected profile already covers the task, and 1–3 suggestions for clear capability gaps.
 - **Pre-install risk audit** checks lifecycle scripts, dependency shapes, native dependencies, source patterns in the manifest-declared entry and bundle patch, and Node compatibility at a full commit SHA.
 - **Controlled installation and recovery** authorizes from the matching local audit record, snapshots the profile before execution, and enters rollback when verification fails.
+- **Evidence-backed ecosystem discovery** combines the GitHub `dsh-plugin` topic with community lists, then uses structural eligibility, publisher artifacts pinned to one commit, and coverage state to distinguish installable candidates from discovery leads.
 - **Local-first state** keeps indexes, audit cache, and install records in the DSH home or a user-selected directory. A GitHub token is used only to raise API limits.
 
 ## Quick start
@@ -84,9 +84,9 @@ Send this request inside DSH:
 
 > Call `deepatlas_status`. If no index exists yet, run one complete scan.
 
-After you confirm and start a complete scan, DeepAtlas partitions GitHub queries, merges community lists, deduplicates repositories, collects candidate evidence, and writes the local index. A dedicated WSL run on 2026-08-23 read 10,914 GitHub topic results and 5,175 community-list entries, producing 11,700 unique index records.
+The local index is the plugin candidate catalog used by DeepAtlas retrieval. After you confirm and start a complete scan, DeepAtlas partitions GitHub queries, merges community lists, deduplicates repositories, collects candidate evidence, and writes that catalog locally. The result includes the item count, source health, and index location. Dated maintainer-scale results live in [Evaluation status](#evaluation-status), keeping a changing ecosystem size separate from the installation promise.
 
-That anonymous run completed in 15 minutes 46 seconds, with most of the time spent waiting for GitHub Search API quota. A GitHub token raises the Search budget from 10 to 30 requests per minute; a stable authenticated connection typically completes within several minutes. Actual duration varies with GitHub quota, network conditions, and ecosystem size. The scan runs in the active DSH process, so keep the process and network available until it returns the item count, source health, and index location.
+With a stable network and a GitHub token, a complete scan typically finishes within several minutes. The anonymous validation run on 2026-08-23 took 15 minutes 46 seconds, mostly while waiting for GitHub Search quota. Actual duration varies with quota, network conditions, and ecosystem size. The scan runs in the active DSH process, so keep the process and network available until it completes.
 
 For consistently fast scans:
 
@@ -199,7 +199,7 @@ HostIntentGate will independently measure the live path from natural language th
 - DeepAtlas is a public preview and DSH is a Developer Preview.
 - The current release line covers DSH `0.1.1-rc.1` / `0.1.1-rc.2` and Node 22.19 / 24.
 - Distribution uses a GitHub tag or full commit SHA and includes prebuilt `lib/` artifacts.
-- Audit covers static risk signals. Runtime isolation, signature verification, and behavior detection belong to broader security controls.
+- The current audit covers static risk signals. Resolved-environment checks, isolated boot, and goal acceptance will be delivered through the later Capability Change Transaction.
 - `dryRun=true` provides the safe default; users enable real installation per profile.
 
 Every new DSH RC enters a compatibility canary covering dependency contracts, Windows/Linux distribution, composition, tool calls, and real startup before the compatibility matrix changes.
@@ -238,11 +238,11 @@ The v0.2.2 stable baseline is **22 test files and 108 tests**; the current v0.2.
 - **v0.2.2**: pinned HTTPS installation, release integrity, complete partitioned discovery, DSH rc.2 lossless JSON, audit authorization hardening, Windows CLI handling, and install recovery.
 - **v0.2.3 (including rc.x)**: complete Evidence v2 provenance, conflict resolution, migration, coverage reporting, and regression gates.
 - **v0.2.4 (including rc.x)**: deliver Capability Diagnosis, HostIntentGate, real DSH session replay, and controlled task awareness.
-- **v0.2.5 (across multiple rc.x builds)**: deliver a complete Capability Change Transaction spanning a goal contract, exact candidate, before/after fingerprints, structural preflight, isolated boot, resolved-graph/runtime deltas, goal acceptance, policy verdict, rollback artifact, and content-addressed receipt.
-- **v0.2.6**: harden source adapters, failure injection, and receipt replay while reusing available DSH safe-boot, doctor, and capability-declaration interfaces.
+- **v0.2.5 (across multiple rc.x builds)**: deliver a complete Capability Change Transaction spanning a goal contract, exact candidate, actual dependency resolution, module-resolution probes, a full loader boot, runtime deltas, goal acceptance, policy verdict, rollback artifact, and content-addressed receipt.
+- **v0.2.6**: harden dependency-drift and capability-reality checks, source adapters, failure injection, and receipt replay while reusing available DSH safe-boot, doctor, and capability-declaration interfaces.
 - **v0.2.7 and later v0.2.x releases**: extend active assurance, post-install validation, drift and causal tracing, team policy, portable proof, and Verified Installability metrics.
 
-See the [v0.2.x roadmap](./docs/v0.2.x-roadmap.md) for milestones, acceptance criteria, and the DSH coordination policy, and the [Capability Change Transaction design](./docs/capability-change-transaction.md) for the transaction model.
+See the [v0.2.x roadmap](./docs/v0.2.x-roadmap.md) for milestones, acceptance criteria, and the DSH coordination policy, the [Capability Change Transaction design](./docs/capability-change-transaction.md) for the transaction model, and the [Resolved Environment Preflight specification](./docs/resolved-environment-preflight.md) for the environment evidence layer.
 
 ## Naming
 
