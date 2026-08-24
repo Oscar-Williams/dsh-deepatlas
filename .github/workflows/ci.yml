@@ -47,6 +47,18 @@ jobs:
             exit 1
           fi
 
+  # Evidence v2 发布闸门使用冻结原生索引，无网络依赖；结构合法但发布不完整时必须失败。
+  evidence-release-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run benchmark:evidence:fixture
+
   # ② 分发 E2E:测试对象必须是 Git 能交付的内容,安装语义必须与用户一致
   # (tarball;目录 link: 不装 dependencies,语义不等价——2026-08-23 实测)
   distribution-e2e:

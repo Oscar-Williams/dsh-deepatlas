@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 2,
+  "evidenceMeta": {
+    "taxonomyVersion": "capability-taxonomy-v1",
+    "extractorVersion": "capability-evidence-v2.0.0",
+    "ruleVersion": "capability-claims-v2.0.0",
+    "state": "complete"
+  },
+  "builtAt": "2026-08-24T00:00:00.000Z",
+  "sources": [
+    {
+      "sourceId": "fixture",
+      "ok": true,
+      "itemCount": 1,
+      "fetchedAt": "2026-08-24T00:00:00.000Z",
+      "mode": "full"
+    }
+  ],
+  "plugins": [
+    {
+      "id": "example/browser-helper",
+      "name": "browser-helper",
+      "displayName": "browser-helper",
+      "repoUrl": "https://github.com/example/browser-helper",
+      "description": "",
+      "type": "cordis",
+      "kind": "plugin",
+      "isInstallable": true,
+      "stars": 1,
+      "lastPushedAt": "2026-08-24T00:00:00.000Z",
+      "license": "MIT",
+      "topics": [],
+      "whitelisted": false,
+      "provides": [],
+      "observations": [
+        {
+          "values": { "name": "browser-helper", "description": "", "topics": [], "provides": [] },
+          "provenance": {
+            "sourceId": "publisher-fixture",
+            "sourceKind": "manifest",
+            "authority": "publisher",
+            "repository": "example/browser-helper",
+            "ref": { "kind": "commit", "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+            "path": "package.json",
+            "contentSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "observedAt": "2026-08-24T00:00:00.000Z",
+            "originGroup": "publisher:example/browser-helper:manifest"
+          }
+        }
+      ],
+      "evidence": {
+        "schemaVersion": 2,
+        "state": "complete",
+        "atoms": [
+          {
+            "evidenceId": "2d0f6d609120eb5b363e295ce5d04cb2bb4c01bbf2310e01d2f45e6596905d9a",
+            "subject": "capability:browser-automation",
+            "polarity": "supports",
+            "signal": {
+              "kind": "publisher-text",
+              "matchedAlias": "browser",
+              "rawValue": "browser-helper",
+              "excerpt": "browser-helper"
+            },
+            "provenance": {
+              "sourceId": "publisher-fixture",
+              "sourceKind": "manifest",
+              "authority": "publisher",
+              "repository": "example/browser-helper",
+              "ref": { "kind": "commit", "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" },
+              "path": "package.json",
+              "jsonPointer": "/name",
+              "contentSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "observedAt": "2026-08-24T00:00:00.000Z",
+              "originGroup": "publisher:example/browser-helper:manifest"
+            },
+            "extractor": {
+              "id": "deepatlas-capability-extractor",
+              "version": "capability-evidence-v2.0.0",
+              "taxonomyVersion": "capability-taxonomy-v1"
+            }
+          }
+        ],
+        "capabilities": [
+          {
+            "id": "browser-automation",
+            "decision": "rejected",
+            "confidence": 0.4,
+            "supportEvidenceIds": ["2d0f6d609120eb5b363e295ce5d04cb2bb4c01bbf2310e01d2f45e6596905d9a"],
+            "contradictionEvidenceIds": [],
+            "computedBy": {
+              "ruleVersion": "capability-claims-v2.0.0",
+              "taxonomyVersion": "capability-taxonomy-v1",
+              "extractorVersion": "capability-evidence-v2.0.0"
+            }
+          }
+        ]
+      },
+      "source": "fixture",
+      "fetchedAt": "2026-08-24T00:00:00.000Z"
+    }
+  ]
+}
