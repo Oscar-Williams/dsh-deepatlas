@@ -61,7 +61,7 @@ npx -y @deepseek-ai/dsh@0.1.1-rc.2 web
 以下示例安装到 `web` profile，并锁定公开版本：
 
 ```bash
-dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.2
+dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.3
 ```
 
 该地址通过 HTTPS 获取锁定版本，在 Windows、WSL 与常见受限网络中保持一致。使用 `headless` 或其他 profile 时，将两处 `web` 替换为对应名称。
@@ -208,7 +208,7 @@ DSH 每个新 RC 会先进入 compatibility canary：依赖契约、Windows/Linu
 
 ```bash
 dsh plugin --profile web remove dsh-deepatlas
-dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.2
+dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.3
 ```
 
 卸载：
@@ -229,7 +229,7 @@ npm run typecheck:tests
 npm run build
 ```
 
-v0.2.2 稳定版基线为 **22 个测试文件、108 项测试**；当前 v0.2.3 开发分支为 **26 个测试文件、131 项测试**。CI 覆盖 Node 22/24、Windows、Evidence 发布与精度 Gate、分发完整性、tarball 安装与启动验证，以及按 commit 安装的 nightly E2E。`lib/` 属于 GitHub 安装载荷，源码变更必须同步构建产物。
+v0.2.3 稳定版基线为 **26 个测试文件、131 项测试**。CI 覆盖 Node 22/24、Windows、Evidence 发布与精度 Gate、分发完整性、tarball 安装与启动验证，以及按 commit 安装的 nightly E2E。`lib/` 属于 GitHub 安装载荷，源码变更必须同步构建产物。
 
 ## 路线图
 

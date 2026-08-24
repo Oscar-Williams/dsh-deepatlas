@@ -1,6 +1,6 @@
 {
   "name": "dsh-deepatlas",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "DeepAtlas provides local capability assurance for DSH: on-demand discovery, provenance-backed recommendations, pinned risk review, and controlled installation. DSH 本地能力保障：按需发现、证据推荐、固定版本审计与受控安装。",
   "type": "module",
   "main": "./lib/index.js",

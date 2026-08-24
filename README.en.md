@@ -61,7 +61,7 @@ npx -y @deepseek-ai/dsh@0.1.1-rc.2 web
 This example installs the pinned public release into `web`:
 
 ```bash
-dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.2
+dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.3
 ```
 
 This HTTPS address fetches the pinned release consistently across Windows, WSL, and common restricted networks. Replace both `web` occurrences with `headless` or another profile name when appropriate.
@@ -210,7 +210,7 @@ Update to another pinned release:
 
 ```bash
 dsh plugin --profile web remove dsh-deepatlas
-dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.2
+dsh plugin --profile web add https://codeload.github.com/Oscar-Williams/dsh-deepatlas/tar.gz/refs/tags/v0.2.3
 ```
 
 Uninstall:
@@ -231,7 +231,7 @@ npm run typecheck:tests
 npm run build
 ```
 
-The v0.2.2 stable baseline is **22 test files and 108 tests**; the current v0.2.3 development branch has **26 test files and 131 tests**. CI covers Node 22/24, Windows, Evidence release and precision gates, distribution integrity, tarball installation and boot verification, plus nightly install-by-commit E2E. GitHub installation ships the committed `lib/`, so source changes must include matching build output.
+The v0.2.3 stable baseline is **26 test files and 131 tests**. CI covers Node 22/24, Windows, Evidence release and precision gates, distribution integrity, tarball installation and boot verification, plus nightly install-by-commit E2E. GitHub installation ships the committed `lib/`, so source changes must include matching build output.
 
 ## Roadmap
 
