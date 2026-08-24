@@ -58,6 +58,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run benchmark:evidence:fixture
+      - run: npm run benchmark:evidence:gold
 
   # ② 分发 E2E:测试对象必须是 Git 能交付的内容,安装语义必须与用户一致
   # (tarball;目录 link: 不装 dependencies,语义不等价——2026-08-23 实测)

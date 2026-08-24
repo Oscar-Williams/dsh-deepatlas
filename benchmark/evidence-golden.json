@@ -1,0 +1,26 @@
+{
+  "version": "evidence-gold-v1",
+  "thresholds": { "acceptedPrecision": 0.95, "acceptedRecall": 0.9, "mustNotFalseAccepts": 0 },
+  "cases": [
+    { "id": "wechat-keyword", "parts": [{ "source": "package-keyword", "text": "wechat" }], "accepted": ["messaging-wechat"], "mustNot": [] },
+    { "id": "memory-keyword", "parts": [{ "source": "package-keyword", "text": "long-term memory" }], "accepted": ["long-term-memory"], "mustNot": [] },
+    { "id": "browser-keyword", "parts": [{ "source": "package-keyword", "text": "browser automation" }], "accepted": ["browser-automation", "automation-schedule"], "mustNot": [] },
+    { "id": "search-keyword", "parts": [{ "source": "package-keyword", "text": "web search" }], "accepted": ["web-search"], "mustNot": [] },
+    { "id": "database-keyword", "parts": [{ "source": "package-keyword", "text": "postgres database" }], "accepted": ["database"], "mustNot": [] },
+    { "id": "spreadsheet-keyword", "parts": [{ "source": "package-keyword", "text": "spreadsheet excel" }], "accepted": ["spreadsheet-doc"], "mustNot": [] },
+    { "id": "screenshot-keyword", "parts": [{ "source": "package-keyword", "text": "screenshot capture" }], "accepted": ["screenshot"], "mustNot": [] },
+    { "id": "workflow-keyword", "parts": [{ "source": "package-keyword", "text": "workflow orchestration" }], "accepted": ["workflow-orchestration"], "mustNot": [] },
+    { "id": "prompt-keyword", "parts": [{ "source": "package-keyword", "text": "prompt enhance" }], "accepted": ["prompt-enhance"], "mustNot": [] },
+    { "id": "word-boundary-negative", "parts": [{ "source": "readme", "text": "Generate keywords for metadata" }], "accepted": [], "mustNot": ["spreadsheet-doc"] },
+    { "id": "name-only-low-confidence", "parts": [{ "source": "name", "text": "telegram-helper" }], "accepted": [], "mustNot": ["messaging-telegram"] },
+    {
+      "id": "publisher-contradiction",
+      "parts": [
+        { "source": "manifest-capability", "text": "browser-automation", "capabilityId": "browser-automation" },
+        { "source": "manifest-capability", "text": "browser-automation", "capabilityId": "browser-automation", "polarity": "contradicts", "authority": "community" }
+      ],
+      "accepted": [],
+      "mustNot": ["browser-automation"]
+    }
+  ]
+}

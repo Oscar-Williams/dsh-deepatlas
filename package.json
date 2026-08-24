@@ -41,7 +41,8 @@
     "scan": "node ./lib/cli.js scan",
     "status": "node ./lib/cli.js status",
     "benchmark:evidence": "npm run build && node ./scripts/evidence-gate.mjs --mode release",
-    "benchmark:evidence:fixture": "npm run build && node ./scripts/evidence-gate.mjs --mode release --data-dir ./tests/fixtures/evidence-v2 --no-write"
+    "benchmark:evidence:fixture": "npm run build && node ./scripts/evidence-gate.mjs --mode release --data-dir ./tests/fixtures/evidence-v2 --no-write",
+    "benchmark:evidence:gold": "npm run build && node ./scripts/evidence-gold.mjs"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": ">=4.0.1 <5.0.0",
