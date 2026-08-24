@@ -46,6 +46,8 @@ export interface EvidenceAtom {
         excerpt?: string;
     };
     provenance: EvidenceProvenance;
+    /** 新证据明确取代的旧 atom；旧 atom 保留在审计轨迹中，不参与 claim 计算。 */
+    supersedesEvidenceIds?: string[];
     extractor: {
         id: string;
         version: string;

@@ -52,7 +52,10 @@ export function retrieve(
 
     // v3-B:索引期固化的能力证据优先;旧索引回退到查询期抽取
     const claims = resolveCapabilityClaims(p)
-    const usableClaims = claims.filter((claim) => claim.decision === 'accepted' || claim.decision === 'provisional')
+    // v1 迁移记录保持低置信度，但仍提供受限 capability fallback，避免迁移后召回骤降。
+    const legacyFallback = p.evidence?.state === 'legacy-partial'
+    const usableClaims = claims.filter((claim) => claim.decision === 'accepted' || claim.decision === 'provisional'
+      || (legacyFallback && claim.decision === 'rejected' && claim.supportEvidenceIds.length > 0 && claim.contradictionEvidenceIds.length === 0))
     const byCapability = new Map(usableClaims.map((claim) => [claim.id, claim]))
     const capOverlap = [...taskCaps].filter((capability) => byCapability.has(capability))
     const capabilityEvidence = capOverlap.map((id) => {

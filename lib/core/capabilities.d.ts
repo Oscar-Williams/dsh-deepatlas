@@ -35,10 +35,14 @@ export interface CapabilityTextPart {
     source: 'name' | 'description' | 'topics' | 'provides' | 'manifest-capability' | 'package-keyword' | 'readme' | 'legacy';
     text: string;
     provenance?: EvidenceProvenance;
+    /** 结构化来源可直接声明规范 capability，跳过别名猜测。 */
+    capabilityId?: string;
+    polarity?: EvidenceAtom['polarity'];
+    supersedesEvidenceIds?: string[];
 }
 /**
- * Evidence v2：事实 atom 与派生 claim 分离。同一 originGroup 内只采用最强信号，
- * 只有独立 authority 的佐证才增加最多 0.10，避免同一仓库堆叠关键词抬分。
+ * Evidence v2：事实 atom 与派生 claim 分离。同一 authority 内只采用最强信号，
+ * 只有独立 authority 的佐证才增加最多 0.10，避免同一发布者堆叠关键词抬分。
  */
 export declare function extractCapabilityEvidence(parts: CapabilityTextPart[], state?: PluginEvidence['state']): PluginEvidence;
 export declare function computeCapabilityClaims(atoms: EvidenceAtom[], state: PluginEvidence['state']): CapabilityClaim[];

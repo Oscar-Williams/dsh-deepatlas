@@ -5,6 +5,7 @@ export interface EvidenceReport {
     plugins: number;
     eligiblePlugins: number;
     pluginsWithEvidence: number;
+    completePlugins: number;
     atoms: number;
     acceptedClaims: number;
     provisionalClaims: number;
@@ -13,10 +14,18 @@ export interface EvidenceReport {
     malformedRecords: number;
     unresolvedReferences: number;
     duplicateEvidenceIds: number;
+    unresolvedSupersedes: number;
+    invalidSupersedes: number;
+    supersedeCycles: number;
+    staleClaims: number;
+    stateMismatches: number;
     invalidCapabilityIds: string[];
     legacyPlugins: number;
     sourceKinds: Record<string, number>;
     capabilityCounts: Record<string, number>;
+    structuralGate: 'PASS' | 'FAIL';
+    releaseGate: 'PASS' | 'FAIL';
+    /** 兼容旧报告消费者，等同 structuralGate。 */
     gate: 'PASS' | 'FAIL';
 }
 /** Evidence v2 schema/provenance Gate；覆盖率单独报告，不用生态噪声倒推阈值。 */
