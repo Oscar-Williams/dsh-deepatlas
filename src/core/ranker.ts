@@ -36,9 +36,9 @@ export function trustScore(meta: Pick<PluginMeta, 'whitelisted' | 'license' | 'n
   return Math.min(100, Math.max(0, s))
 }
 
-/** 综合静态分(match 恒为 0,推荐阶段由模型语义匹配后补足) */
-export function rank(meta: PluginMeta): QualityScore {
-  const activity = activityScore(meta.lastPushedAt)
+/** 综合静态分(match 恒为 0,推荐阶段由模型语义匹配后补足)。now 便于冻结评测时间。 */
+export function rank(meta: PluginMeta, now = new Date()): QualityScore {
+  const activity = activityScore(meta.lastPushedAt, now)
   const community = communityScore(meta.stars)
   const trust = trustScore(meta)
   const total = Math.round(activity * 0.35 + community * 0.25 + trust * 0.25)

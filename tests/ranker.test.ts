@@ -58,7 +58,7 @@ describe('trustScore', () => {
 
 describe('rank', () => {
   it('总分为三分加权,match 恒为 0', () => {
-    const q = rank(meta({ stars: 1000, lastPushedAt: '2026-08-20T00:00:00Z', license: 'MIT' }))
+    const q = rank(meta({ stars: 1000, lastPushedAt: '2026-08-20T00:00:00Z', license: 'MIT' }), NOW)
     expect(q.match).toBe(0)
     expect(q.activity).toBe(100)
     expect(q.community).toBe(58) // 新基数:千星级约 58 分

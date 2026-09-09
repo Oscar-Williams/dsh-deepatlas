@@ -13,5 +13,5 @@ export declare function activityScore(lastPushedAt: string, now?: Date): number;
 export declare function communityScore(stars: number): number;
 /** 可信度分(0-100):白名单 +50,宽松开源协议 +30,规范命名(dsh- 前缀)+20,归档 -20 */
 export declare function trustScore(meta: Pick<PluginMeta, 'whitelisted' | 'license' | 'name' | 'archived'>): number;
-/** 综合静态分(match 恒为 0,推荐阶段由模型语义匹配后补足) */
-export declare function rank(meta: PluginMeta): QualityScore;
+/** 综合静态分(match 恒为 0,推荐阶段由模型语义匹配后补足)。now 便于冻结评测时间。 */
+export declare function rank(meta: PluginMeta, now?: Date): QualityScore;
