@@ -1,0 +1,7 @@
+# dsh-web-app disables the shared HMR row for regular web launches. The
+# nightly distribution check exercises the profile/home patch watcher, which
+# dsh rc.2 requires during startup, so re-enable the service for this job only.
+- id: hmr
+  disabled: false
+  config:
+    root: []

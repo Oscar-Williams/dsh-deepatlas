@@ -33,12 +33,17 @@ jobs:
       - name: 组合验证
         shell: bash
         run: |
-          dsh --profile web --dump-config | tee dump.yml
+          dsh --profile web --patch ci/nightly-hmr.patch.yml --dump-config | tee dump.yml
           grep -A2 "== dsh-deepatlas" dump.yml
+          grep -A2 -- "- id: hmr" dump.yml | grep -q "disabled: false"
       - name: 启动冒烟(HTTP 200)
         shell: bash
         run: |
-          (dsh web --port 3090 --no-open > boot.log 2>&1 &)
+          # dsh-web-app disables the shared HMR row for normal web launches,
+          # while dsh rc.2 still watches profile and home patch layers. Enable
+          # that service only for this patch-layer smoke test so both hosted
+          # platforms can complete the same startup path.
+          (dsh --profile web --patch ci/nightly-hmr.patch.yml --port 3090 --no-open > boot.log 2>&1 &)
           for i in $(seq 1 24); do
             sleep 5
             code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://127.0.0.1:3090 || true)
