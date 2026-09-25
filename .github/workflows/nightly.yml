@@ -20,7 +20,9 @@ jobs:
         with:
           node-version: 22
       - name: 安装 dsh 与 pnpm
-        run: npm i -g pnpm @deepseek-ai/dsh@0.1.1-rc.2 --no-fund --no-audit
+        # dsh rc.2 calls hmr.registerConfig while watching profile/home patches.
+        # HMR 1.0.18+ removed that API, so keep the compatible release explicit.
+        run: npm i -g pnpm @deepseek-ai/dsh@0.1.1-rc.2 @deepseek-ai/cordis-plugin-hmr@1.0.17 --no-fund --no-audit
       - name: 回显已验证的 DSH 版本
         run: dsh --version
       - name: 全新 DSH_HOME 从 GitHub 锁定 SHA 安装
