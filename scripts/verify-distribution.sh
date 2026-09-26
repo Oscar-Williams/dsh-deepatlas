@@ -23,11 +23,11 @@ echo "[2/4] 全新 DSH_HOME=$DSH_HOME 安装 tarball"
 "$DSH" plugin --profile web add "$DIST/$TGZ" || { echo "FAIL: plugin add"; exit 1; }
 
 echo "[3/4] 组合验证(dump-config 断言)"
-DUMP="$("$DSH" --profile web --dump-config)" || { echo "FAIL: dump-config"; exit 1; }
+DUMP="$("$DSH" --profile web --patch "$ROOT/ci/nightly-hmr.patch.yml" --dump-config)" || { echo "FAIL: dump-config"; exit 1; }
 echo "$DUMP" | grep -A2 "== dsh-deepatlas" || { echo "FAIL: 组合树未见 deepatlas"; exit 1; }
 
 echo "[4/4] 启动冒烟(HTTP 200,最长 120s)"
-("$DSH" web --port "$PORT" --no-open > "$DSH_HOME/boot.log" 2>&1 &)
+("$DSH" --profile web --patch "$ROOT/ci/nightly-hmr.patch.yml" --port "$PORT" --no-open > "$DSH_HOME/boot.log" 2>&1 &)
 for i in $(seq 1 24); do
   sleep 5
   code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 "http://127.0.0.1:$PORT" || true)"

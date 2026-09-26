@@ -71,7 +71,8 @@ jobs:
         with:
           node-version: 22
       - name: 安装 dsh 与 pnpm
-        run: npm i -g pnpm @deepseek-ai/dsh@0.1.1-rc.2 --no-fund --no-audit
+        # Keep the HMR API expected by dsh rc.2 (1.0.18+ removed registerConfig).
+        run: npm i -g pnpm @deepseek-ai/dsh@0.1.1-rc.2 @deepseek-ai/cordis-plugin-hmr@1.0.17 --no-fund --no-audit
       - name: 回显已验证的 DSH 版本
         run: dsh --version
       - name: 分发验证(archive→pack→安装→组合→启动)
