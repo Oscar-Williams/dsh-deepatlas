@@ -37,7 +37,11 @@ jobs:
         run: |
           dsh --profile web --patch ci/nightly-hmr.patch.yml --dump-config | tee dump.yml
           grep -A2 "== dsh-deepatlas" dump.yml
-          grep -A2 -- "- id: hmr" dump.yml | grep -q "disabled: false"
+          awk '
+            /^- id: / { hmr = ($0 == "- id: hmr") }
+            hmr && /^  disabled: false\r?$/ { enabled = 1 }
+            END { exit !enabled }
+          ' dump.yml
       - name: 启动冒烟(HTTP 200)
         shell: bash
         run: |
